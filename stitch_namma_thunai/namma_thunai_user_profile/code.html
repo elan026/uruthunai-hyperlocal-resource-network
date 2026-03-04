@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Namma Thunai User Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#308ce8",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#111921",
+                        "success": "#078838",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .filled-icon { font-variation-settings: 'FILL' 1; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display">
+<div class="flex min-h-screen">
+<!-- Sidebar -->
+<aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col fixed h-full">
+<div class="p-6 flex items-center gap-3">
+<div class="size-10 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-2xl">tsunami</span>
+</div>
+<div>
+<h1 class="text-lg font-bold leading-tight">Namma Thunai</h1>
+<p class="text-xs text-slate-500">Hyperlocal Support</p>
+</div>
+</div>
+<nav class="flex-1 px-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="text-sm font-medium">Live Map</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="text-sm font-medium">Resources</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="text-sm font-medium">Community</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-primary/10 text-primary rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined filled-icon">account_circle</span>
+<span class="text-sm font-bold">Profile</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-200 dark:border-slate-800">
+<div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
+<p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Active Emergency</p>
+<p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Monsoon Alert</p>
+<p class="text-xs text-slate-500 mt-1">Chennai South Coast</p>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 flex flex-col">
+<!-- Navbar -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-10 px-8 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-bold">User Profile</h2>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm w-64 focus:ring-2 focus:ring-primary/50" placeholder="Search resources or volunteers..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+<button class="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-px bg-slate-200 dark:border-slate-700 mx-1"></div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="text-sm font-bold leading-none">Anand Kumar</p>
+<p class="text-[10px] text-primary font-bold uppercase tracking-tighter">Volunteer</p>
+</div>
+<img class="size-9 rounded-full object-cover ring-2 ring-primary/20" data-alt="Close up portrait of a smiling Indian man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpixT4yCV58QWB7lZLThDIuXfHF1i-zAURADzoWU_dB7p1z98IvfSz21g6eI2jpj6diyy-3LEa25k10E9zj6yWabe7nvzxuEZTxABm4XELirhfGRsAI71CprI1b1J0CQgxi-onRsR_j-CoMhPT0MT13jmIToR_2LSZJiha2UdI2XrtbLxE8ZY_c28Qn2mT22qZnBjKvXqaNUKu3MzI4pUUjhxWXuyKQKdZ7LSZSIZHLuzhu0uKkjJKLpL9vOH6uwNv3ihy-E6CH9Y"/>
+</div>
+</div>
+</header>
+<!-- Profile Content -->
+<div class="p-8 max-w-6xl mx-auto w-full space-y-8">
+<!-- Profile Header Card -->
+<div class="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row gap-8 items-center md:items-start">
+<div class="relative group">
+<img class="size-40 rounded-2xl object-cover shadow-xl ring-4 ring-white dark:ring-slate-800" data-alt="Portrait of Anand Kumar, a community volunteer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZXnp1hNhxa_0x2Y4vodlMLXVb47KarJuKDRxF2bSHC26y5O4m0dAoK5pFdYohDNuRw-vAZB3habet92b05wJ2YUoCKA-_Dlw1oP1yWN4RqYJe8iPSIU8LCEst9bq9k1-VSs0iTHfNFsq3TRXLpwpesn9uEnZDhsg_olxZy1RFl7KQPOm13bU-M-wY3ppj8BJbz9WLz4GkzVHkX7rgNEAveUveUfdNTjiBM4NZPJWcYA6eafpq6Js9OGUBMWexIativtUgZxIRcTQ"/>
+<div class="absolute -bottom-3 -right-3 bg-success text-white p-2 rounded-xl shadow-lg flex items-center gap-1 border-4 border-white dark:border-slate-900">
+<span class="material-symbols-outlined text-sm filled-icon">verified</span>
+<span class="text-[10px] font-bold uppercase">Volunteer Badge</span>
+</div>
+</div>
+<div class="flex-1 text-center md:text-left">
+<div class="flex flex-col md:flex-row md:items-center gap-3 mb-2">
+<h3 class="text-3xl font-bold text-slate-900 dark:text-slate-100">Anand Kumar</h3>
+<span class="inline-flex items-center px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full uppercase tracking-wide">
+                                CHN-ADY-01 • Adyar Zone
+                            </span>
+</div>
+<p class="text-slate-500 dark:text-slate-400 mb-6 max-w-lg">Active community member since October 2023. Specializing in logistics support and senior citizen assistance during monsoon flood relief efforts.</p>
+<div class="flex flex-wrap gap-4 justify-center md:justify-start">
+<button class="bg-primary hover:bg-primary/90 text-white px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">edit</span>
+                                Edit Profile
+                            </button>
+<button class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-6 py-2.5 rounded-xl font-bold transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-xl">share</span>
+                                Share Profile
+                            </button>
+</div>
+</div>
+<div class="w-full md:w-64 bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 flex flex-col items-center justify-center text-center">
+<p class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">Trust Score</p>
+<div class="relative size-24 mb-3">
+<svg class="size-full -rotate-90" viewbox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+<circle class="stroke-slate-200 dark:stroke-slate-700" cx="18" cy="18" fill="none" r="16" stroke-width="3"></circle>
+<circle class="stroke-success" cx="18" cy="18" fill="none" r="16" stroke-dasharray="100" stroke-dashoffset="5" stroke-width="3"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="text-2xl font-black text-success">95%</span>
+</div>
+</div>
+<p class="text-xs text-slate-500 font-medium">Top 5% of Volunteers</p>
+<div class="mt-4 flex items-center gap-1 text-success text-xs font-bold">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+                            +2% from last month
+                        </div>
+</div>
+</div>
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
+<div class="flex items-center justify-between mb-4">
+<div class="size-12 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center text-blue-600">
+<span class="material-symbols-outlined text-2xl">volunteer_activism</span>
+</div>
+<span class="text-success text-sm font-bold">+12 pts</span>
+</div>
+<p class="text-3xl font-black mb-1">24</p>
+<p class="text-sm text-slate-500 font-medium">Resources Shared</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
+<div class="flex items-center justify-between mb-4">
+<div class="size-12 bg-amber-50 dark:bg-amber-900/20 rounded-xl flex items-center justify-center text-amber-600">
+<span class="material-symbols-outlined text-2xl">task_alt</span>
+</div>
+<span class="text-success text-sm font-bold">+8 pts</span>
+</div>
+<p class="text-3xl font-black mb-1">18</p>
+<p class="text-sm text-slate-500 font-medium">Requests Fulfilled</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
+<div class="flex items-center justify-between mb-4">
+<div class="size-12 bg-purple-50 dark:bg-purple-900/20 rounded-xl flex items-center justify-center text-purple-600">
+<span class="material-symbols-outlined text-2xl">favorite</span>
+</div>
+<span class="text-success text-sm font-bold">+42</span>
+</div>
+<p class="text-3xl font-black mb-1">128</p>
+<p class="text-sm text-slate-500 font-medium">Community Thanks</p>
+</div>
+</div>
+<!-- Split Sections -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Resources Shared -->
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<h4 class="text-xl font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">inventory_2</span>
+                                Resources Shared
+                            </h4>
+<button class="text-primary text-sm font-bold hover:underline">View All</button>
+</div>
+<div class="space-y-3">
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-4 hover:shadow-md transition-shadow">
+<div class="size-14 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0">
+<img class="size-full object-cover" data-alt="Stockpile of drinking water bottles" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYpMzoqykw1OPs7CDJkSzMYkloMzdtx3OT5rWl1XA34ZEXlYeD-IKEJtKobG1ezObXO6MqCoMpmDiHFSH46NoQJkIXH62ly7f32i3TYNRYPeAaSfuQ3q25vlDFbQGf7CjrsElVlZAtk8xjxeX7e7x3s9lcUtdKmQZKtpq1qG0uT4ggEDBhfwSFgt9Omrj8Zt3XWtErI0IRrW3fr5tviAFB6Y6ZmrNVnh0AGNjuXhKqgys7Ua2em80nBFqdn9d7ahlzhNLyRv6siBA"/>
+</div>
+<div class="flex-1">
+<h5 class="font-bold text-slate-800 dark:text-slate-100">Extra Water Bottles</h5>
+<p class="text-xs text-slate-500">12 units • Available for pickup</p>
+</div>
+<span class="px-2 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-black rounded-lg uppercase">Active</span>
+</div>
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-4 hover:shadow-md transition-shadow">
+<div class="size-14 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0">
+<img class="size-full object-cover" data-alt="High capacity portable power bank" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfjwBR50Kg2DZTCT9A_G3H03LUOi7KmMYPX94J0EXK9xHExdn9B0mcfbn2YTYl2EnTcw1A7UbOrbew7qgApe2wQx4ocYr_242DqMHDpfnJbvC-bK06sViXX9X5HdW638LGDLog7Yv0jZzvQa3wAyk404e71HPJS_jx_rcAIkyDlmaDaTronL1gjRCcTLgX7T66vIb0x8xLl9EEflDSKPMR2VNIMmQa7gw0tlV2qH2unPjV0lezdt-mUT1c8f70mHKGYpHJrufLuVU"/>
+</div>
+<div class="flex-1">
+<h5 class="font-bold text-slate-800 dark:text-slate-100">Power Bank (20k mAh)</h5>
+<p class="text-xs text-slate-500">2 units • Shared with neighbor</p>
+</div>
+<span class="px-2 py-1 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 text-[10px] font-black rounded-lg uppercase">Borrowed</span>
+</div>
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-4 hover:shadow-md transition-shadow">
+<div class="size-14 rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0">
+<img class="size-full object-cover" data-alt="First aid kit with essential supplies" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3YfDDePdZgmLByGYoPGpO_hMgM24E41ByMMWY_waitR8Q33Xop6OILPBqMeso8hsSSeBY7uPVu4Z0BNzxcE2T2iYOzHFjOYHTgXIN2EKjsZAtyfAfnOFaRtZfQuLBiQnC9ZK8F0HKbxqKZXmkQYPo-R9K5lPClLx9ONlE8Sdg5uBrOC4i2i1J98F0fInH0Pgze2uSkwhY9jvW_S0eGLrwPB_o9e8lTkp5q4tV14FnCr-MpBBKBWAucGlMEVz3ExxXQEfcoAZiL3M"/>
+</div>
+<div class="flex-1">
+<h5 class="font-bold text-slate-800 dark:text-slate-100">Emergency Medical Kit</h5>
+<p class="text-xs text-slate-500">Basic supplies • Donated to relief camp</p>
+</div>
+<span class="px-2 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] font-black rounded-lg uppercase">Donated</span>
+</div>
+</div>
+</div>
+<!-- Requests Fulfilled -->
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<h4 class="text-xl font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-success">task_alt</span>
+                                Requests Fulfilled
+                            </h4>
+<button class="text-primary text-sm font-bold hover:underline">View History</button>
+</div>
+<div class="space-y-3">
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-start gap-4">
+<div class="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 shrink-0 mt-1">
+<span class="material-symbols-outlined text-xl">directions_car</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h5 class="font-bold text-slate-800 dark:text-slate-100">Transport for Senior Citizen</h5>
+<span class="text-[10px] text-slate-400 font-medium">2 days ago</span>
+</div>
+<p class="text-sm text-slate-500 mt-1">Helped Mrs. Lakshmi reach the pharmacy during waterlogging in Street 4.</p>
+<div class="mt-2 flex items-center gap-1 text-xs text-success font-bold">
+<span class="material-symbols-outlined text-xs filled-icon">favorite</span>
+                                        Highly Appreciated
+                                    </div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-start gap-4">
+<div class="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 shrink-0 mt-1">
+<span class="material-symbols-outlined text-xl">restaurant</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h5 class="font-bold text-slate-800 dark:text-slate-100">Hot Meals Delivery</h5>
+<span class="text-[10px] text-slate-400 font-medium">1 week ago</span>
+</div>
+<p class="text-sm text-slate-500 mt-1">Distributed 15 home-cooked meal packets to the relief center at the Community Hall.</p>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-start gap-4">
+<div class="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 shrink-0 mt-1">
+<span class="material-symbols-outlined text-xl">flash_off</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h5 class="font-bold text-slate-800 dark:text-slate-100">Inverter Repair Support</h5>
+<span class="text-[10px] text-slate-400 font-medium">2 weeks ago</span>
+</div>
+<p class="text-sm text-slate-500 mt-1">Coordinated with a technician to fix power backup for a local household with infants.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Community Badges -->
+<div class="bg-gradient-to-r from-primary/10 to-transparent p-8 rounded-2xl border border-primary/20 text-center">
+<h4 class="text-lg font-bold mb-4">Achievements &amp; Badges</h4>
+<div class="flex flex-wrap justify-center gap-6">
+<div class="flex flex-col items-center gap-2 group">
+<div class="size-16 rounded-full bg-white dark:bg-slate-800 shadow-md flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl filled-icon">military_tech</span>
+</div>
+<span class="text-xs font-bold text-slate-600 dark:text-slate-300">Fast Responder</span>
+</div>
+<div class="flex flex-col items-center gap-2 group">
+<div class="size-16 rounded-full bg-white dark:bg-slate-800 shadow-md flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl filled-icon">water_drop</span>
+</div>
+<span class="text-xs font-bold text-slate-600 dark:text-slate-300">Flood Warrior</span>
+</div>
+<div class="flex flex-col items-center gap-2 group opacity-40 grayscale">
+<div class="size-16 rounded-full bg-white dark:bg-slate-800 shadow-md flex items-center justify-center text-slate-400">
+<span class="material-symbols-outlined text-3xl">verified_user</span>
+</div>
+<span class="text-xs font-bold text-slate-600 dark:text-slate-300">Top Trusted</span>
+</div>
+<div class="flex flex-col items-center gap-2 group">
+<div class="size-16 rounded-full bg-white dark:bg-slate-800 shadow-md flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl filled-icon">volunteer_activism</span>
+</div>
+<span class="text-xs font-bold text-slate-600 dark:text-slate-300">Kind Heart</span>
+</div>
+</div>
+</div>
+</div>
+<footer class="p-8 mt-auto text-center border-t border-slate-200 dark:border-slate-800">
+<p class="text-sm text-slate-500">© 2024 Namma Thunai Hyperlocal Support Platform. Made with care for Tamil Nadu.</p>
+</footer>
+</main>
+</div>
+</body></html>
