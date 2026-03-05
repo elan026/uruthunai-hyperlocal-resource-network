@@ -2,9 +2,175 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Base ─── */
 body {
   margin: 0;
   font-family: 'Inter', 'Public Sans', sans-serif;
-  background-color: #f7fafc;
-  color: #1a202c;
+  background-color: #f6f7f8;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: auto;
+  /* Lenis handles smooth scroll */
+}
+
+/* ─── Material Symbols ─── */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.material-symbols-outlined.filled {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* ─── Emergency ─── */
+@keyframes emergency-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.emergency-pulse {
+  animation: emergency-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* ─── Motion Utility Classes ─── */
+@layer utilities {
+
+  /* Hover-lift effect for cards */
+  .hover-lift {
+    transition: all 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Soft-scale for icons and small elements */
+  .hover-scale {
+    transition: transform 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .hover-scale:hover {
+    transform: scale(1.05);
+  }
+
+  /* Button press effect */
+  .press-scale {
+    transition: transform 150ms ease-out;
+  }
+
+  .press-scale:active {
+    transform: scale(0.97);
+  }
+
+  /* Nav link underline slide */
+  .nav-underline {
+    position: relative;
+  }
+
+  .nav-underline::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #308ce8;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .nav-underline:hover::after {
+    transform: scaleX(1);
+  }
+
+  /* Icon micro-interaction */
+  .icon-hover {
+    transition: all 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .icon-hover:hover {
+    transform: translateY(-1px) rotate(3deg);
+  }
+
+  /* GPU acceleration hint */
+  .gpu-accelerated {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+  }
+}
+
+/* ─── Lenis overrides ─── */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .hover-lift:hover {
+    transform: none;
+    box-shadow: none;
+  }
+
+  .hover-scale:hover,
+  .icon-hover:hover {
+    transform: none;
+  }
+
+  .nav-underline::after {
+    transition: none;
+  }
 }

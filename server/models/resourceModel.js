@@ -1,13 +1,23 @@
 const db = require('../config/db');
 
 const Resource = {
-    findAll: async () => {
-        const [rows] = await db.execute(`
+    findAll: async ({ minLat, maxLat, minLng, maxLng } = {}) => {
+        let query = `
             SELECT r.*, u.name as provider_name, u.role as provider_role, u.trust_score as provider_trust_score 
             FROM resources r 
             JOIN users u ON r.user_id = u.id 
-            ORDER BY r.created_at DESC
-        `);
+            WHERE 1=1
+        `;
+        const params = [];
+
+        if (minLat && maxLat && minLng && maxLng) {
+            query += ' AND r.location_lat BETWEEN ? AND ? AND r.location_lng BETWEEN ? AND ?';
+            params.push(minLat, maxLat, minLng, maxLng);
+        }
+
+        query += ' ORDER BY r.created_at DESC';
+
+        const [rows] = await db.execute(query, params);
         return rows;
     },
 

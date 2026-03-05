@@ -70,6 +70,8 @@ const initDb = async () => {
                 alert_type VARCHAR(50) NOT NULL,
                 message TEXT NOT NULL,
                 is_active BOOLEAN DEFAULT TRUE,
+                location_lat DECIMAL(10, 8),
+                location_lng DECIMAL(11, 8),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE CASCADE
             );

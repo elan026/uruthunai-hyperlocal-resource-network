@@ -1,124 +1,232 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { resourceService, requestService } from '../services/api';
-import MetricCard from '../components/MetricCard';
-import { ShieldAlert, ArrowRight, Users, Package, HelpCircle, BellRing } from 'lucide-react';
+import { resourceService, requestService, alertService } from '../services/api';
 
 export default function AdminDashboard() {
     const { user, emergencyMode, setEmergencyMode } = useAuth();
-    const navigate = useNavigate();
-    const [disasterType, setDisasterType] = useState('Flood');
-    const [metrics, setMetrics] = useState({ requests: 0, resources: 0, critical: 0 });
-    const disasterOptions = ['Flood', 'Cyclone', 'Heatwave', 'Medical Emergency', 'Industrial Accident'];
+    const [metrics, setMetrics] = useState({
+        totalResources: 0,
+        totalRequests: 0,
+        totalAlerts: 0,
+    });
+    const [recentRequests, setRecentRequests] = useState([]);
 
     useEffect(() => {
         const fetchMetrics = async () => {
             try {
-                const [reqRes, resRes] = await Promise.all([
+                const [resRes, reqRes, alertRes] = await Promise.all([
+                    resourceService.getAll(),
                     requestService.getAll(),
-                    resourceService.getAll()
+                    alertService.getAll().catch(() => ({ data: [] }))
                 ]);
                 setMetrics({
-                    requests: reqRes.data.length,
-                    resources: resRes.data.length,
-                    critical: reqRes.data.filter(r => r.urgency_level === 'Critical').length
+                    totalResources: resRes.data.length,
+                    totalRequests: reqRes.data.length,
+                    totalAlerts: alertRes.data?.length || 0
                 });
+                setRecentRequests(reqRes.data.slice(0, 5));
             } catch (err) {
-                console.error("Failed to load metrics", err);
+                console.error('Error fetching admin metrics', err);
             }
         };
         fetchMetrics();
     }, []);
 
     return (
-        <div className="p-8 max-w-7xl mx-auto h-[calc(100vh-80px)] overflow-y-auto pb-32">
-            <div className="flex justify-between items-end border-b border-gray-200 pb-6 mb-10">
-                <div>
-                    <h1 className="text-4xl font-extrabold text-navy-900 tracking-tight leading-tight">Admin Control Panel</h1>
-                    <p className="text-lg text-gray-500 font-medium mt-1">Area: {user?.area_code || 'CHN-ADY-01'} | Role: {user?.role || 'Admin'}</p>
-                </div>
-            </div>
-
-            <div className="grid lg:grid-cols-3 gap-8">
-
-                {/* Main Control Area */}
-                <div className="lg:col-span-2 space-y-8">
-
-                    <div className={`p-10 rounded-[40px] border shadow-lg transition-colors relative overflow-hidden ${emergencyMode ? 'bg-gradient-to-br from-red-600 to-red-800 border-red-600' : 'bg-white border-gray-200'}`}>
-                        {emergencyMode && <div className="absolute inset-0 bg-red-500 mix-blend-overlay animate-pulse opacity-20"></div>}
-
-                        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-                            <div className="space-y-4 max-w-sm">
-                                <h2 className={`text-3xl font-extrabold tracking-tight ${emergencyMode ? 'text-white' : 'text-navy-900'}`}>
-                                    Operations State
-                                </h2>
-                                <p className={`font-medium leading-relaxed ${emergencyMode ? 'text-red-100' : 'text-gray-500'}`}>
-                                    Activating emergency mode pushes local alerts and prioritizes rescue requests.
-                                </p>
-                            </div>
-
-                            <button
-                                onClick={() => setEmergencyMode(!emergencyMode)}
-                                className={`h-24 px-12 rounded-[2rem] font-black text-2xl uppercase tracking-widest shadow-xl transition-all hover:scale-[1.02] flex items-center justify-center gap-4 border-4 ${emergencyMode
-                                    ? 'bg-navy-900 text-red-500 border-navy-800 hover:bg-black'
-                                    : 'bg-red-600 text-white border-red-500 hover:bg-red-700 shadow-red-500/30'
-                                    }`}
-                            >
-                                <ShieldAlert className={`w-8 h-8 ${emergencyMode ? 'text-red-500' : 'text-white'}`} />
-                                {emergencyMode ? 'DEACTIVATE' : 'ACTIVATE'}
-                            </button>
-                        </div>
+        <div className="p-6 md:p-8">
+            <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+                    <div>
+                        <h2 className="text-3xl font-black tracking-tight">Admin Control Panel</h2>
+                        <p className="text-slate-500 mt-1">Disaster Management Overview — Area: {user?.area_code || 'CHN-ADY-01'}</p>
                     </div>
-
-                    <div className="bg-white p-10 rounded-[40px] border border-gray-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-8">
-                        <div>
-                            <h3 className="font-extrabold text-navy-900 text-2xl tracking-tight mb-2">Disaster Context</h3>
-                            <p className="text-gray-500 font-medium">Select type to configure UI templates and alert parameters.</p>
-                        </div>
-                        <select
-                            value={disasterType}
-                            onChange={(e) => setDisasterType(e.target.value)}
-                            className="bg-gray-50 border border-gray-200 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition-colors font-bold text-lg text-gray-800 w-full sm:w-64 appearance-none shadow-inner"
+                    <div className="flex gap-3 mt-4 md:mt-0">
+                        <button
+                            onClick={() => setEmergencyMode(!emergencyMode)}
+                            className={`px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-3 transition-all ${emergencyMode
+                                    ? 'bg-red-500 text-white shadow-xl shadow-red-500/20'
+                                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                }`}
                         >
-                            {disasterOptions.map(o => <option key={o} value={o}>{o}</option>)}
-                        </select>
-                    </div>
-
-                    {/* Quick Actions */}
-                    <div className="grid sm:grid-cols-3 gap-4">
-                        <button onClick={() => navigate('/alerts')} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-left group">
-                            <BellRing className="w-8 h-8 text-orange-500 mb-3 group-hover:scale-110 transition-transform" />
-                            <h4 className="font-bold text-navy-900">Post Alert</h4>
-                            <p className="text-sm text-gray-500 mt-1">Send community-wide notification</p>
+                            <span className="material-symbols-outlined text-lg">{emergencyMode ? 'emergency' : 'toggle_off'}</span>
+                            {emergencyMode ? 'Emergency Mode Active' : 'Emergency Mode Off'}
                         </button>
-                        <button onClick={() => navigate('/volunteers')} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-left group">
-                            <Users className="w-8 h-8 text-teal-500 mb-3 group-hover:scale-110 transition-transform" />
-                            <h4 className="font-bold text-navy-900">Manage Volunteers</h4>
-                            <p className="text-sm text-gray-500 mt-1">View and coordinate responders</p>
-                        </button>
-                        <button onClick={() => navigate('/emergency')} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all text-left group">
-                            <ShieldAlert className="w-8 h-8 text-red-500 mb-3 group-hover:scale-110 transition-transform" />
-                            <h4 className="font-bold text-navy-900">Emergency Queue</h4>
-                            <p className="text-sm text-gray-500 mt-1">View critical request pipeline</p>
+                        <button className="px-6 py-3 rounded-xl font-bold text-sm bg-primary text-white shadow-lg shadow-primary/20 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-lg">add_alert</span>
+                            Create Alert
                         </button>
                     </div>
-
                 </div>
 
-                {/* Metrics Sidebar */}
-                <div className="space-y-6">
-                    <h3 className="font-extrabold text-navy-900 text-2xl tracking-tight mb-4 border-b border-gray-100 pb-2">Real-time Metrics</h3>
-
-                    <MetricCard title="Active Requests" value={metrics.requests} trend={12} subtitle="Total from database" colorClass="text-orange-600" />
-                    <MetricCard title="Critical Requests" value={metrics.critical} trend={-5} subtitle="Urgency: Critical" colorClass="text-red-600" />
-                    <MetricCard title="Total Resources" value={metrics.resources} trend={22} subtitle="Posted by community" colorClass="text-teal-600" />
-
-                    <button onClick={() => navigate('/map')} className="w-full bg-navy-800 text-white font-bold py-5 rounded-3xl mt-4 shadow-lg hover:bg-navy-900 transition-colors flex items-center justify-center gap-2">
-                        View Resource Map <ArrowRight className="w-5 h-5" />
-                    </button>
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    {[
+                        { label: 'Total Active Resources', value: metrics.totalResources, icon: 'inventory_2', color: 'text-blue-500', bg: 'bg-blue-50 border-blue-100' },
+                        { label: 'Open Requests', value: metrics.totalRequests, icon: 'assignment_late', color: 'text-red-500', bg: 'bg-red-50 border-red-100' },
+                        { label: 'Verified Volunteers', value: '156', icon: 'person_check', color: 'text-emerald-500', bg: 'bg-emerald-50 border-emerald-100' },
+                        { label: 'Community Alerts', value: metrics.totalAlerts, icon: 'campaign', color: 'text-amber-500', bg: 'bg-amber-50 border-amber-100' },
+                    ].map((stat, i) => (
+                        <div key={i} className={`flex items-center gap-5 p-5 rounded-2xl border ${stat.bg}`}>
+                            <div className={`flex-shrink-0 h-14 w-14 rounded-xl flex items-center justify-center ${stat.color}`} style={{ backgroundColor: 'white' }}>
+                                <span className="material-symbols-outlined text-3xl">{stat.icon}</span>
+                            </div>
+                            <div>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
+                                <h3 className="text-3xl font-black text-slate-900 mt-1">{stat.value}</h3>
+                            </div>
+                        </div>
+                    ))}
                 </div>
 
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left: Main Content */}
+                    <div className="lg:col-span-2 space-y-8">
+                        {/* Recent Requests Table */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200">
+                            <div className="p-6 border-b border-slate-200 flex items-center justify-between">
+                                <h3 className="font-bold text-lg flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-red-500">assignment_late</span>
+                                    Recent Activity
+                                </h3>
+                                <button className="text-sm font-bold text-primary hover:underline">View All</button>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-widest">
+                                            <th className="py-3 px-6 text-left">User / Request</th>
+                                            <th className="py-3 px-6 text-left">Category</th>
+                                            <th className="py-3 px-6 text-left">Urgency</th>
+                                            <th className="py-3 px-6 text-left">Status</th>
+                                            <th className="py-3 px-6 text-left">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {recentRequests.length > 0 ? recentRequests.map((req, i) => (
+                                            <tr key={req.id || i} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                                <td className="py-4 px-6">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">#{req.id || i + 1}</div>
+                                                        <div>
+                                                            <p className="font-bold text-slate-900">{req.description?.substring(0, 30) || 'Request'}</p>
+                                                            <p className="text-[10px] text-slate-500">{new Date(req.created_at).toLocaleString()}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded uppercase">{req.category}</span>
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <span className={`text-[10px] font-black px-3 py-1 rounded-full ${req.urgency_level === 'Critical' ? 'bg-red-500 text-white' :
+                                                            req.urgency_level === 'Essential' ? 'bg-orange-500 text-white' :
+                                                                'bg-blue-100 text-blue-700'
+                                                        }`}>{req.urgency_level}</span>
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <span className={`text-[10px] font-bold px-2 py-1 rounded ${req.status === 'Active' || !req.status ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-500'
+                                                        }`}>{req.status || 'Active'}</span>
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <button className="text-primary hover:underline text-xs font-bold">View</button>
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            [
+                                                { desc: 'Emergency med evac request', cat: 'Medical', urg: 'Critical', status: 'Active' },
+                                                { desc: 'Shelter for stranded family(5)', cat: 'Shelter', urg: 'Essential', status: 'Active' },
+                                                { desc: 'Power backup need', cat: 'Electricity', urg: 'Support', status: 'Pending' },
+                                            ].map((row, i) => (
+                                                <tr key={i} className="border-b border-slate-100">
+                                                    <td className="py-4 px-6">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">#{i + 1}</div>
+                                                            <div>
+                                                                <p className="font-bold text-slate-900">{row.desc}</p>
+                                                                <p className="text-[10px] text-slate-500">Today</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-4 px-6"><span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded uppercase">{row.cat}</span></td>
+                                                    <td className="py-4 px-6">
+                                                        <span className={`text-[10px] font-black px-3 py-1 rounded-full ${row.urg === 'Critical' ? 'bg-red-500 text-white' :
+                                                                row.urg === 'Essential' ? 'bg-orange-500 text-white' :
+                                                                    'bg-blue-100 text-blue-700'
+                                                            }`}>{row.urg}</span>
+                                                    </td>
+                                                    <td className="py-4 px-6"><span className="bg-green-100 text-green-600 text-[10px] font-bold px-2 py-1 rounded">{row.status}</span></td>
+                                                    <td className="py-4 px-6"><button className="text-primary hover:underline text-xs font-bold">View</button></td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Area Map */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-primary">map</span>
+                                Region Overview Map
+                            </h3>
+                            <div className="h-56 rounded-xl bg-slate-200 relative flex items-center justify-center overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent"></div>
+                                <div className="text-center z-10">
+                                    <span className="material-symbols-outlined text-5xl text-slate-300">public</span>
+                                    <p className="text-sm text-slate-400 mt-2">Admin region overview</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Panel */}
+                    <div className="space-y-8">
+                        {/* Volunteer Management */}
+                        <div className="bg-white rounded-2xl border border-slate-200 p-6">
+                            <h3 className="font-bold text-sm uppercase tracking-widest text-slate-500 mb-4 flex items-center justify-between">
+                                Volunteer Pool
+                                <span className="text-primary text-xs cursor-pointer hover:underline">Manage</span>
+                            </h3>
+                            <div className="space-y-4">
+                                {[
+                                    { name: 'Field Medics', count: 12, icon: 'medical_services', color: 'text-red-500' },
+                                    { name: 'Transport Drivers', count: 8, icon: 'local_shipping', color: 'text-blue-500' },
+                                    { name: 'Logistics & Supply', count: 15, icon: 'inventory_2', color: 'text-emerald-500' },
+                                    { name: 'Communication Team', count: 6, icon: 'cell_tower', color: 'text-purple-500' },
+                                ].map((role, i) => (
+                                    <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100">
+                                        <div className="flex items-center gap-3">
+                                            <span className={`material-symbols-outlined ${role.color}`}>{role.icon}</span>
+                                            <span className="text-sm font-bold">{role.name}</span>
+                                        </div>
+                                        <span className="text-sm font-black text-slate-900">{role.count}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* System Status */}
+                        <div className="bg-slate-900 text-white rounded-2xl p-6">
+                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">System Status</h3>
+                            <div className="space-y-4">
+                                {[
+                                    { label: 'SMS Gateway', status: 'Operational', ok: true },
+                                    { label: 'Database Sync', status: 'Synced (5s ago)', ok: true },
+                                    { label: 'Alert Broadcast', status: emergencyMode ? 'Armed' : 'Standby', ok: emergencyMode },
+                                ].map((item, i) => (
+                                    <div key={i} className="flex items-center justify-between bg-white/10 p-3 rounded-lg">
+                                        <span className="text-sm font-medium">{item.label}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`h-2 w-2 rounded-full ${item.ok ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
+                                            <span className="text-xs font-bold">{item.status}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
