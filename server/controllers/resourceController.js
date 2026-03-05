@@ -4,7 +4,8 @@ const { validateRequiredFields } = require('../utils/helpers');
 // GET /api/resources
 exports.getAllResources = async (req, res, next) => {
     try {
-        const resources = await Resource.findAll();
+        const { minLat, maxLat, minLng, maxLng } = req.query;
+        const resources = await Resource.findAll({ minLat, maxLat, minLng, maxLng });
         res.json(resources);
     } catch (err) {
         next(err);

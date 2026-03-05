@@ -2,21 +2,19 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { resourceService } from '../services/api';
-import ResourceCard from '../components/ResourceCard';
-import { Send, MapPin, AlertCircle } from 'lucide-react';
 
 export default function PostResource() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        category: 'Shelter',
+        category: 'Medical Supplies',
         title: '',
         description: '',
         availability: 'Next 24 hours',
         emergencyFlag: false
     });
 
-    const categories = ['Medical Help', 'Shelter', 'Water & Food', 'Electricity / Generator', 'Transport', 'Volunteers'];
+    const categories = ['Medical Supplies', 'Emergency Shelter', 'Food & Water', 'Clothing & Bedding', 'Rescue Tools', 'Other'];
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -36,122 +34,170 @@ export default function PostResource() {
     };
 
     return (
-        <div className="p-8 max-w-6xl mx-auto h-[calc(100vh-80px)] overflow-y-auto flex flex-col gap-8 pb-32">
-            <h1 className="text-3xl font-extrabold text-navy-900 tracking-tight mb-2">Post a Resource</h1>
-            <p className="text-gray-500 font-medium text-lg leading-relaxed max-w-2xl mb-4">Offer your help to the community. Fill in the details below so neighbors in need can find and request your resources.</p>
-
-            <div className="grid lg:grid-cols-5 gap-12">
-
-                {/* Form Area */}
-                <form onSubmit={handleSubmit} className="lg:col-span-3 space-y-6 bg-white p-8 rounded-[40px] shadow-sm border border-gray-100">
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-navy-800 tracking-wide uppercase">Resource Category</label>
-                        <select
-                            value={formData.category}
-                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition-colors font-medium text-gray-800 appearance-none"
-                        >
-                            {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-navy-800 tracking-wide uppercase">Title <span className="text-red-500">*</span></label>
-                        <input
-                            type="text"
-                            placeholder="e.g. 20L Drinking Water Cans"
-                            value={formData.title}
-                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition-colors font-medium text-gray-800"
-                            required
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-navy-800 tracking-wide uppercase">Description <span className="text-red-500">*</span></label>
-                        <textarea
-                            rows="4"
-                            placeholder="Provide details like quantity, restrictions, or specific directions..."
-                            value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition-colors font-medium text-gray-800 resize-none"
-                            required
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-navy-800 tracking-wide uppercase">Availability Duration</label>
-                        <select
-                            value={formData.availability}
-                            onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
-                            className="w-full bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:bg-white transition-colors font-medium text-gray-800 appearance-none"
-                        >
-                            <option>Next 12 hours</option>
-                            <option>Next 24 hours</option>
-                            <option>Next 48 hours</option>
-                            <option>Indefinite / As needed</option>
-                        </select>
-                    </div>
-
-                    <div className="flex items-center gap-4 bg-red-50 p-5 rounded-2xl border border-red-100">
-                        <div className="flex-shrink-0 bg-white p-2 rounded-full border border-red-200 shadow-sm">
-                            <input
-                                type="checkbox"
-                                id="emergency"
-                                checked={formData.emergencyFlag}
-                                onChange={(e) => setFormData({ ...formData, emergencyFlag: e.target.checked })}
-                                className="w-5 h-5 accent-red-600 rounded bg-gray-100 border-gray-300 focus:ring-red-500 cursor-pointer"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="emergency" className="font-bold text-red-900 cursor-pointer block">Flag as Emergency Resource</label>
-                            <span className="text-sm text-red-700/80 font-medium">Check this if the item is critical and limited in supply (e.g. Oxygen cylinder, life raft).</span>
-                        </div>
-                    </div>
-
-                    <div className="pt-4 border-t border-gray-100 flex justify-between items-center bg-gray-50 -mx-8 -mb-8 px-8 py-6 rounded-b-[40px] mt-8">
-                        <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
-                            <MapPin className="w-4 h-4" /> Location auto-detected: <span className="font-bold text-gray-700">Adyar, CHN</span>
-                        </div>
-                        <button type="submit" className="flex items-center gap-2 bg-teal-600 text-white font-extrabold px-8 py-4 rounded-full shadow-lg hover:bg-teal-700 hover:shadow-xl hover:-translate-y-1 transition-all">
-                            <Send className="w-5 h-5" /> Publish Resource
-                        </button>
-                    </div>
-                </form>
-
-                {/* Preview Area */}
-                <div className="lg:col-span-2 space-y-6 sticky top-8 h-fit">
-                    <div className="bg-navy-900 text-white p-6 rounded-3xl shadow-xl flex items-start gap-4 mb-4 relative overflow-hidden">
-                        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] mix-blend-overlay"></div>
-                        <AlertCircle className="w-8 h-8 text-teal-400 flex-shrink-0 relative z-10 mt-1" />
-                        <div className="relative z-10">
-                            <h3 className="font-bold text-lg mb-1 tracking-tight">Live Preview</h3>
-                            <p className="text-gray-300 text-sm font-medium leading-relaxed">This is exactly how your resource will appear to neighbors in need on the live map and dashboard.</p>
-                        </div>
-                    </div>
-
-                    <div className="pointer-events-none transform origin-top hover:scale-[1.02] transition-transform">
-                        <ResourceCard
-                            resource={{
-                                category: formData.category,
-                                title: formData.title || 'Your Title Here',
-                                description: formData.description || 'Detailed description will appear here. Be as specific as possible.',
-                                time: 'Just now',
-                                distance: 'Your location'
-                            }}
-                        />
-                    </div>
-
-                    <div className="bg-blue-50/50 border border-blue-100 p-6 rounded-3xl mt-6">
-                        <h4 className="font-bold text-navy-800 mb-2">Privacy & Request Flow</h4>
-                        <ol className="list-decimal pl-5 space-y-2 text-sm text-gray-600 font-medium leading-relaxed">
-                            <li>Your exact location is hidden unti you approve a request.</li>
-                            <li>When a neighbor requests help, you get notified immediately.</li>
-                            <li>After accepting, you can chat with them securely to coordinate pickup/delivery.</li>
-                        </ol>
-                    </div>
+        <div className="p-8">
+            <div className="max-w-6xl mx-auto">
+                <div className="mb-8">
+                    <h2 className="text-3xl font-black tracking-tight text-slate-900">Post a New Resource</h2>
+                    <p className="text-slate-500 mt-2">Provide accurate details to help those in need quickly.</p>
                 </div>
 
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    {/* Form Section */}
+                    <form onSubmit={handleSubmit} className="xl:col-span-2 space-y-6">
+                        <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="col-span-1">
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Resource Category</label>
+                                    <select
+                                        value={formData.category}
+                                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                        className="w-full bg-slate-50 border-slate-200 rounded-lg p-3 text-sm focus:ring-primary focus:border-primary"
+                                    >
+                                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                </div>
+                                <div className="col-span-1">
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Resource Title</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g., 20 Hygiene Kits"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        className="w-full bg-slate-50 border-slate-200 rounded-lg p-3 text-sm focus:ring-primary focus:border-primary"
+                                        required
+                                    />
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Description</label>
+                                    <textarea
+                                        rows="4"
+                                        placeholder="Describe the resource, quantity, and specific instructions..."
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        className="w-full bg-slate-50 border-slate-200 rounded-lg p-3 text-sm focus:ring-primary focus:border-primary resize-none"
+                                        required
+                                    />
+                                </div>
+                                <div className="col-span-1">
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Availability Duration</label>
+                                    <select
+                                        value={formData.availability}
+                                        onChange={(e) => setFormData({ ...formData, availability: e.target.value })}
+                                        className="w-full bg-slate-50 border-slate-200 rounded-lg p-3 text-sm focus:ring-primary focus:border-primary"
+                                    >
+                                        <option>Next 12 hours</option>
+                                        <option>Next 24 hours</option>
+                                        <option>Next 48 hours</option>
+                                        <option>Until claimed</option>
+                                        <option>Indefinite</option>
+                                    </select>
+                                </div>
+                                <div className="col-span-1 flex items-end pb-3">
+                                    <label className="inline-flex items-center cursor-pointer gap-3">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.emergencyFlag}
+                                            onChange={(e) => setFormData({ ...formData, emergencyFlag: e.target.checked })}
+                                            className="sr-only peer"
+                                        />
+                                        <div className="relative w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                                        <span className="text-sm font-bold text-slate-700">Emergency Flag (High Priority)</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Location Section */}
+                        <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-bold">Auto-detected Location</h3>
+                                <div className="flex items-center gap-2 text-primary">
+                                    <span className="material-symbols-outlined text-sm">my_location</span>
+                                    <span className="text-xs font-bold uppercase tracking-wider">GPS Active</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg mb-4 border border-slate-100">
+                                <span className="material-symbols-outlined text-slate-400">location_on</span>
+                                <p className="text-sm font-medium">{user?.area_code || 'Anna Nagar, Chennai - 600040'}</p>
+                            </div>
+                            <div className="h-48 rounded-lg overflow-hidden border border-slate-200 relative bg-gradient-to-br from-primary/5 to-blue-50 flex items-center justify-center">
+                                <div className="text-center">
+                                    <span className="material-symbols-outlined text-4xl text-slate-300">map</span>
+                                    <p className="text-xs text-slate-400 mt-2">Your broadcast radius</p>
+                                </div>
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <div className="size-8 bg-primary/40 rounded-full flex items-center justify-center border-2 border-primary">
+                                        <div className="size-2 bg-primary rounded-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 border-t border-slate-200 pt-8 pb-4">
+                            <button type="button" className="w-full sm:w-auto px-8 py-4 bg-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-300 transition-all">
+                                Save as Draft
+                            </button>
+                            <button type="submit" className="w-full sm:w-auto px-12 py-4 bg-primary text-white font-black rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                                <span className="material-symbols-outlined">send</span>
+                                Publish Resource
+                            </button>
+                        </div>
+                    </form>
+
+                    {/* Preview Sidebar */}
+                    <div className="space-y-6">
+                        <h3 className="text-lg font-bold flex items-center gap-2 px-2">
+                            <span className="material-symbols-outlined">visibility</span>
+                            Live Preview
+                        </h3>
+                        <div className="sticky top-0">
+                            <div className="bg-white rounded-xl overflow-hidden shadow-xl border-2 border-primary/30">
+                                <div className="h-32 bg-primary/10 relative flex items-center justify-center">
+                                    <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-primary border border-primary/20">
+                                        Available
+                                    </div>
+                                    <span className="material-symbols-outlined text-primary text-5xl opacity-40">medical_services</span>
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="px-2 py-0.5 bg-slate-100 text-[10px] font-bold rounded text-slate-500 uppercase">{formData.category}</span>
+                                        <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                                            <span className="material-symbols-outlined text-[12px]">schedule</span>
+                                            {formData.availability}
+                                        </span>
+                                    </div>
+                                    <h4 className="text-xl font-bold mb-2">{formData.title || 'Resource Title Preview'}</h4>
+                                    <p className="text-sm text-slate-500 mb-6 line-clamp-3">
+                                        {formData.description || 'Your description will appear here as you type. Provide clear details about what you\'re offering and how people can collect it.'}
+                                    </p>
+                                    <div className="flex items-center gap-4 py-4 border-t border-slate-100">
+                                        <div className="size-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
+                                            {user?.name?.charAt(0) || 'U'}
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold leading-none">{user?.name || 'Your Name'}</p>
+                                            <p className="text-[10px] text-slate-400 mt-1">{user?.area_code || 'Your location'}</p>
+                                        </div>
+                                    </div>
+                                    <button className="w-full bg-slate-100 text-slate-400 font-bold py-3 rounded-lg text-sm mt-2" disabled>
+                                        View Details
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="mt-8 p-6 bg-primary/5 rounded-xl border border-primary/10">
+                                <h5 className="text-sm font-bold text-primary mb-2 flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-sm">info</span>
+                                    Did you know?
+                                </h5>
+                                <p className="text-xs text-slate-600 leading-relaxed">
+                                    Emergency resources are prioritized for users in active red zones. Ensure the 'Emergency Flag' is only used for life-critical supplies.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
