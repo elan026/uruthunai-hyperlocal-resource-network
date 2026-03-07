@@ -11,6 +11,7 @@ export default function Landing() {
     const { login } = useAuth();
     const navigate = useNavigate();
     const [phone, setPhone] = useState('9876543210');
+    const [activeTab, setActiveTab] = useState(0);
 
     const handleLogin = async () => {
         try {
@@ -44,7 +45,7 @@ export default function Landing() {
                         >
                             <span className="material-symbols-outlined">diversity_3</span>
                         </motion.div>
-                        <h1 className="text-xl font-bold tracking-tight text-slate-900">Namma Thunai</h1>
+                        <h1 className="text-xl font-bold tracking-tight text-slate-900">Uruthunai</h1>
                     </div>
                     <nav className="hidden flex-1 justify-center gap-8 md:flex">
                         {['How it Works', 'About Us', 'Community', 'Resources'].map((item) => (
@@ -107,7 +108,7 @@ export default function Landing() {
                                     </FadeUp>
                                     <FadeUp delay={0.2} y={40}>
                                         <h1 className="text-5xl font-black leading-[1.1] tracking-tight text-slate-900 lg:text-7xl">
-                                            Namma <span className="text-primary">Thunai</span>
+                                            Uru<span className="text-primary">thunai</span>
                                         </h1>
                                     </FadeUp>
                                     <FadeUp delay={0.35}>
@@ -155,31 +156,72 @@ export default function Landing() {
                                 </FadeUp>
                             </div>
 
-                            {/* Hero Visual with Parallax */}
+                            {/* Hero Visual with Parallax & Floating Cards */}
                             <Reveal delay={0.3} direction="right">
                                 <div className="relative">
                                     <ParallaxSection speed={0.15}>
-                                        <div className="absolute -left-4 -top-4 h-64 w-64 rounded-full bg-primary/10 blur-3xl"></div>
+                                        <div className="absolute -left-10 -top-10 h-64 w-64 rounded-full bg-primary/20 blur-[80px]"></div>
                                     </ParallaxSection>
                                     <ParallaxSection speed={-0.1}>
-                                        <div className="absolute -bottom-4 -right-4 h-64 w-64 rounded-full bg-blue-400/10 blur-3xl"></div>
+                                        <div className="absolute -bottom-10 -right-10 h-64 w-64 rounded-full bg-secondary/20 blur-[80px]"></div>
                                     </ParallaxSection>
+
                                     <motion.div
-                                        whileHover={{ scale: 1.01 }}
-                                        transition={{ duration: 0.4 }}
-                                        className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 to-blue-100 shadow-2xl flex items-center justify-center"
+                                        whileHover={{ scale: 1.02 }}
+                                        transition={{ duration: 0.5, ease: 'easeOut' }}
+                                        className="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] border-[6px] border-white/50 bg-white/20 shadow-2xl backdrop-blur-sm z-10"
                                     >
-                                        <div className="text-center p-8">
-                                            <motion.span
-                                                animate={{ y: [0, -6, 0] }}
-                                                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                                                className="material-symbols-outlined text-[120px] text-primary/40 block"
-                                            >
-                                                diversity_3
-                                            </motion.span>
-                                            <p className="text-xl font-bold text-slate-700 mt-4">Neighbors Helping Neighbors</p>
+                                        <img src="/app_overview.png" alt="Uruthunai App Infrastructure" className="h-full w-full object-cover" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-slate-900/10 to-transparent"></div>
+
+                                        <div className="absolute bottom-6 left-6 right-6">
+                                            <div className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur-md">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent/20 text-accent">
+                                                        <span className="material-symbols-outlined material-symbols-outlined-filled text-2xl">verified</span>
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-white font-bold text-sm">Hyperlocal Network Active</h4>
+                                                        <p className="text-white/80 text-xs">Real-time resource sharing enabled</p>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent"></div>
+                                    </motion.div>
+
+                                    {/* Floating App Use-Case Cards */}
+                                    <motion.div
+                                        initial={{ y: 20, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        transition={{ delay: 0.8, type: 'spring', bounce: 0.4 }}
+                                        className="absolute -left-8 top-1/4 z-20 hidden md:block"
+                                    >
+                                        <div className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white/95 p-3 shadow-xl backdrop-blur-md">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 text-red-600">
+                                                <span className="material-symbols-outlined text-[20px]">warning</span>
+                                            </div>
+                                            <div className="pr-4">
+                                                <p className="text-sm font-bold leading-tight text-slate-900">Water Logging Alert</p>
+                                                <p className="text-xs text-slate-500">Velachery Main Rd • Just now</p>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+
+                                    <motion.div
+                                        initial={{ y: -20, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        transition={{ delay: 1.1, type: 'spring', bounce: 0.4 }}
+                                        className="absolute -right-6 bottom-1/3 z-20 hidden md:block"
+                                    >
+                                        <div className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white/95 p-3 shadow-xl backdrop-blur-md">
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                                                <span className="material-symbols-outlined text-[20px]">medical_services</span>
+                                            </div>
+                                            <div className="pr-4">
+                                                <p className="text-sm font-bold leading-tight text-slate-900">First Aid Needed</p>
+                                                <p className="text-xs font-medium text-success">Volunteer En Route</p>
+                                            </div>
+                                        </div>
                                     </motion.div>
                                 </div>
                             </Reveal>
@@ -187,41 +229,126 @@ export default function Landing() {
                     </div>
                 </section>
 
-                {/* How it Works */}
-                <section id="how-it-works" className="bg-white px-6 py-20 lg:px-10">
+                {/* Interactive Feature Demo */}
+                <section id="how-it-works" className="bg-white px-6 py-24 lg:px-10">
                     <div className="mx-auto max-w-7xl">
                         <FadeUp className="mb-16 flex flex-col items-center text-center">
-                            <h2 className="text-sm font-bold uppercase tracking-widest text-primary">Our Framework</h2>
-                            <h3 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">How it Works</h3>
+                            <h2 className="text-sm font-bold uppercase tracking-widest text-primary">Interactive Preview</h2>
+                            <h3 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Experience Uruthunai</h3>
                             <p className="mt-4 max-w-2xl text-lg text-slate-600">
-                                Namma Thunai connects neighborhoods into small, tight-knit circles to ensure no one is left behind when a crisis hits.
+                                See how our hyperlocal platform connects neighbors to save lives during crises. Click the features below to explore.
                             </p>
                         </FadeUp>
-                        <StaggerContainer staggerDelay={0.15} className="grid grid-cols-1 gap-8 md:grid-cols-3">
-                            {[
-                                { icon: 'notifications_active', title: 'Real-time Alerts', desc: 'Receive hyperlocal updates specific to your street. Our system monitors weather and infrastructure data to keep you informed before the storm hits.' },
-                                { icon: 'handshake', title: 'Resource Sharing', desc: 'Coordinate tools, clean water, and food within your community circle. Use our simple inventory system to know who has a generator or extra supplies.' },
-                                { icon: 'groups', title: 'Verified Volunteers', desc: 'Connect with vetted volunteers and neighbors. Every member is verified to ensure a safe and trustworthy support network for your family.' },
-                            ].map((item, i) => (
-                                <StaggerItem key={i}>
-                                    <motion.div
-                                        whileHover={{ y: -6, boxShadow: '0 24px 48px -12px rgba(0, 0, 0, 0.08)' }}
-                                        transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-                                        className="group flex flex-col rounded-2xl border border-slate-100 bg-bg-light p-8 transition-colors h-full"
+
+                        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 items-center">
+                            {/* Tabs */}
+                            <div className="lg:col-span-5 flex flex-col gap-4">
+                                {[
+                                    { icon: 'share_location', title: 'Community Resource Map', desc: 'See who has water, power, or tools available right now on your street.' },
+                                    { icon: 'notifications_active', title: 'Hyperlocal Emergency Alerts', desc: 'Get instant notifications about rising water levels or power cuts in your exact zone.' },
+                                    { icon: 'handshake', title: 'Volunteer Coordination', desc: 'Request immediate physical assistance or volunteer to help vulnerable neighbors nearby.' },
+                                ].map((tab, idx) => (
+                                    <motion.button
+                                        key={idx}
+                                        onClick={() => setActiveTab(idx)}
+                                        className={`flex flex-col sm:flex-row gap-4 text-left items-start sm:items-center rounded-2xl p-6 transition-all duration-300 ${activeTab === idx ? 'bg-primary/5 border-2 border-primary/20 shadow-lg shadow-primary/5' : 'bg-transparent border-2 border-transparent hover:bg-slate-50'}`}
                                     >
+                                        <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl transition-colors ${activeTab === idx ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500'}`}>
+                                            <span className="material-symbols-outlined text-3xl">{tab.icon}</span>
+                                        </div>
+                                        <div>
+                                            <h4 className={`text-xl font-bold ${activeTab === idx ? 'text-primary' : 'text-slate-900'}`}>{tab.title}</h4>
+                                            <p className="mt-2 text-sm text-slate-600 leading-relaxed">{tab.desc}</p>
+                                        </div>
+                                    </motion.button>
+                                ))}
+                            </div>
+
+                            {/* Viewer */}
+                            <div className="lg:col-span-7">
+                                <Reveal delay={0.2} direction="up">
+                                    <div className="relative aspect-square sm:aspect-video w-full overflow-hidden rounded-[2.5rem] bg-slate-100 border-8 border-slate-50 shadow-2xl">
+
+                                        {/* Dynamic Content Based on Tab selection */}
                                         <motion.div
-                                            whileHover={{ rotate: [0, -5, 5, 0] }}
+                                            key={activeTab}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
                                             transition={{ duration: 0.4 }}
-                                            className="mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300"
+                                            className="h-full w-full bg-cover bg-center"
                                         >
-                                            <span className="material-symbols-outlined text-3xl">{item.icon}</span>
+                                            {activeTab === 0 && (
+                                                <div className="relative w-full h-full flex flex-col w-full h-full justify-end bg-mint-50">
+                                                    <img src="/resource_map_mockup.png" alt="Resource Map" className="absolute inset-0 w-full h-full object-cover" />
+                                                    <div className="relative z-10 w-full bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-transparent p-6 pt-24 text-white">
+                                                        <div className="flex gap-2 overflow-x-auto pb-2">
+                                                            {['Water (12)', 'Medical (3)', 'Power (5)', 'Food (8)'].map((filter, i) => (
+                                                                <span key={i} className="whitespace-nowrap rounded-full border border-white/20 bg-black/40 px-4 py-2 text-xs font-bold backdrop-blur-md cursor-pointer hover:bg-primary transition-colors">
+                                                                    {filter}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {activeTab === 1 && (
+                                                <div className="w-full h-full bg-slate-900 p-8 flex flex-col justify-center gap-4 relative overflow-hidden">
+                                                    <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
+                                                    <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="relative z-10 mx-auto w-full max-w-sm rounded-2xl bg-red-500 p-6 text-white shadow-xl">
+                                                        <div className="flex items-center gap-3 border-b border-red-400/50 pb-4">
+                                                            <span className="material-symbols-outlined text-4xl animate-pulse">warning</span>
+                                                            <div>
+                                                                <h4 className="text-lg font-black">CRITICAL ALERT</h4>
+                                                                <p className="text-xs text-red-100">Adyar, Zone 13</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="pt-4">
+                                                            <p className="text-sm font-medium">Water levels rising rapidly on Main Road. Evacuation center opened at Govt School. Move vehicles to higher ground immediately.</p>
+                                                        </div>
+                                                    </motion.div>
+                                                    <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} transition={{ delay: 0.2 }} className="relative z-10 mx-auto w-full max-w-sm rounded-2xl bg-white p-4 shadow-xl">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600"><span className="material-symbols-outlined">power_off</span></div>
+                                                            <div>
+                                                                <h4 className="text-sm font-bold text-slate-900">Power Maintenance</h4>
+                                                                <p className="text-xs text-slate-500">Scheduled at 14:00 for your block</p>
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                </div>
+                                            )}
+
+                                            {activeTab === 2 && (
+                                                <div className="relative w-full h-full p-8 flex flex-col justify-center items-center">
+                                                    <img src="/app_overview.png" alt="Volunteers" className="absolute inset-0 w-full h-full object-cover blur-sm opacity-20 mix-blend-multiply" />
+                                                    <div className="relative z-10 flex w-full max-w-md flex-col gap-4">
+                                                        {[
+                                                            { name: 'Karthik S.', role: 'Medical Reg', needs: 'Need First Aid Kit', urg: 'High' },
+                                                            { name: 'Priya R.', role: 'Resident', needs: 'Help moving furniture', urg: 'Medium' },
+                                                        ].map((req, i) => (
+                                                            <div key={i} className="flex flex-col sm:flex-row gap-4 items-center justify-between rounded-2xl bg-white p-5 shadow-xl border border-slate-100 transform transition-transform hover:scale-105">
+                                                                <div className="flex items-center gap-4 w-full">
+                                                                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">{req.name[0]}</div>
+                                                                    <div>
+                                                                        <h4 className="text-sm font-bold text-slate-900">{req.needs}</h4>
+                                                                        <div className="flex items-center gap-2 mt-1">
+                                                                            <span className="text-xs text-slate-500">{req.name}</span>
+                                                                            <span className={`px-2 py-[2px] rounded text-[10px] font-bold ${req.urg === 'High' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{req.urg} Prio</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <button className="w-full sm:w-auto mt-2 sm:mt-0 whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-xs font-bold text-white hover:bg-primary-dark transition-colors">Help Info</button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </motion.div>
-                                        <h4 className="mb-3 text-xl font-bold text-slate-900">{item.title}</h4>
-                                        <p className="text-slate-600">{item.desc}</p>
-                                    </motion.div>
-                                </StaggerItem>
-                            ))}
-                        </StaggerContainer>
+                                    </div>
+                                </Reveal>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -272,14 +399,14 @@ export default function Landing() {
                             <div className="flex h-8 w-8 items-center justify-center rounded bg-primary text-white">
                                 <span className="material-symbols-outlined text-lg">diversity_3</span>
                             </div>
-                            <span className="text-lg font-bold">Namma Thunai</span>
+                            <span className="text-lg font-bold">Uruthunai</span>
                         </div>
-                        <p className="text-sm text-slate-500">© 2024 Namma Thunai Foundation. Built for Tamil Nadu.</p>
+                        <p className="text-sm text-slate-500">© 2024 Uruthunai Foundation. Built for Tamil Nadu.</p>
                         <div className="flex gap-6">
                             {['public', 'shield', 'alternate_email'].map((icon) => (
                                 <motion.a
                                     key={icon}
-                                    whileHover={{ y: -3, color: '#308ce8' }}
+                                    whileHover={{ y: -3, color: '#8B5CF6' }}
                                     className="text-slate-400 transition-colors cursor-pointer"
                                     href="#"
                                 >

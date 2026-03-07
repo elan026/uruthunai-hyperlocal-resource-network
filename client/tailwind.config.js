@@ -8,9 +8,19 @@ export default {
         extend: {
             colors: {
                 primary: {
-                    DEFAULT: '#308ce8',
-                    light: '#137fec',
-                    dark: '#1152d4',
+                    DEFAULT: '#8B5CF6',
+                    light: '#A78BFA',
+                    dark: '#7C3AED',
+                },
+                secondary: {
+                    DEFAULT: '#60A5FA',
+                    light: '#93C5FD',
+                    dark: '#3B82F6',
+                },
+                accent: {
+                    DEFAULT: '#A7F3D0',
+                    light: '#D1FAE5',
+                    dark: '#6EE7B7',
                 },
                 success: '#22c55e',
                 warning: '#eab308',
@@ -20,8 +30,13 @@ export default {
                     red: '#ec1313',
                     bg: '#221010',
                 },
-                'bg-light': '#f6f7f8',
+                'bg-light': '#F3F4F6',
                 'bg-dark': '#111921',
+                text: {
+                    DEFAULT: '#1E293B',
+                    light: '#334155',
+                    dark: '#0F172A',
+                },
                 navy: {
                     50: '#eef2ff',
                     100: '#e0e7ff',

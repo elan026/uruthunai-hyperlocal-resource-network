@@ -35,4 +35,9 @@ export const alertService = {
     deactivate: (id) => api.patch(`/alerts/${id}/deactivate`)
 };
 
+// ─── Listings (Map) ──────────────────────────
+export const listingService = {
+    getNearby: (lat, lng, radiusKm = 5) => api.get(`/listings/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`)
+};
+
 export default api;

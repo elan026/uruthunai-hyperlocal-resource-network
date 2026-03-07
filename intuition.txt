@@ -3,3 +3,26 @@ what about the users?
 what about the roles and preferences?
 
 * A local coordination medium that connects people who need help with people who can provide help within a geographic area.*
+
+
+color pallete:
+
+Colors
+
+Primary – Lavender #8B5CF6
+
+Secondary – Soft Blue #60A5FA
+
+Accent – Mint #A7F3D0
+
+Background – Light Gray #F3F4F6
+
+Text – Dark Slate #1E293B
+
+Meaning
+
+Lavender → emotional understanding
+
+Blue → reliability
+
+Mint → care & calmness

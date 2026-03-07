@@ -29,7 +29,7 @@ export default function Sidebar({ isAdmin }) {
                     <span className="material-symbols-outlined">diversity_3</span>
                 </motion.div>
                 <div>
-                    <h1 className="text-lg font-black tracking-tight leading-none text-slate-900">Namma Thunai</h1>
+                    <h1 className="text-lg font-black tracking-tight leading-none text-slate-900">Uruthunai</h1>
                     <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mt-1">Community Support</p>
                 </div>
             </div>

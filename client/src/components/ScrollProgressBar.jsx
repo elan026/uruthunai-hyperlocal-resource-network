@@ -10,7 +10,7 @@ import useReducedMotion from '../hooks/useReducedMotion';
  * @param {number} props.height - Bar height in px (default: 3)
  */
 export default function ScrollProgressBar({
-    color = '#308ce8',
+    color = '#8B5CF6',
     height = 3,
 }) {
     const prefersReduced = useReducedMotion();
