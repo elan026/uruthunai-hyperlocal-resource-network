@@ -19,15 +19,39 @@ export default function PostResource() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await resourceService.create({
+            const dataToSubmit = {
                 user_id: user?.id || 1,
                 category: formData.category,
                 title: formData.title,
                 description: formData.description,
                 availability_duration: formData.availability,
                 is_emergency: formData.emergencyFlag
-            });
-            navigate('/dashboard');
+            };
+
+            // Capture precise location right at the moment of posting
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        dataToSubmit.location_lat = position.coords.latitude;
+                        dataToSubmit.location_lng = position.coords.longitude;
+                        await resourceService.create(dataToSubmit);
+                        navigate('/dashboard');
+                    },
+                    async (error) => {
+                        console.error("Location error, continuing without precise location", error);
+                        dataToSubmit.location_lat = 13.0827;
+                        dataToSubmit.location_lng = 80.2707;
+                        await resourceService.create(dataToSubmit);
+                        navigate('/dashboard');
+                    }
+                );
+            } else {
+                dataToSubmit.location_lat = 13.0827;
+                dataToSubmit.location_lng = 80.2707;
+                await resourceService.create(dataToSubmit);
+                navigate('/dashboard');
+            }
+
         } catch (err) {
             console.error('Error posting resource', err);
         }

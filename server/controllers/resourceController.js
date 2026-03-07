@@ -35,6 +35,27 @@ exports.createResource = async (req, res, next) => {
         }
 
         const result = await Resource.create(req.body);
+
+        // Emit real-time update
+        const io = req.app.get('io');
+        if (io && req.body.location_lat && req.body.location_lng) {
+            // Apply similar privacy protection offset before emitting
+            const lat = parseFloat((parseFloat(req.body.location_lat) + (Math.random() - 0.5) * 0.001).toFixed(4));
+            const lng = parseFloat((parseFloat(req.body.location_lng) + (Math.random() - 0.5) * 0.001).toFixed(4));
+
+            io.emit('new_listing_created', {
+                id: result.id,
+                type: 'offer',
+                category,
+                title_or_description: title,
+                is_emergency: req.body.is_emergency || false,
+                location_lat: lat,
+                location_lng: lng,
+                status: 'Available',
+                created_at: new Date()
+            });
+        }
+
         res.status(201).json({ message: 'Resource created successfully', id: result.id });
     } catch (err) {
         next(err);

@@ -6,8 +6,8 @@
 body {
   margin: 0;
   font-family: 'Inter', 'Public Sans', sans-serif;
-  background-color: #f6f7f8;
-  color: #0f172a;
+  background-color: #F3F4F6;
+  color: #1E293B;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -104,7 +104,7 @@ html {
     left: 0;
     right: 0;
     height: 2px;
-    background-color: #308ce8;
+    background-color: #8B5CF6;
     transform: scaleX(0);
     transform-origin: left;
     transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);

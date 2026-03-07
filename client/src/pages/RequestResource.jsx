@@ -30,13 +30,37 @@ export default function RequestResource() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await requestService.create({
+            const dataToSubmit = {
                 user_id: user?.id || 1,
                 category: formData.type || 'Medical / First Aid',
                 description: formData.description,
                 urgency_level: formData.urgency
-            });
-            navigate('/dashboard');
+            };
+
+            // Capture precise location right at the moment of posting
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        dataToSubmit.location_lat = position.coords.latitude;
+                        dataToSubmit.location_lng = position.coords.longitude;
+                        await requestService.create(dataToSubmit);
+                        navigate('/dashboard');
+                    },
+                    async (error) => {
+                        console.error("Location error, continuing without precise location", error);
+                        // Default fallback mapping behavior or rely on backend defaults
+                        dataToSubmit.location_lat = 13.0827;
+                        dataToSubmit.location_lng = 80.2707;
+                        await requestService.create(dataToSubmit);
+                        navigate('/dashboard');
+                    }
+                );
+            } else {
+                dataToSubmit.location_lat = 13.0827;
+                dataToSubmit.location_lng = 80.2707;
+                await requestService.create(dataToSubmit);
+                navigate('/dashboard');
+            }
         } catch (err) {
             console.error('Error sending request', err);
         }
