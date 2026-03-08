@@ -8,7 +8,7 @@ export default function AdminSidebar() {
     const { logout } = useAuth(); // Assuming we use same auth context or custom admin one
 
     const menuItems = [
-        { path: '/admin/dashboard', label: 'Control Center', icon: 'dashboard' },
+        { path: '/admin/dashboard', label: 'Control Center', icon: 'monitoring' },
         { path: '/admin/moderation', label: 'Moderation Queue', icon: 'gavel' },
         { path: '/admin/verification', label: 'User Verification', icon: 'verified_user' },
         { path: '/admin/emergency', label: 'Emergency Controls', icon: 'mode_heat' },
