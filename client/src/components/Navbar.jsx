@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-export default function Navbar({ user, emergencyMode, onLogout }) {
+export default function Navbar({ user, emergencyMode, onLogout, onMenuClick }) {
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -10,18 +10,24 @@ export default function Navbar({ user, emergencyMode, onLogout }) {
     };
 
     return (
-        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10">
-            {/* Left: Location + Emergency Toggle */}
-            <div className="flex items-center gap-6">
+        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-10">
+            {/* Left: Menu + Location + Emergency Toggle */}
+            <div className="flex items-center gap-2 sm:gap-6">
+                <button
+                    onClick={onMenuClick}
+                    className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors flex items-center justify-center cursor-pointer"
+                >
+                    <span className="material-symbols-outlined">menu</span>
+                </button>
                 <motion.div
                     whileHover={{ scale: 1.02, backgroundColor: '#f1f5f9' }}
-                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer transition-colors"
+                    className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer transition-colors"
                 >
                     <span className="material-symbols-outlined text-primary">location_on</span>
-                    <span className="font-bold text-slate-900">{user?.area_code || '638001 - Erode City'}</span>
+                    <span className="font-bold text-slate-900 truncate max-w-[120px] md:max-w-none">{user?.area_code || '638001 - Erode City'}</span>
                 </motion.div>
-                <div className="h-6 w-px bg-slate-200"></div>
-                <div className="flex items-center gap-3">
+                <div className="hidden sm:block h-6 w-px bg-slate-200"></div>
+                <div className="flex items-center gap-2 sm:gap-3">
                     <span className="text-sm font-bold text-slate-500">System Status</span>
                     <motion.div
                         whileHover={{ scale: 1.05 }}
@@ -46,12 +52,12 @@ export default function Navbar({ user, emergencyMode, onLogout }) {
             </div>
 
             {/* Right: Search + Notifications + Profile */}
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-2 sm:gap-5">
                 {/* Search */}
-                <div className="relative group">
+                <div className="relative group hidden md:block">
                     <input
-                        className="bg-slate-100 border border-transparent rounded-xl py-2.5 pl-11 pr-4 text-sm w-64 focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-primary/10 transition-all font-medium"
-                        placeholder="Search resources, users..."
+                        className="bg-slate-100 border border-transparent rounded-xl py-2.5 pl-11 pr-4 text-sm w-48 lg:w-64 focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-primary/10 transition-all font-medium"
+                        placeholder="Search resources..."
                         type="text"
                     />
                     <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within:text-primary transition-colors">search</span>
@@ -72,13 +78,13 @@ export default function Navbar({ user, emergencyMode, onLogout }) {
                     onClick={handleLogout}
                     whileHover={{ scale: 1.05, backgroundColor: '#fff1f2', color: '#e11d48' }}
                     whileTap={{ scale: 0.95 }}
-                    className="p-2.5 text-slate-400 rounded-xl transition-colors"
+                    className="hidden sm:block p-2.5 text-slate-400 rounded-xl transition-colors"
                     title="Logout"
                 >
                     <span className="material-symbols-outlined">logout</span>
                 </motion.button>
 
-                <div className="h-6 w-px bg-slate-200"></div>
+                <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
 
                 {/* Profile */}
                 <Link to="/profile">

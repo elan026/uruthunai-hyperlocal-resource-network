@@ -40,9 +40,9 @@ export default function Dashboard() {
     ];
 
     return (
-        <div className="p-6 lg:p-10 grid grid-cols-12 gap-8 max-w-[1600px] mx-auto">
+        <div className="p-4 sm:p-6 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 max-w-[1600px] mx-auto">
             {/* Left Section (Main) */}
-            <div className="col-span-12 lg:col-span-8 space-y-10">
+            <div className="lg:col-span-8 space-y-8 lg:space-y-10">
                 <FadeUp y={20}>
                     <div className="flex flex-col gap-1">
                         <h2 className="text-3xl font-black text-slate-900 tracking-tight">Community Dashboard</h2>
@@ -202,7 +202,7 @@ export default function Dashboard() {
             </div>
 
             {/* Right Side Panel */}
-            <aside className="col-span-12 lg:col-span-4 space-y-8 mt-4 lg:mt-0">
+            <aside className="lg:col-span-4 space-y-6 lg:space-y-8">
                 {/* Community Announcements */}
                 <FadeUp delay={0.2}>
                     <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-5">

@@ -139,7 +139,7 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Sub-nav */}
-                <div className="flex gap-1 bg-white border border-slate-200 rounded-xl p-1 mb-6 w-fit">
+                <div className="flex gap-1 bg-white border border-slate-200 rounded-xl p-1 mb-6 w-fit max-w-full overflow-x-auto">
                     {panels.map(p => (
                         <button key={p.id} onClick={() => setActivePanel(p.id)}
                             className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${activePanel === p.id ? 'bg-slate-900 text-white shadow-sm' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'
@@ -228,15 +228,15 @@ export default function AdminDashboard() {
                                             <tr key={i} className="border-t border-slate-50 hover:bg-slate-50/50">
                                                 <td className="px-4 py-2.5">
                                                     <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${a.event_type === 'resource' ? 'bg-emerald-100 text-emerald-700' :
-                                                            a.event_type === 'request' ? 'bg-amber-100 text-amber-700' :
-                                                                'bg-red-100 text-red-700'
+                                                        a.event_type === 'request' ? 'bg-amber-100 text-amber-700' :
+                                                            'bg-red-100 text-red-700'
                                                         }`}>{a.event_type}</span>
                                                 </td>
                                                 <td className="px-4 py-2.5 font-medium text-slate-800 max-w-[200px] truncate">{a.detail}</td>
                                                 <td className="px-4 py-2.5 text-slate-600">{a.user_name}</td>
                                                 <td className="px-4 py-2.5">
                                                     <span className={`text-[10px] font-bold ${a.status === 'Available' || a.status === 'Open' ? 'text-emerald-600' :
-                                                            a.status === 'Pending' ? 'text-amber-600' : 'text-slate-400'
+                                                        a.status === 'Pending' ? 'text-amber-600' : 'text-slate-400'
                                                         }`}>{a.status}</span>
                                                 </td>
                                                 <td className="px-4 py-2.5 text-slate-400">{formatTime(a.created_at)}</td>
@@ -254,9 +254,9 @@ export default function AdminDashboard() {
 
                 {/* ═══════════ USERS ═══════════ */}
                 {activePanel === 'users' && (
-                    <div className="flex gap-6">
+                    <div className="flex flex-col lg:flex-row gap-6">
                         {/* User List */}
-                        <div className={`${selectedUser ? 'w-1/2' : 'w-full'} transition-all`}>
+                        <div className={`${selectedUser ? 'w-full lg:w-1/2' : 'w-full'} transition-all`}>
                             <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
                                 <div className="px-4 py-3 border-b border-slate-100 flex items-center gap-3">
                                     <span className="material-symbols-outlined text-slate-400 text-lg">search</span>
@@ -306,7 +306,7 @@ export default function AdminDashboard() {
                                                     </td>
                                                     <td className="px-4 py-2.5">
                                                         <span className={`text-[9px] font-bold uppercase tracking-wider ${u.verification_status === 'verified' ? 'text-emerald-600' :
-                                                                u.verification_status === 'banned' ? 'text-red-600' : 'text-slate-400'
+                                                            u.verification_status === 'banned' ? 'text-red-600' : 'text-slate-400'
                                                             }`}>{u.verification_status}</span>
                                                     </td>
                                                     <td className="px-4 py-2.5 text-slate-400">{formatTime(u.created_at)}</td>
@@ -320,7 +320,7 @@ export default function AdminDashboard() {
 
                         {/* User Detail Panel */}
                         {selectedUser && userDetail && (
-                            <div className="w-1/2">
+                            <div className="w-full lg:w-1/2">
                                 <div className="bg-white border border-slate-200 rounded-xl overflow-hidden sticky top-4">
                                     <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                                         <h3 className="text-sm font-bold text-slate-900">User #{userDetail.id} — {userDetail.name}</h3>
@@ -330,7 +330,7 @@ export default function AdminDashboard() {
                                     </div>
                                     <div className="p-4 space-y-4 max-h-[calc(100vh-300px)] overflow-y-auto">
                                         {/* Summary */}
-                                        <div className="grid grid-cols-2 gap-3 text-xs">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                                             <div className="bg-slate-50 p-3 rounded-lg"><span className="text-slate-400 block text-[10px] font-bold uppercase mb-1">Phone</span>{userDetail.phone_number}</div>
                                             <div className="bg-slate-50 p-3 rounded-lg"><span className="text-slate-400 block text-[10px] font-bold uppercase mb-1">Area</span>{userDetail.area_code || '—'}</div>
                                             <div className="bg-slate-50 p-3 rounded-lg"><span className="text-slate-400 block text-[10px] font-bold uppercase mb-1">Type</span>{userDetail.user_type}</div>
@@ -425,8 +425,8 @@ export default function AdminDashboard() {
                                         <tr key={i} className="border-t border-slate-50 hover:bg-slate-50/50">
                                             <td className="px-4 py-2.5">
                                                 <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${a.event_type === 'resource' ? 'bg-emerald-100 text-emerald-700' :
-                                                        a.event_type === 'request' ? 'bg-amber-100 text-amber-700' :
-                                                            'bg-red-100 text-red-700'
+                                                    a.event_type === 'request' ? 'bg-amber-100 text-amber-700' :
+                                                        'bg-red-100 text-red-700'
                                                     }`}>{a.event_type}</span>
                                             </td>
                                             <td className="px-4 py-2.5 font-medium text-slate-800 max-w-[250px] truncate">{a.detail}</td>
@@ -437,8 +437,8 @@ export default function AdminDashboard() {
                                             </td>
                                             <td className="px-4 py-2.5">
                                                 <span className={`text-[10px] font-bold ${['Available', 'Open'].includes(a.status) ? 'text-emerald-600' :
-                                                        a.status === 'Pending' ? 'text-amber-600' :
-                                                            ['Fulfilled', 'Claimed'].includes(a.status) ? 'text-blue-600' : 'text-slate-400'
+                                                    a.status === 'Pending' ? 'text-amber-600' :
+                                                        ['Fulfilled', 'Claimed'].includes(a.status) ? 'text-blue-600' : 'text-slate-400'
                                                     }`}>{a.status}</span>
                                             </td>
                                             <td className="px-4 py-2.5 text-slate-400 whitespace-nowrap">{formatTime(a.created_at)}</td>

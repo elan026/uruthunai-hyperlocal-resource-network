@@ -70,7 +70,7 @@ export default function RequestResource() {
     };
 
     return (
-        <div className="p-6 lg:p-10 max-w-7xl mx-auto w-full grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto w-full grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
             {/* Left Side: Form */}
             <div className="xl:col-span-2 space-y-8">
                 <div>
@@ -78,7 +78,7 @@ export default function RequestResource() {
                     <p className="text-slate-500 mt-2">Fill in the details to broadcast an emergency resource request to your nearby community members.</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-xl shadow-sm border border-slate-200">
+                <form onSubmit={handleSubmit} className="space-y-6 bg-white p-5 sm:p-8 rounded-xl shadow-sm border border-slate-200">
                     {/* Urgency Level */}
                     <div className="space-y-4">
                         <label className="text-sm font-semibold uppercase tracking-wider text-slate-500">Urgency Level</label>

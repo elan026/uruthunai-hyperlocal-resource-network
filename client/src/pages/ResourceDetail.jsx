@@ -144,7 +144,7 @@ export default function ResourceDetail() {
                         {/* Details */}
                         <div className="flex-1 flex flex-col pt-2">
                             <div className="flex justify-between items-start mb-4">
-                                <h1 className="text-3xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">{resource.title}</h1>
+                                <h1 className="text-2xl sm:text-3xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">{resource.title}</h1>
                                 <motion.button
                                     whileHover={{ scale: 1.1, backgroundColor: '#f1f5f9' }}
                                     whileTap={{ scale: 0.9 }}
@@ -258,7 +258,7 @@ export default function ResourceDetail() {
                             <span className="material-symbols-outlined text-primary">pin_drop</span>
                             Collection Point
                         </h3>
-                        <div className="rounded-3xl overflow-hidden h-64 relative border border-slate-200 bg-slate-200 flex items-center justify-center shadow-inner group">
+                        <div className="rounded-2xl sm:rounded-3xl overflow-hidden h-48 sm:h-64 relative border border-slate-200 bg-slate-200 flex items-center justify-center shadow-inner group">
                             <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 opacity-60 transition-opacity duration-700 group-hover:opacity-100"></div>
                             <div className="text-center relative z-10">
                                 <span className="material-symbols-outlined text-5xl text-slate-400 mb-3 drop-shadow-sm">map</span>
