@@ -13,25 +13,32 @@ const menuItems = [
 
 const adminItem = { path: '/admin', label: 'Admin Control', icon: 'shield_with_heart' };
 
-export default function Sidebar({ isAdmin }) {
+export default function Sidebar({ isAdmin, isOpen, onClose }) {
     const location = useLocation();
     const items = isAdmin ? [...menuItems, adminItem] : menuItems;
 
     return (
-        <aside className="w-72 bg-white border-r border-slate-200 flex flex-col fixed h-screen z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-            {/* Brand */}
-            <div className="p-6 flex items-center gap-3">
-                <motion.div
-                    whileHover={{ rotate: [0, -5, 5, 0], scale: 1.05 }}
-                    transition={{ duration: 0.4 }}
-                    className="size-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20"
-                >
-                    <span className="material-symbols-outlined">diversity_3</span>
-                </motion.div>
-                <div>
-                    <h1 className="text-lg font-black tracking-tight leading-none text-slate-900">Uruthunai</h1>
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mt-1">Community Support</p>
+        <aside className={`w-72 bg-white border-r border-slate-200 flex flex-col fixed h-screen z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div className="p-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <motion.div
+                        whileHover={{ rotate: [0, -5, 5, 0], scale: 1.05 }}
+                        transition={{ duration: 0.4 }}
+                        className="size-10 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/20"
+                    >
+                        <span className="material-symbols-outlined">diversity_3</span>
+                    </motion.div>
+                    <div>
+                        <h1 className="text-lg font-black tracking-tight leading-none text-slate-900">Uruthunai</h1>
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mt-1">Community Support</p>
+                    </div>
                 </div>
+                <button
+                    onClick={onClose}
+                    className="md:hidden text-slate-500 hover:text-slate-900 p-2"
+                >
+                    <span className="material-symbols-outlined">close</span>
+                </button>
             </div>
 
             {/* Navigation */}
@@ -42,6 +49,7 @@ export default function Sidebar({ isAdmin }) {
                         <Link
                             key={item.path}
                             to={item.path}
+                            onClick={onClose}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all group relative overflow-hidden ${isActive
                                 ? 'text-primary'
                                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -68,6 +76,7 @@ export default function Sidebar({ isAdmin }) {
             <div className="p-4 border-t border-slate-100">
                 <Link
                     to="/profile"
+                    onClick={onClose}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all group relative overflow-hidden ${location.pathname === '/profile'
                         ? 'text-primary'
                         : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'

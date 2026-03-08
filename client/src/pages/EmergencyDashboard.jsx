@@ -27,8 +27,8 @@ export default function EmergencyDashboard() {
                         <span className="material-symbols-outlined text-4xl">flood</span>
                     </div>
                     <div className="flex-1 text-center md:text-left">
-                        <h2 className="text-2xl md:text-3xl font-black mb-2">Flooding Alert: Move to higher ground</h2>
-                        <p className="text-white/90 text-lg">Emergency shelter is now available at <span className="font-bold underline">Adyar Government School</span>. High-priority evacuation for Sector 4 is in progress.</p>
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-black mb-2">Flooding Alert: Move to higher ground</h2>
+                        <p className="text-white/90 text-sm sm:text-lg">Emergency shelter is now available at <span className="font-bold underline">Adyar Government School</span>. High-priority evacuation for Sector 4 is in progress.</p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3">
                         <button className="px-6 py-3 bg-white text-red-500 font-bold rounded-xl hover:bg-slate-100 transition-colors whitespace-nowrap">View Shelters</button>
@@ -81,7 +81,7 @@ export default function EmergencyDashboard() {
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex justify-between items-start mb-1">
-                                        <h4 className="font-bold text-lg">{req.description?.substring(0, 50) || 'Emergency request'}</h4>
+                                        <h4 className="font-bold text-base sm:text-lg">{req.description?.substring(0, 50) || 'Emergency request'}</h4>
                                         <span className="text-slate-400 text-xs font-medium">{new Date(req.created_at).toLocaleTimeString()}</span>
                                     </div>
                                     <p className="text-slate-600 text-sm mb-4">{req.description || 'Emergency assistance needed in your area.'}</p>

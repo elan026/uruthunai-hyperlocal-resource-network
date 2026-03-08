@@ -61,7 +61,7 @@ export default function PostResource() {
     };
 
     return (
-        <div className="p-8">
+        <div className="p-4 sm:p-8">
             <div className="max-w-6xl mx-auto">
                 <div className="mb-8">
                     <h2 className="text-3xl font-black tracking-tight text-slate-900">Post a New Resource</h2>

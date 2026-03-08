@@ -327,7 +327,7 @@ export default function ResourceMap() {
             </div>
 
             {/* Floating Left Panel */}
-            <div className="relative z-[400] w-[340px] m-4 flex flex-col gap-4 pointer-events-none h-[calc(100vh-8rem)]">
+            <div className="relative z-[400] w-[calc(100%-2rem)] sm:w-[340px] m-4 flex flex-col gap-4 pointer-events-none h-[calc(100vh-8rem)]">
 
                 {/* Header & Emergency Mode */}
                 <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-white/40 pointer-events-auto shrink-0 flex flex-col gap-3">

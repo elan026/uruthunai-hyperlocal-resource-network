@@ -64,10 +64,10 @@ export default function Landing() {
                 <FadeUp delay={0.3} y={10} className="bg-blue-50 px-6 py-3 border-b border-blue-100">
                     <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
-                            <span className="material-symbols-outlined text-primary animate-pulse icon-hover">emergency_home</span>
+                            <span className="material-symbols-outlined text-red-600 animate-pulse icon-hover">warning</span>
                             <div>
-                                <p className="text-sm font-bold text-slate-900 leading-none">Urgent: Emergency Alert</p>
-                                <p className="text-xs text-slate-600 mt-1">Heavy rainfall expected in coastal regions. Check local community boards.</p>
+                                <p className="text-sm font-bold text-slate-900 leading-none">Red Alert: Heavy Rainfall Warning</p>
+                                <p className="text-xs text-slate-700 mt-1">IMD predicts extremely heavy rainfall in coastal districts. Please stay indoors and monitor community updates.</p>
                             </div>
                         </div>
                         <motion.button
@@ -94,13 +94,13 @@ export default function Landing() {
                                         </span>
                                     </FadeUp>
                                     <FadeUp delay={0.2} y={40}>
-                                        <h1 className="text-5xl font-black leading-[1.1] tracking-tight text-slate-900 lg:text-7xl">
+                                        <h1 className="text-4xl sm:text-5xl font-black leading-[1.1] tracking-tight text-slate-900 lg:text-7xl">
                                             Uru<span className="text-primary">thunai</span>
                                         </h1>
                                     </FadeUp>
                                     <FadeUp delay={0.35}>
                                         <p className="text-lg font-medium text-slate-600 lg:text-xl">
-                                            Hyperlocal Support for Every Neighborhood. Empowering Tamil Nadu communities through mutual aid, shared resources, and disaster preparedness.
+                                            From the scars of the 2004 Tsunami, the resilience shown during Cyclone Gaja, and the solidarity of the Chennai Floods—our strength lies in each other. Uruthunai empowers Tamil Nadu neighborhoods through rapid mutual aid and disaster preparedness.
                                         </p>
                                     </FadeUp>
                                 </div>
@@ -176,7 +176,6 @@ export default function Landing() {
                                         </div>
                                     </motion.div>
 
-                                    {/* Floating App Use-Case Cards */}
                                     <motion.div
                                         initial={{ y: 20, opacity: 0 }}
                                         animate={{ y: 0, opacity: 1 }}
@@ -184,12 +183,12 @@ export default function Landing() {
                                         className="absolute -left-8 top-1/4 z-20 hidden md:block"
                                     >
                                         <div className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white/95 p-3 shadow-xl backdrop-blur-md">
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 text-red-600">
-                                                <span className="material-symbols-outlined text-[20px]">warning</span>
+                                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
+                                                <span className="material-symbols-outlined text-[20px]">water_damage</span>
                                             </div>
                                             <div className="pr-4">
-                                                <p className="text-sm font-bold leading-tight text-slate-900">Water Logging Alert</p>
-                                                <p className="text-xs text-slate-500">Velachery Main Rd • Just now</p>
+                                                <p className="text-sm font-bold leading-tight text-slate-900">Severe Inundation Warning</p>
+                                                <p className="text-xs text-slate-500">Pallikaranai Marshes • 2 mins ago</p>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -217,13 +216,13 @@ export default function Landing() {
                 </section>
 
                 {/* Interactive Feature Demo */}
-                <section id="how-it-works" className="bg-white px-6 py-24 lg:px-10">
+                <section id="how-it-works" className="bg-white px-4 sm:px-6 py-16 sm:py-24 lg:px-10">
                     <div className="mx-auto max-w-7xl">
                         <FadeUp className="mb-16 flex flex-col items-center text-center">
-                            <h2 className="text-sm font-bold uppercase tracking-widest text-primary">Interactive Preview</h2>
-                            <h3 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Experience Uruthunai</h3>
+                            <h2 className="text-sm font-bold uppercase tracking-widest text-primary">Solidarity in Action</h2>
+                            <h3 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Never Face It Alone</h3>
                             <p className="mt-4 max-w-2xl text-lg text-slate-600">
-                                See how our hyperlocal platform connects neighbors to save lives during crises. Click the features below to explore.
+                                When traditional lines of communication fail—as we experienced during Cyclone Vardah and the 2015 floods—hyperlocal networks save lives. Explore how the platform works.
                             </p>
                         </FadeUp>
 
@@ -231,14 +230,14 @@ export default function Landing() {
                             {/* Tabs */}
                             <div className="lg:col-span-5 flex flex-col gap-4">
                                 {[
-                                    { icon: 'share_location', title: 'Community Resource Map', desc: 'See who has water, power, or tools available right now on your street.' },
-                                    { icon: 'notifications_active', title: 'Hyperlocal Emergency Alerts', desc: 'Get instant notifications about rising water levels or power cuts in your exact zone.' },
-                                    { icon: 'handshake', title: 'Volunteer Coordination', desc: 'Request immediate physical assistance or volunteer to help vulnerable neighbors nearby.' },
+                                    { icon: 'share_location', title: 'Community Resource Map', desc: 'Instantly view who has clean drinking water, backup power, or medical supplies within your immediate zone.' },
+                                    { icon: 'notifications_active', title: 'Hyperlocal Emergency Alerts', desc: 'Receive real-time, verified alerts about reservoir discharges, power cuts, and rescue boat deployments.' },
+                                    { icon: 'handshake', title: 'Volunteer Coordination', desc: 'Request immediate physical assistance for vulnerable neighbors, elderly residents, or stranded families.' },
                                 ].map((tab, idx) => (
                                     <motion.button
                                         key={idx}
                                         onClick={() => setActiveTab(idx)}
-                                        className={`flex flex-col sm:flex-row gap-4 text-left items-start sm:items-center rounded-2xl p-6 transition-all duration-300 ${activeTab === idx ? 'bg-primary/5 border-2 border-primary/20 shadow-lg shadow-primary/5' : 'bg-transparent border-2 border-transparent hover:bg-slate-50'}`}
+                                        className={`flex flex-col sm:flex-row gap-4 text-left items-start sm:items-center rounded-2xl p-4 sm:p-6 transition-all duration-300 ${activeTab === idx ? 'bg-primary/5 border-2 border-primary/20 shadow-lg shadow-primary/5' : 'bg-transparent border-2 border-transparent hover:bg-slate-50'}`}
                                     >
                                         <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl transition-colors ${activeTab === idx ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500'}`}>
                                             <span className="material-symbols-outlined text-3xl">{tab.icon}</span>
@@ -291,7 +290,7 @@ export default function Landing() {
                                                             </div>
                                                         </div>
                                                         <div className="pt-4">
-                                                            <p className="text-sm font-medium">Water levels rising rapidly on Main Road. Evacuation center opened at Govt School. Move vehicles to higher ground immediately.</p>
+                                                            <p className="text-sm font-medium">Excessive discharge from Chembarambakkam reservoir expected. Low-lying areas in Adyar basin please initiate community evacuation protocol immediately.</p>
                                                         </div>
                                                     </motion.div>
                                                     <motion.div initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} transition={{ delay: 0.2 }} className="relative z-10 mx-auto w-full max-w-sm rounded-2xl bg-white p-4 shadow-xl">
@@ -345,11 +344,11 @@ export default function Landing() {
                         <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl bg-primary px-8 py-16 text-center text-white shadow-2xl shadow-primary/40 relative">
                             <div className="relative z-10">
                                 <FadeUp y={20}>
-                                    <h2 className="text-3xl font-black sm:text-5xl">Ready to protect your neighborhood?</h2>
+                                    <h2 className="text-2xl sm:text-5xl font-black">Our strength is our community.</h2>
                                 </FadeUp>
                                 <FadeUp delay={0.2} y={20}>
-                                    <p className="mx-auto mt-6 max-w-xl text-lg text-white/80">
-                                        Join thousands of residents across Tamil Nadu building a resilient future together. Secure your community's safety today.
+                                    <p className="mx-auto mt-6 max-w-2xl text-lg text-white/80">
+                                        Tamil Nadu has weathered the toughest storms because we stand together. Uruthunai simply gives that spirit of "Namma Thunai" a digital voice. Join the network before the next crisis hits.
                                     </p>
                                 </FadeUp>
                                 <FadeUp delay={0.4}>

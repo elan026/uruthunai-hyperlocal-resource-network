@@ -34,13 +34,13 @@ export default function AdminModeration() {
     };
 
     return (
-        <div className="p-8 pb-32 max-w-5xl mx-auto">
+        <div className="p-4 sm:p-8 pb-32 max-w-5xl mx-auto">
             <div className="mb-8">
                 <h1 className="text-3xl font-black text-slate-900 tracking-tight">Incident & Moderation System</h1>
                 <p className="text-slate-500 mt-1">Review flagged community reports and manage user suspensions.</p>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col h-[600px]">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[400px]">
                 <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
                     <h3 className="font-black text-slate-900 flex items-center gap-2">
                         <span className="material-symbols-outlined text-rose-500">security</span>
@@ -48,9 +48,9 @@ export default function AdminModeration() {
                     </h3>
                     <span className="text-xs font-bold bg-rose-100 text-rose-700 px-2 py-1 rounded-full">{reports.length} Cases</span>
                 </div>
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
                     {reports.length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                        <div className="h-full flex flex-col items-center justify-center text-slate-400 py-12">
                             <span className="material-symbols-outlined text-4xl mb-2">done_all</span>
                             <p className="font-bold">No pending reports!</p>
                         </div>
