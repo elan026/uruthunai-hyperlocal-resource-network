@@ -87,21 +87,28 @@ class AdminModel {
     // ─── Activity Logs ──────────────────────────
     static async getRecentActivity(limit = 50) {
         // Union of recent resources, requests, and reports
+        const limitStr = parseInt(limit, 10);
         const [rows] = await db.execute(`
-            (SELECT 'resource' as event_type, r.id, r.title as detail, r.category, r.status, r.created_at, u.name as user_name, u.id as user_id
-             FROM resources r JOIN users u ON r.user_id = u.id
-             ORDER BY r.created_at DESC LIMIT ?)
+            SELECT * FROM (
+                SELECT 'resource' as event_type, r.id, r.title as detail, r.category, r.status, r.created_at, u.name as user_name, u.id as user_id
+                FROM resources r JOIN users u ON r.user_id = u.id
+                ORDER BY r.created_at DESC LIMIT ${limitStr}
+            ) t1
             UNION ALL
-            (SELECT 'request' as event_type, rq.id, rq.description as detail, rq.category, rq.status, rq.created_at, u.name as user_name, u.id as user_id
-             FROM requests rq JOIN users u ON rq.user_id = u.id
-             ORDER BY rq.created_at DESC LIMIT ?)
+            SELECT * FROM (
+                SELECT 'request' as event_type, rq.id, rq.description as detail, rq.category, rq.status, rq.created_at, u.name as user_name, u.id as user_id
+                FROM requests rq JOIN users u ON rq.user_id = u.id
+                ORDER BY rq.created_at DESC LIMIT ${limitStr}
+            ) t2
             UNION ALL
-            (SELECT 'report' as event_type, rp.id, rp.reason as detail, 'Moderation' as category, rp.status, rp.created_at, u.name as user_name, u.id as user_id
-             FROM reports rp JOIN users u ON rp.reported_by = u.id
-             ORDER BY rp.created_at DESC LIMIT ?)
+            SELECT * FROM (
+                SELECT 'report' as event_type, rp.id, rp.reason as detail, 'Moderation' as category, rp.status, rp.created_at, u.name as user_name, u.id as user_id
+                FROM reports rp JOIN users u ON rp.reported_by = u.id
+                ORDER BY rp.created_at DESC LIMIT ${limitStr}
+            ) t3
             ORDER BY created_at DESC
-            LIMIT ?
-        `, [limit, limit, limit, limit]);
+            LIMIT ${limitStr}
+        `);
         return rows;
     }
 
