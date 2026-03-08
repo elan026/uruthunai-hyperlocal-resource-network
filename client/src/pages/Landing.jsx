@@ -1,6 +1,5 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
 import { motion } from 'framer-motion';
 import FadeUp from '../components/AnimatedSection';
 import Reveal from '../components/Reveal';
@@ -8,23 +7,11 @@ import { StaggerContainer, StaggerItem } from '../components/StaggerContainer';
 import ParallaxSection from '../components/ParallaxSection';
 
 export default function Landing() {
-    const { login } = useAuth();
     const navigate = useNavigate();
-    const [phone, setPhone] = useState('9876543210');
     const [activeTab, setActiveTab] = useState(0);
 
-    const handleLogin = async () => {
-        try {
-            await login({
-                phone_number: phone,
-                name: 'Anitha M.',
-                area_code: 'CHN-ADY-01',
-                role: 'Resident'
-            });
-            navigate('/dashboard');
-        } catch (err) {
-            console.error('Login error', err);
-        }
+    const openAuthModal = () => {
+        navigate('/login');
     };
 
     return (
@@ -59,9 +46,9 @@ export default function Landing() {
                         ))}
                     </nav>
                     <div className="flex items-center gap-3">
-                        <button onClick={handleLogin} className="hidden text-sm font-bold text-slate-700 hover:text-primary sm:block px-4 py-2 transition-colors">Login</button>
+                        <button onClick={openAuthModal} className="hidden text-sm font-bold text-slate-700 hover:text-primary sm:block px-4 py-2 transition-colors">Login</button>
                         <motion.button
-                            onClick={handleLogin}
+                            onClick={openAuthModal}
                             whileHover={{ scale: 1.03, boxShadow: '0 10px 30px rgba(48, 140, 232, 0.2)' }}
                             whileTap={{ scale: 0.97 }}
                             className="rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-colors"
@@ -120,7 +107,7 @@ export default function Landing() {
                                 <FadeUp delay={0.5}>
                                     <div className="flex flex-wrap gap-4">
                                         <motion.button
-                                            onClick={handleLogin}
+                                            onClick={openAuthModal}
                                             whileHover={{ scale: 1.03, boxShadow: '0 16px 40px rgba(48, 140, 232, 0.25)' }}
                                             whileTap={{ scale: 0.97 }}
                                             className="flex min-w-[160px] items-center justify-center rounded-xl bg-primary px-8 py-4 text-base font-bold text-white shadow-lg shadow-primary/20 transition-colors"
@@ -151,7 +138,7 @@ export default function Landing() {
                                                 </motion.div>
                                             ))}
                                         </div>
-                                        <p className="text-sm font-medium text-slate-500">Trusted by <span className="font-bold text-slate-900">5,000+ residents</span> across Chennai</p>
+                                        <p className="text-sm font-medium text-slate-500">Trusted by <span className="font-bold text-slate-900">1,200+ residents</span> across Erode</p>
                                     </div>
                                 </FadeUp>
                             </div>
@@ -368,7 +355,7 @@ export default function Landing() {
                                 <FadeUp delay={0.4}>
                                     <div className="mt-10 flex flex-wrap justify-center gap-4">
                                         <motion.button
-                                            onClick={handleLogin}
+                                            onClick={openAuthModal}
                                             whileHover={{ scale: 1.04, boxShadow: '0 12px 30px rgba(0,0,0,0.15)' }}
                                             whileTap={{ scale: 0.97 }}
                                             className="rounded-xl bg-white px-8 py-4 text-base font-bold text-primary transition-colors"

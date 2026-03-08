@@ -9,8 +9,10 @@ const api = axios.create({
 
 // ─── Auth ────────────────────────────────────
 export const authService = {
-    login: (data) => api.post('/auth/login', data),
-    getProfile: (id) => api.get(`/auth/profile/${id}`)
+    login: (data) => api.post('/auth/verify-otp', data),
+    sendOtp: (data) => api.post('/auth/send-otp', data),
+    getProfile: (id) => api.get(`/auth/profile/${id}`),
+    updateProfile: (id, data) => api.put(`/auth/profile/${id}`, data)
 };
 
 // ─── Resources ───────────────────────────────

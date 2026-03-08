@@ -21,7 +21,7 @@ const sendNotification = async (userId, title, message, type = 'info') => {
 
 /**
  * Broadcast an alert to all users in an area
- * @param {string} areaCode - Area code (e.g., 'CHN-ADY-01')
+ * @param {string} areaCode - Area code (e.g., 'ERD-HQ-01')
  * @param {string} title - Alert title
  * @param {string} message - Alert body
  */

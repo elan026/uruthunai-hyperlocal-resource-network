@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const resourceRoutes = require('./routes/resourceRoutes');
 const requestRoutes = require('./routes/requestRoutes');
 const listingRoutes = require('./routes/listingRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -31,6 +32,7 @@ app.set('io', io);
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes); // Mount Admin routes
 app.use('/api/resources', resourceRoutes);
 app.use('/api/requests', requestRoutes);
 app.use('/api/listings', listingRoutes);

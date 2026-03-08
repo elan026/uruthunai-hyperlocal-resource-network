@@ -79,7 +79,7 @@ export default function CommunityAlerts() {
                         </h2>
                         <p className="text-slate-500 mt-2 text-lg font-medium">Official updates from area admins and local authorities.</p>
                     </div>
-                    {user?.role === 'Admin' && (
+                    {user?.role === 'admin' && (
                         <motion.button
                             onClick={() => setShowForm(!showForm)}
                             whileHover={{ scale: 1.05 }}

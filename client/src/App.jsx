@@ -11,14 +11,18 @@ import EmergencyDashboard from './pages/EmergencyDashboard';
 import Volunteers from './pages/Volunteers';
 import CommunityAlerts from './pages/CommunityAlerts';
 import Profile from './pages/Profile';
+import AuthPage from './pages/AuthPage'; // Added import
 import Layout from './components/Layout';
 import ScrollProgressBar from './components/ScrollProgressBar';
 import PageTransition from './components/PageTransition';
-import useSmoothScroll from './hooks/useSmoothScroll';
 
+// Admin Components
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminLayout from './components/AdminLayout';
+import AdminDashboardNew from './pages/admin/AdminDashboard'; // new separate dashboard
 function ProtectedLayout({ children }) {
   const { user, emergencyMode, logout } = useAuth();
-  if (!user) return <Navigate to="/" />;
+  if (!user) return <Navigate to="/login" />; // Redirect to login page instead of "/"
   return (
     <Layout user={user} emergencyMode={emergencyMode} onLogout={logout}>
       {children}
@@ -26,10 +30,18 @@ function ProtectedLayout({ children }) {
   );
 }
 
+function AdminRoute({ children }) {
+  const { user } = useAuth();
+  if (user?.role !== 'admin') return <Navigate to="/dashboard" />;
+  return children;
+}
+
+
 function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
+      <Route path="/login" element={<AuthPage />} />
       <Route path="/dashboard" element={<ProtectedLayout><PageTransition><Dashboard /></PageTransition></ProtectedLayout>} />
       <Route path="/map" element={<ProtectedLayout><PageTransition><ResourceMap /></PageTransition></ProtectedLayout>} />
       <Route path="/post-resource" element={<ProtectedLayout><PageTransition><PostResource /></PageTransition></ProtectedLayout>} />
@@ -38,16 +50,25 @@ function AppRoutes() {
       <Route path="/emergency" element={<ProtectedLayout><PageTransition><EmergencyDashboard /></PageTransition></ProtectedLayout>} />
       <Route path="/volunteers" element={<ProtectedLayout><PageTransition><Volunteers /></PageTransition></ProtectedLayout>} />
       <Route path="/alerts" element={<ProtectedLayout><PageTransition><CommunityAlerts /></PageTransition></ProtectedLayout>} />
-      <Route path="/admin" element={<ProtectedLayout><PageTransition><AdminDashboard /></PageTransition></ProtectedLayout>} />
       <Route path="/profile" element={<ProtectedLayout><PageTransition><Profile /></PageTransition></ProtectedLayout>} />
+
+      {/* Admin Routes Isolated */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin/*" element={
+        <AdminLayout>
+          <PageTransition>
+            <Routes>
+              <Route path="dashboard" element={<AdminDashboardNew />} />
+              <Route path="*" element={<Navigate to="dashboard" />} />
+            </Routes>
+          </PageTransition>
+        </AdminLayout>
+      } />
     </Routes>
   );
 }
 
 function AppShell() {
-  // Activate Lenis smooth scroll globally
-  useSmoothScroll({ duration: 1.2 });
-
   return (
     <>
       <ScrollProgressBar />

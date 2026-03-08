@@ -161,7 +161,7 @@ export default function RequestResource() {
                             <span className="material-symbols-outlined text-primary text-lg">location_on</span>
                             Neighborhood Preview
                         </h3>
-                        <span className="text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500">Chennai, TN</span>
+                        <span className="text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500">Erode, TN</span>
                     </div>
                     <div className="aspect-square bg-slate-200 relative flex items-center justify-center">
                         <div className="text-center">

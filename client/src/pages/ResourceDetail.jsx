@@ -153,7 +153,7 @@ export default function ResourceDetail() {
                             <div className="flex flex-wrap gap-4 items-center mb-8 border-b border-slate-100 pb-8">
                                 <div className="flex items-center gap-2 text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 font-semibold">
                                     <span className="material-symbols-outlined text-lg text-primary">location_on</span>
-                                    <span className="text-sm">Adyar, Chennai • Nearby</span>
+                                    <span className="text-sm">Thindal, Erode • Nearby</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 font-semibold">
                                     <span className="material-symbols-outlined text-lg text-slate-400">schedule</span>
@@ -258,7 +258,7 @@ export default function ResourceDetail() {
                             <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 opacity-60 transition-opacity duration-700 group-hover:opacity-100"></div>
                             <div className="text-center relative z-10">
                                 <span className="material-symbols-outlined text-5xl text-slate-400 mb-3 drop-shadow-sm">map</span>
-                                <p className="text-sm font-semibold text-slate-500 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-slate-200/50">Interactive map showing Adyar, Chennai</p>
+                                <p className="text-sm font-semibold text-slate-500 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full border border-slate-200/50">Interactive map showing Thindal, Erode</p>
                             </div>
                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                                 <div className="w-8 h-8 bg-primary/40 rounded-full animate-ping absolute -inset-1"></div>
