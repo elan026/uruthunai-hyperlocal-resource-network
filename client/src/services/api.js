@@ -12,7 +12,8 @@ export const authService = {
     login: (data) => api.post('/auth/verify-otp', data),
     sendOtp: (data) => api.post('/auth/send-otp', data),
     getProfile: (id) => api.get(`/auth/profile/${id}`),
-    updateProfile: (id, data) => api.put(`/auth/profile/${id}`, data)
+    updateProfile: (id, data) => api.put(`/auth/profile/${id}`, data),
+    deleteProfile: (id) => api.delete(`/auth/profile/${id}`)
 };
 
 // ─── Resources ───────────────────────────────

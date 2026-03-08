@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { getLocationsDropdownOptions } from '../data/erodeLocations';
 
 export default function AuthPage() {
     const navigate = useNavigate();
@@ -56,7 +57,7 @@ export default function AuthPage() {
             // If registering, pass additional details
             if (!isLogin) {
                 payload.name = name || 'New User';
-                payload.area_code = areaCode || 'ERD-UNKNOWN';
+                payload.area_code = areaCode || '638052 - Perundurai';
                 payload.role = 'user';
                 payload.user_type = 'resident';
             }
@@ -174,15 +175,18 @@ export default function AuthPage() {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-500">Area / Locality</label>
-                                                <input
-                                                    type="text"
+                                                <label className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-500">Area / Locality (Erode Govt Data)</label>
+                                                <select
                                                     value={areaCode}
                                                     onChange={(e) => setAreaCode(e.target.value)}
-                                                    placeholder="e.g. Perundurai, Erode"
-                                                    className="w-full rounded-xl border-2 border-slate-100 bg-slate-50 px-4 py-3.5 text-base font-semibold text-slate-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
+                                                    className="w-full rounded-xl border-2 border-slate-100 bg-slate-50 px-4 py-3.5 text-base font-semibold text-slate-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all capitalize cursor-pointer"
                                                     required
-                                                />
+                                                >
+                                                    <option value="" disabled>Select your nearest Taluka/Pincode</option>
+                                                    {getLocationsDropdownOptions().map((opt, i) => (
+                                                        <option key={i} value={opt.value}>{opt.label}</option>
+                                                    ))}
+                                                </select>
                                             </div>
                                         </>
                                     )}

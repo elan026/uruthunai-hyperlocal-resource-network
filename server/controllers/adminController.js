@@ -10,7 +10,7 @@ exports.login = async (req, res, next) => {
 
         const adminUser = rows[0];
 
-        if (!adminUser || adminUser.password !== password) {
+        if (!adminUser || adminUser.password?.toLowerCase() !== password?.toLowerCase()) {
             return res.status(401).json({ error: 'Invalid admin credentials' });
         }
 

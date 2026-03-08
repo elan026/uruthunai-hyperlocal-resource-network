@@ -22,24 +22,30 @@ exports.createRequest = async (req, res, next) => {
 
         const result = await Request.create(req.body);
 
-        // Emit real-time update
-        const io = req.app.get('io');
-        if (io && req.body.location_lat && req.body.location_lng) {
-            // Apply similar privacy protection offset before emitting
-            const lat = parseFloat((parseFloat(req.body.location_lat) + (Math.random() - 0.5) * 0.001).toFixed(4));
-            const lng = parseFloat((parseFloat(req.body.location_lng) + (Math.random() - 0.5) * 0.001).toFixed(4));
+        // Emit real-time update with user info (fire-and-forget, never crash)
+        try {
+            const io = req.app.get('io');
+            if (io && req.body.location_lat && req.body.location_lng) {
+                const User = require('../models/userModel');
+                const user = await User.findById(user_id);
+                const lat = parseFloat((parseFloat(req.body.location_lat) + (Math.random() - 0.5) * 0.001).toFixed(4));
+                const lng = parseFloat((parseFloat(req.body.location_lng) + (Math.random() - 0.5) * 0.001).toFixed(4));
 
-            io.emit('new_listing_created', {
-                id: result.id,
-                type: 'request',
-                category,
-                title_or_description: description,
-                urgency_level: req.body.urgency_level || 'Support',
-                location_lat: lat,
-                location_lng: lng,
-                status: 'Open',
-                created_at: new Date()
-            });
+                io.emit('new_listing_created', {
+                    id: result.id,
+                    type: 'request',
+                    category,
+                    title_or_description: description,
+                    urgency_level: req.body.urgency_level || 'Support',
+                    location_lat: lat,
+                    location_lng: lng,
+                    user_name: user?.name || 'Community Member',
+                    status: 'Open',
+                    created_at: new Date().toISOString()
+                });
+            }
+        } catch (socketErr) {
+            console.error('Socket emit failed (non-fatal):', socketErr.message);
         }
 
         res.status(201).json({ message: 'Request created successfully', id: result.id });

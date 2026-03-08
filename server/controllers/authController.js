@@ -99,3 +99,40 @@ exports.updateProfile = async (req, res, next) => {
         next(err);
     }
 };
+
+// DELETE /api/auth/profile/:id
+exports.deleteProfile = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        await User.delete(id);
+        res.json({ message: 'Profile deleted successfully' });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// POST /api/auth/profile/:id/avatar
+exports.uploadAvatar = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ error: 'No image file provided' });
+        }
+
+        const profilePicUrl = `/uploads/profiles/${req.file.filename}`;
+        await User.update(id, { profile_pic: profilePicUrl });
+
+        res.json({ message: 'Profile picture updated', profile_pic: profilePicUrl });
+    } catch (err) {
+        next(err);
+    }
+};

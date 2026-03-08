@@ -20,6 +20,9 @@ import PageTransition from './components/PageTransition';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminLayout from './components/AdminLayout';
 import AdminDashboardNew from './pages/admin/AdminDashboard'; // new separate dashboard
+import AdminModeration from './pages/admin/AdminModeration';
+import AdminVerification from './pages/admin/AdminVerification';
+import AdminEmergency from './pages/admin/AdminEmergency';
 function ProtectedLayout({ children }) {
   const { user, emergencyMode, logout } = useAuth();
   if (!user) return <Navigate to="/login" />; // Redirect to login page instead of "/"
@@ -59,7 +62,10 @@ function AppRoutes() {
           <PageTransition>
             <Routes>
               <Route path="dashboard" element={<AdminDashboardNew />} />
-              <Route path="*" element={<Navigate to="dashboard" />} />
+              <Route path="moderation" element={<AdminModeration />} />
+              <Route path="verification" element={<AdminVerification />} />
+              <Route path="emergency" element={<AdminEmergency />} />
+              <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
             </Routes>
           </PageTransition>
         </AdminLayout>

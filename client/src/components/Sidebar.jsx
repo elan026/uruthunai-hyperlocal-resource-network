@@ -82,9 +82,9 @@ export default function Sidebar({ isAdmin }) {
                         />
                     )}
                     <span className={`material-symbols-outlined relative z-10 transition-transform duration-300 group-hover:scale-110 ${location.pathname === '/profile' ? 'filled' : ''}`}>
-                        account_circle
+                        settings
                     </span>
-                    <span className="text-sm relative z-10">Profile Settings</span>
+                    <span className="text-sm relative z-10">Settings</span>
                 </Link>
             </div>
         </aside>

@@ -6,12 +6,12 @@ export default function Volunteers() {
 
     useEffect(() => {
         setVolunteers([
-            { id: 1, name: 'Karthik R.', role: 'Volunteer', area_code: 'ERD-HQ-01', trust_score: 92, skills: ['First Aid', 'Rescue'], status: 'Active' },
-            { id: 2, name: 'Priya S.', role: 'Medical Support', area_code: 'ERD-PER-01', trust_score: 88, skills: ['Nursing', 'CPR'], status: 'Active' },
-            { id: 3, name: 'Ravi M.', role: 'Volunteer', area_code: 'ERD-HQ-01', trust_score: 75, skills: ['Transport', 'Supply Chain'], status: 'Standby' },
-            { id: 4, name: 'Lakshmi D.', role: 'Volunteer', area_code: 'ERD-BHA-01', trust_score: 95, skills: ['Shelter Mgmt', 'Cooking'], status: 'Active' },
-            { id: 5, name: 'Suresh K.', role: 'Medical Support', area_code: 'ERD-HQ-01', trust_score: 83, skills: ['Pharmacy', 'First Aid'], status: 'Offline' },
-            { id: 6, name: 'Deepa V.', role: 'Volunteer', area_code: 'ERD-GOBI-01', trust_score: 70, skills: ['Communication', 'Elderly Care'], status: 'Active' },
+            { id: 1, name: 'Karthik R.', role: 'Volunteer', area_code: '638001 - Erode City', trust_score: 92, skills: ['First Aid', 'Rescue'], status: 'Active' },
+            { id: 2, name: 'Priya S.', role: 'Medical Support', area_code: '638052 - Perundurai', trust_score: 88, skills: ['Nursing', 'CPR'], status: 'Active' },
+            { id: 3, name: 'Ravi M.', role: 'Volunteer', area_code: '638001 - Erode City', trust_score: 75, skills: ['Transport', 'Supply Chain'], status: 'Standby' },
+            { id: 4, name: 'Lakshmi D.', role: 'Volunteer', area_code: '638301 - Bhavani', trust_score: 95, skills: ['Shelter Mgmt', 'Cooking'], status: 'Active' },
+            { id: 5, name: 'Suresh K.', role: 'Medical Support', area_code: '638001 - Erode City', trust_score: 83, skills: ['Pharmacy', 'First Aid'], status: 'Offline' },
+            { id: 6, name: 'Deepa V.', role: 'Volunteer', area_code: '638452 - Gobichettipalayam', trust_score: 70, skills: ['Communication', 'Elderly Care'], status: 'Active' },
         ]);
     }, []);
 
@@ -119,7 +119,7 @@ export default function Volunteers() {
                     <div className="bg-white rounded-2xl p-16 text-center border border-slate-200 mt-8">
                         <span className="material-symbols-outlined text-5xl text-slate-300 mb-4">groups</span>
                         <h3 className="font-bold text-slate-800 text-xl">No volunteers found</h3>
-                        <p className="text-slate-500 mt-2">Try a different search query or area code.</p>
+                        <p className="text-slate-500 mt-2">Try a different search query or Pincode.</p>
                     </div>
                 )}
             </div>
