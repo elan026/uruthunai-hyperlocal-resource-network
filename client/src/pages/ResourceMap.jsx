@@ -62,27 +62,36 @@ export default function ResourceMap() {
     }, [listings]);
 
     useEffect(() => {
-        // 1. Get User Location
+        // 1. Get User Location with Real-time Tracking (watchPosition)
+        let watchId;
+        let initialFetchDone = false;
+
+        const defaultLat = 11.3410;
+        const defaultLng = 77.7172;
+
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
+            watchId = navigator.geolocation.watchPosition(
                 (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
                     setUserLocation([lat, lng]);
-                    fetchNearby(lat, lng);
+
+                    if (!initialFetchDone) {
+                        fetchNearby(lat, lng);
+                        initialFetchDone = true;
+                    }
                 },
                 (error) => {
                     console.error("Error getting location", error);
-                    // Default to Chennai if denied
-                    const defaultLat = 13.0827;
-                    const defaultLng = 80.2707;
-                    setUserLocation([defaultLat, defaultLng]);
-                    fetchNearby(defaultLat, defaultLng);
-                }
+                    if (!initialFetchDone) {
+                        setUserLocation([defaultLat, defaultLng]);
+                        fetchNearby(defaultLat, defaultLng);
+                        initialFetchDone = true;
+                    }
+                },
+                { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
             );
         } else {
-            const defaultLat = 13.0827;
-            const defaultLng = 80.2707;
             setUserLocation([defaultLat, defaultLng]);
             fetchNearby(defaultLat, defaultLng);
         }
@@ -92,11 +101,18 @@ export default function ResourceMap() {
 
         socket.on('new_listing_created', (newListing) => {
             console.log('Received new listing from socket:', newListing);
-            // Append incoming feature to our list
-            setListings((prevListings) => [newListing, ...prevListings]);
+            // Append incoming feature to our list instantly
+            setListings((prevListings) => {
+                // Prevent duplicate markers if user created it themselves and it already got added via other means
+                if (prevListings.some(l => l.id === newListing.id && l.type === newListing.type)) {
+                    return prevListings;
+                }
+                return [newListing, ...prevListings];
+            });
         });
 
         return () => {
+            if (watchId) navigator.geolocation.clearWatch(watchId);
             socket.disconnect();
         };
     }, []);
@@ -135,16 +151,20 @@ export default function ResourceMap() {
                         ref={setMapRef}
                     >
                         <TileLayer
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+                            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> | <a href="https://carto.com/">CARTO</a>'
+                            maxZoom={19}
                         />
 
                         <SetMapCenter center={userLocation} />
 
-                        {/* User Location Marker */}
-                        <Marker position={userLocation} icon={createIcon('#334155')}>
+                        {/* User Location Live Tracker Marker */}
+                        <Marker position={userLocation} icon={createIcon('#3b82f6')}>
                             <Popup>
-                                <span className="font-bold">You are here</span>
+                                <div className="text-center">
+                                    <span className="font-black text-blue-600 block mb-1">Your Live Location</span>
+                                    <span className="text-[10px] text-slate-500">Tracking active</span>
+                                </div>
                             </Popup>
                         </Marker>
 

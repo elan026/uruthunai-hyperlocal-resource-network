@@ -1,7 +1,7 @@
 import { useAuth } from '../hooks/useAuth';
 
 export default function Profile() {
-    const { user } = useAuth();
+    const { user, updateProfile } = useAuth();
 
     const stats = [
         { label: 'Resources Shared', value: '24', icon: 'volunteer_activism', color: 'text-primary' },
@@ -44,24 +44,36 @@ export default function Profile() {
                                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                     <div>
                                         <h1 className="text-3xl font-black tracking-tight">{user?.name || 'Community Member'}</h1>
-                                        <div className="flex items-center gap-3 mt-2 text-sm text-slate-500">
+                                        <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-slate-500">
                                             <span className="flex items-center gap-1">
                                                 <span className="material-symbols-outlined text-sm">location_on</span>
-                                                {user?.area_code || 'CHN-ADY-01'}
+                                                {user?.area_code || 'ERD-HQ-01'}
                                             </span>
                                             <span className="w-1 h-1 rounded-full bg-slate-300"></span>
                                             <span className="flex items-center gap-1">
                                                 <span className="material-symbols-outlined text-sm filled text-primary">verified</span>
-                                                Verified {user?.role || 'Resident'}
+                                                Verified {user?.user_type ? user.user_type.replace('_', ' ') : 'resident'}
                                             </span>
                                             <span className="w-1 h-1 rounded-full bg-slate-300"></span>
                                             <span>Member since Jan 2024</span>
                                         </div>
                                     </div>
-                                    <button className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all flex items-center gap-2 self-start">
-                                        <span className="material-symbols-outlined text-sm">edit</span>
-                                        Edit Profile
-                                    </button>
+                                    <div className="flex flex-col sm:flex-row gap-3 self-start">
+                                        <select
+                                            value={user?.user_type || 'resident'}
+                                            onChange={(e) => updateProfile(user.id, { user_type: e.target.value })}
+                                            className="px-4 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl border-none ring-0 cursor-pointer hover:bg-slate-200 transition-colors capitalize"
+                                        >
+                                            <option value="resident">Resident</option>
+                                            <option value="volunteer">Volunteer</option>
+                                            <option value="activist">Community Activist</option>
+                                            <option value="skilled_support">Skilled Support</option>
+                                        </select>
+                                        <button className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-all flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-sm">edit</span>
+                                            Edit Profile
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

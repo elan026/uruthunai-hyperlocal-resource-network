@@ -5,6 +5,7 @@ const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
+    const [adminToken, setAdminToken] = useState(localStorage.getItem('adminToken') || null);
     const [emergencyMode, setEmergencyMode] = useState(false);
 
     const login = async (credentials) => {
@@ -13,15 +14,31 @@ export function AuthProvider({ children }) {
         return res.data.user;
     };
 
+    const sendOtp = async (phone_number) => {
+        return await authService.sendOtp({ phone_number });
+    };
+
     const logout = () => {
         setUser(null);
+        setAdminToken(null);
+        localStorage.removeItem('adminToken');
+    };
+
+    const updateProfile = async (id, data) => {
+        const res = await authService.updateProfile(id, data);
+        setUser(res.data.user);
+        return res.data.user;
     };
 
     const value = {
         user,
         setUser,
+        adminToken,
+        setAdminToken,
         login,
+        sendOtp,
         logout,
+        updateProfile,
         emergencyMode,
         setEmergencyMode
     };

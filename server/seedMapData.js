@@ -17,14 +17,14 @@ const seedMapData = async () => {
         // First, ensure a user exists
         await pool.query(`INSERT IGNORE INTO users (id, phone_number, name, role) VALUES (1, '9999999999', 'Admin Seed', 'Admin')`);
 
-        const mockLocations = [
-            { cat: 'Medical Help', title: 'Apollo Pharmacy - Emergency Meds', desc: 'First-aid kits and oxygen support available.', lat: 13.0033, lng: 80.2555 },
-            { cat: 'Shelter', title: 'Adyar Community Hall', desc: 'Capacity for 50 people. Blankets provided.', lat: 13.0100, lng: 80.2500 },
-            { cat: 'Water & Food', title: 'Mylapore Distribution Point', desc: 'Canned food and 5L water cans.', lat: 13.0333, lng: 80.2666 },
-            { cat: 'Volunteers', title: 'Coastal Rescue Squad', desc: 'Volunteers available for evacuation.', lat: 13.0222, lng: 80.2777 },
+        const locations = [
+            { cat: 'Medical Help', title: 'GH Erode - Emergency Meds', desc: 'First-aid kits and oxygen support available.', lat: 11.3450, lng: 77.7200 },
+            { cat: 'Shelter', title: 'Perundurai Community Hall', desc: 'Capacity for 50 people. Blankets provided.', lat: 11.2721, lng: 77.5843 },
+            { cat: 'Water & Food', title: 'Bhavani Distribution Point', desc: 'Canned food and 5L water cans.', lat: 11.4426, lng: 77.6853 },
+            { cat: 'Volunteers', title: 'Cauvery Rescue Squad', desc: 'Volunteers available for evacuation near riverbeds.', lat: 11.3300, lng: 77.7100 },
         ];
 
-        for (const loc of mockLocations) {
+        for (const loc of locations) {
             await pool.query(
                 `INSERT INTO resources (user_id, category, title, description, location_lat, location_lng, status) 
                  VALUES (?, ?, ?, ?, ?, ?, 'Available')`,

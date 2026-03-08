@@ -6,12 +6,12 @@ export default function Volunteers() {
 
     useEffect(() => {
         setVolunteers([
-            { id: 1, name: 'Karthik R.', role: 'Volunteer', area_code: 'CHN-ADY-01', trust_score: 92, skills: ['First Aid', 'Rescue'], status: 'Active' },
-            { id: 2, name: 'Priya S.', role: 'Medical Support', area_code: 'CHN-ADY-02', trust_score: 88, skills: ['Nursing', 'CPR'], status: 'Active' },
-            { id: 3, name: 'Ravi M.', role: 'Volunteer', area_code: 'CHN-ADY-01', trust_score: 75, skills: ['Transport', 'Supply Chain'], status: 'Standby' },
-            { id: 4, name: 'Lakshmi D.', role: 'Volunteer', area_code: 'CHN-MYL-03', trust_score: 95, skills: ['Shelter Mgmt', 'Cooking'], status: 'Active' },
-            { id: 5, name: 'Suresh K.', role: 'Medical Support', area_code: 'CHN-ADY-01', trust_score: 83, skills: ['Pharmacy', 'First Aid'], status: 'Offline' },
-            { id: 6, name: 'Deepa V.', role: 'Volunteer', area_code: 'CHN-TBR-01', trust_score: 70, skills: ['Communication', 'Elderly Care'], status: 'Active' },
+            { id: 1, name: 'Karthik R.', role: 'Volunteer', area_code: 'ERD-HQ-01', trust_score: 92, skills: ['First Aid', 'Rescue'], status: 'Active' },
+            { id: 2, name: 'Priya S.', role: 'Medical Support', area_code: 'ERD-PER-01', trust_score: 88, skills: ['Nursing', 'CPR'], status: 'Active' },
+            { id: 3, name: 'Ravi M.', role: 'Volunteer', area_code: 'ERD-HQ-01', trust_score: 75, skills: ['Transport', 'Supply Chain'], status: 'Standby' },
+            { id: 4, name: 'Lakshmi D.', role: 'Volunteer', area_code: 'ERD-BHA-01', trust_score: 95, skills: ['Shelter Mgmt', 'Cooking'], status: 'Active' },
+            { id: 5, name: 'Suresh K.', role: 'Medical Support', area_code: 'ERD-HQ-01', trust_score: 83, skills: ['Pharmacy', 'First Aid'], status: 'Offline' },
+            { id: 6, name: 'Deepa V.', role: 'Volunteer', area_code: 'ERD-GOBI-01', trust_score: 70, skills: ['Communication', 'Elderly Care'], status: 'Active' },
         ]);
     }, []);
 

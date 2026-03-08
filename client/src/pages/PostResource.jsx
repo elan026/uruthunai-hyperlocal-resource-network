@@ -142,7 +142,7 @@ export default function PostResource() {
                             </div>
                             <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg mb-4 border border-slate-100">
                                 <span className="material-symbols-outlined text-slate-400">location_on</span>
-                                <p className="text-sm font-medium">{user?.area_code || 'Anna Nagar, Chennai - 600040'}</p>
+                                <p className="text-sm font-medium">{user?.area_code || 'Perundurai, Erode - 638052'}</p>
                             </div>
                             <div className="h-48 rounded-lg overflow-hidden border border-slate-200 relative bg-gradient-to-br from-primary/5 to-blue-50 flex items-center justify-center">
                                 <div className="text-center">
