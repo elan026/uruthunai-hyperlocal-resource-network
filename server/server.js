@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const http = require('http');
+const path = require('path');
 const { Server } = require('socket.io');
 
 const authRoutes = require('./routes/authRoutes');
@@ -25,6 +26,7 @@ const PORT = process.env.PORT || 5000;
 // Core Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Pass io to request and resource controllers or routes if needed, 
 // OR set it globally

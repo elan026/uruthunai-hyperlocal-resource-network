@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Circle } from 'react-leaflet';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { resourceService } from '../services/api';
@@ -13,6 +14,27 @@ export default function PostResource() {
         availability: 'Next 24 hours',
         emergencyFlag: false
     });
+    const [location, setLocation] = useState(null);
+    const [isLocating, setIsLocating] = useState(true);
+
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                    setIsLocating(false);
+                },
+                (err) => {
+                    console.error("Location access denied or failed", err);
+                    setLocation({ lat: 11.3410, lng: 77.7172 }); // Erode Default
+                    setIsLocating(false);
+                }
+            );
+        } else {
+            setLocation({ lat: 11.3410, lng: 77.7172 });
+            setIsLocating(false);
+        }
+    }, []);
 
     const categories = ['Medical Supplies', 'Emergency Shelter', 'Food & Water', 'Clothing & Bedding', 'Rescue Tools', 'Other'];
 
@@ -25,32 +47,13 @@ export default function PostResource() {
                 title: formData.title,
                 description: formData.description,
                 availability_duration: formData.availability,
-                is_emergency: formData.emergencyFlag
+                is_emergency: formData.emergencyFlag,
+                location_lat: location?.lat || 11.3410,
+                location_lng: location?.lng || 77.7172
             };
 
-            // Capture precise location right at the moment of posting
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        dataToSubmit.location_lat = position.coords.latitude;
-                        dataToSubmit.location_lng = position.coords.longitude;
-                        await resourceService.create(dataToSubmit);
-                        navigate('/dashboard');
-                    },
-                    async (error) => {
-                        console.error("Location error, continuing without precise location", error);
-                        dataToSubmit.location_lat = 13.0827;
-                        dataToSubmit.location_lng = 80.2707;
-                        await resourceService.create(dataToSubmit);
-                        navigate('/dashboard');
-                    }
-                );
-            } else {
-                dataToSubmit.location_lat = 13.0827;
-                dataToSubmit.location_lng = 80.2707;
-                await resourceService.create(dataToSubmit);
-                navigate('/dashboard');
-            }
+            await resourceService.create(dataToSubmit);
+            navigate('/dashboard');
 
         } catch (err) {
             console.error('Error posting resource', err);
@@ -137,23 +140,25 @@ export default function PostResource() {
                                 <h3 className="text-lg font-bold">Auto-detected Location</h3>
                                 <div className="flex items-center gap-2 text-primary">
                                     <span className="material-symbols-outlined text-sm">my_location</span>
-                                    <span className="text-xs font-bold uppercase tracking-wider">GPS Active</span>
+                                    <span className="text-xs font-bold uppercase tracking-wider">{isLocating ? 'Locating...' : 'GPS Active'}</span>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg mb-4 border border-slate-100">
                                 <span className="material-symbols-outlined text-slate-400">location_on</span>
-                                <p className="text-sm font-medium">{user?.area_code || 'Perundurai, Erode - 638052'}</p>
+                                <p className="text-sm font-medium">{user?.area_code || '638052 - Perundurai'}</p>
                             </div>
-                            <div className="h-48 rounded-lg overflow-hidden border border-slate-200 relative bg-gradient-to-br from-primary/5 to-blue-50 flex items-center justify-center">
-                                <div className="text-center">
-                                    <span className="material-symbols-outlined text-4xl text-slate-300">map</span>
-                                    <p className="text-xs text-slate-400 mt-2">Your broadcast radius</p>
-                                </div>
-                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                    <div className="size-8 bg-primary/40 rounded-full flex items-center justify-center border-2 border-primary">
-                                        <div className="size-2 bg-primary rounded-full"></div>
+                            <div className="h-48 rounded-lg overflow-hidden border border-slate-200 relative bg-slate-100 z-0">
+                                {location && !isLocating ? (
+                                    <MapContainer center={[location.lat, location.lng]} zoom={15} style={{ height: '100%', width: '100%' }} zoomControl={false} dragging={false}>
+                                        <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+                                        <Circle center={[location.lat, location.lng]} radius={400} pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.2 }} />
+                                    </MapContainer>
+                                ) : (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2"></div>
+                                        <span className="text-xs text-slate-500 font-bold">Acquiring GPS Signal...</span>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
 

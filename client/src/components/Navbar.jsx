@@ -18,7 +18,7 @@ export default function Navbar({ user, emergencyMode, onLogout }) {
                     className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer transition-colors"
                 >
                     <span className="material-symbols-outlined text-primary">location_on</span>
-                    <span className="font-bold text-slate-900">{user?.area_code || 'ERD-HQ-01'}</span>
+                    <span className="font-bold text-slate-900">{user?.area_code || '638001 - Erode City'}</span>
                 </motion.div>
                 <div className="h-6 w-px bg-slate-200"></div>
                 <div className="flex items-center gap-3">

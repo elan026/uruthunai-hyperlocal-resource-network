@@ -22,12 +22,13 @@ const initDb = async () => {
                 phone_number VARCHAR(20) UNIQUE NOT NULL,
                 password VARCHAR(255) NULL,
                 name VARCHAR(100),
-                area_code VARCHAR(20),
+                area_code VARCHAR(100),
                 role ENUM('admin', 'user') DEFAULT 'user',
                 user_type ENUM('resident', 'volunteer', 'activist', 'skilled_support') DEFAULT 'resident',
                 trust_score INT DEFAULT 50,
                 verification_status ENUM('unverified', 'verified') DEFAULT 'unverified',
                 skills VARCHAR(255),
+                profile_pic VARCHAR(255) DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);

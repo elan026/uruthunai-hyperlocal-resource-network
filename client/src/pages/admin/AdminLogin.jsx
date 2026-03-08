@@ -97,7 +97,7 @@ export default function AdminLogin() {
                 </form>
 
                 <div className="mt-8 text-center border-t border-slate-100 pt-6">
-                    <p className="text-xs text-slate-400 font-semibold tracking-wider uppercase">Default: admin / admin123</p>
+                    <p className="text-xs text-slate-400 font-semibold tracking-wider">Default: admin / admin123</p>
                 </div>
             </motion.div>
         </div>

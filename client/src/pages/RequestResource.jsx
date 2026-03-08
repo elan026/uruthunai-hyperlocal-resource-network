@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Circle } from 'react-leaflet';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { requestService } from '../services/api';
@@ -11,6 +12,27 @@ export default function RequestResource() {
         description: '',
         urgency: 'Essential'
     });
+    const [location, setLocation] = useState(null);
+    const [isLocating, setIsLocating] = useState(true);
+
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                    setIsLocating(false);
+                },
+                (err) => {
+                    console.error("Location access denied or failed", err);
+                    setLocation({ lat: 11.3410, lng: 77.7172 }); // Erode Default
+                    setIsLocating(false);
+                }
+            );
+        } else {
+            setLocation({ lat: 11.3410, lng: 77.7172 });
+            setIsLocating(false);
+        }
+    }, []);
 
     const resourceTypes = [
         { value: 'food', label: 'Food & Rations' },
@@ -34,33 +56,14 @@ export default function RequestResource() {
                 user_id: user?.id || 1,
                 category: formData.type || 'Medical / First Aid',
                 description: formData.description,
-                urgency_level: formData.urgency
+                urgency_level: formData.urgency,
+                location_lat: location?.lat || 11.3410,
+                location_lng: location?.lng || 77.7172
             };
 
-            // Capture precise location right at the moment of posting
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    async (position) => {
-                        dataToSubmit.location_lat = position.coords.latitude;
-                        dataToSubmit.location_lng = position.coords.longitude;
-                        await requestService.create(dataToSubmit);
-                        navigate('/dashboard');
-                    },
-                    async (error) => {
-                        console.error("Location error, continuing without precise location", error);
-                        // Default fallback mapping behavior or rely on backend defaults
-                        dataToSubmit.location_lat = 13.0827;
-                        dataToSubmit.location_lng = 80.2707;
-                        await requestService.create(dataToSubmit);
-                        navigate('/dashboard');
-                    }
-                );
-            } else {
-                dataToSubmit.location_lat = 13.0827;
-                dataToSubmit.location_lng = 80.2707;
-                await requestService.create(dataToSubmit);
-                navigate('/dashboard');
-            }
+            await requestService.create(dataToSubmit);
+            navigate('/dashboard');
+
         } catch (err) {
             console.error('Error sending request', err);
         }
@@ -163,13 +166,20 @@ export default function RequestResource() {
                         </h3>
                         <span className="text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500">Erode, TN</span>
                     </div>
-                    <div className="aspect-square bg-slate-200 relative flex items-center justify-center">
-                        <div className="text-center">
-                            <span className="material-symbols-outlined text-6xl text-slate-300">map</span>
-                            <p className="text-sm text-slate-400 mt-2">Your neighborhood</p>
-                        </div>
+                    <div className="aspect-square bg-slate-100 relative overflow-hidden z-0">
+                        {location && !isLocating ? (
+                            <MapContainer center={[location.lat, location.lng]} zoom={15} style={{ height: '100%', width: '100%' }} zoomControl={false} dragging={false}>
+                                <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+                                <Circle center={[location.lat, location.lng]} radius={800} pathOptions={{ color: '#ef4444', fillColor: '#ef4444', fillOpacity: 0.2 }} />
+                            </MapContainer>
+                        ) : (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2"></div>
+                                <span className="text-xs text-slate-500 font-bold">Acquiring GPS Signal...</span>
+                            </div>
+                        )}
                         {/* Privacy Overlay */}
-                        <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center p-6 text-center">
+                        <div className="absolute inset-0 bg-slate-900/40 flex items-center justify-center p-6 text-center pointer-events-none">
                             <div className="bg-white/90 p-4 rounded-lg backdrop-blur shadow-xl">
                                 <span className="material-symbols-outlined text-primary mb-2">lock</span>
                                 <p className="text-xs font-medium">Privacy Guaranteed</p>

@@ -30,6 +30,16 @@ export function AuthProvider({ children }) {
         return res.data.user;
     };
 
+    const loadProfile = async (id) => {
+        const res = await authService.getProfile(id);
+        return res.data;
+    };
+
+    const deleteProfile = async (id) => {
+        await authService.deleteProfile(id);
+        logout();
+    };
+
     const value = {
         user,
         setUser,
@@ -39,6 +49,8 @@ export function AuthProvider({ children }) {
         sendOtp,
         logout,
         updateProfile,
+        loadProfile,
+        deleteProfile,
         emergencyMode,
         setEmergencyMode
     };

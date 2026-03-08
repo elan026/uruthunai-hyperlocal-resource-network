@@ -34,20 +34,37 @@ const User = {
 
     findById: async (id) => {
         const [rows] = await db.execute(
-            'SELECT id, phone_number, name, area_code, role, user_type, skills, verification_status, trust_score, created_at FROM users WHERE id = ?',
+            'SELECT id, phone_number, name, area_code, role, user_type, skills, profile_pic, verification_status, trust_score, created_at FROM users WHERE id = ?',
             [id]
         );
         return rows[0] || null;
     },
 
-    update: async (id, { name, area_code, user_type, skills }) => {
+    update: async (id, { name, area_code, user_type, skills, profile_pic }) => {
         const fields = [];
         const values = [];
 
         if (name !== undefined) { fields.push('name = ?'); values.push(name); }
         if (area_code !== undefined) { fields.push('area_code = ?'); values.push(area_code); }
         if (user_type !== undefined) { fields.push('user_type = ?'); values.push(user_type); }
-        if (skills !== undefined) { fields.push('skills = ?'); values.push(skills); }
+        if (skills !== undefined) {
+            fields.push('skills = ?');
+            // skills column is JSON type — sanitize input
+            if (!skills || skills === '') {
+                values.push(null);
+            } else if (typeof skills === 'string') {
+                // Convert comma-separated string to JSON array
+                try {
+                    JSON.parse(skills); // already valid JSON
+                    values.push(skills);
+                } catch {
+                    values.push(JSON.stringify(skills.split(',').map(s => s.trim()).filter(Boolean)));
+                }
+            } else {
+                values.push(JSON.stringify(skills));
+            }
+        }
+        if (profile_pic !== undefined) { fields.push('profile_pic = ?'); values.push(profile_pic); }
 
         if (fields.length === 0) return true;
 
@@ -67,6 +84,11 @@ const User = {
             resources_posted: resources[0].count,
             requests_fulfilled: requests[0].count
         };
+    },
+
+    delete: async (id) => {
+        await db.execute('DELETE FROM users WHERE id = ?', [id]);
+        return true;
     }
 };
 

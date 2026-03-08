@@ -17,6 +17,10 @@ export default function ResourceDetail() {
 
     useEffect(() => {
         const fetchResource = async () => {
+            if (!id || id === 'undefined') {
+                setLoading(false);
+                return;
+            }
             try {
                 const res = await resourceService.getById(id);
                 setResource(res.data);
