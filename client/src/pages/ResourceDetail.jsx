@@ -102,7 +102,7 @@ export default function ResourceDetail() {
             {/* Breadcrumb */}
             <FadeUp delay={0.1}>
                 <nav className="flex items-center gap-3 text-sm font-semibold text-slate-500 mb-8 bg-white/50 backdrop-blur w-fit px-4 py-2 rounded-full border border-slate-200">
-                    <button onClick={() => navigate('/dashboard')} className="hover:text-primary transition-colors hover:scale-105 active:scale-95">Home</button>
+                    <button onClick={() => navigate('/home')} className="hover:text-primary transition-colors hover:scale-105 active:scale-95">Home</button>
                     <span className="material-symbols-outlined text-sm text-slate-300">chevron_right</span>
                     <button onClick={() => navigate('/map')} className="hover:text-primary transition-colors hover:scale-105 active:scale-95">Resources</button>
                     <span className="material-symbols-outlined text-sm text-slate-300">chevron_right</span>

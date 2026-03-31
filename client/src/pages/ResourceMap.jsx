@@ -293,7 +293,7 @@ export default function ResourceMap() {
             </div>
 
             {/* Realtime Toast Notifications - Top Right */}
-            <div className="fixed top-20 right-4 z-[1000] flex flex-col gap-3 pointer-events-none" style={{ maxWidth: '320px' }}>
+            <div aria-live="polite" className="fixed top-20 right-4 z-[1000] flex flex-col gap-3 pointer-events-none" style={{ maxWidth: '320px' }}>
                 {realtimeToasts.map(toast => {
                     const style = getCategoryStyle(toast.category);
                     return (
@@ -404,9 +404,17 @@ export default function ResourceMap() {
 
                     <div className="flex-1 overflow-y-auto p-3 space-y-3">
                         {filteredListings.length === 0 ? (
-                            <div className="text-center py-10 px-4">
-                                <span className="material-symbols-outlined text-4xl text-slate-200 mb-2">location_off</span>
-                                <p className="text-xs font-medium text-slate-400">No resources found for the selected filters in your radius.</p>
+                            <div className="flex flex-col items-center justify-center text-center py-12 px-4 h-full border-2 border-dashed border-slate-100 rounded-xl m-2">
+                                <div className="relative w-16 h-16 flex items-center justify-center mb-4">
+                                    <div className="absolute inset-0 rounded-full border-2 border-dashed border-slate-300 animate-spin-slow"></div>
+                                    <span className="material-symbols-outlined text-[40px] text-slate-300">location_on</span>
+                                </div>
+                                <h4 className="font-black text-slate-800 text-lg mb-1">It's quiet here.</h4>
+                                <p className="text-xs font-medium text-slate-500 mb-6 leading-relaxed">Be the first to add a resource or request help in your area to activate this zone.</p>
+                                <div className="flex flex-col gap-2 w-full">
+                                    <button onClick={() => navigate('/post-resource')} className="w-full bg-primary/10 text-primary font-bold py-2.5 rounded-lg text-xs hover:bg-primary/20 transition-colors">Post a Resource</button>
+                                    <button onClick={() => navigate('/request-resource')} className="w-full bg-white border border-slate-200 text-slate-600 font-bold py-2.5 rounded-lg text-xs hover:bg-slate-50 transition-colors">Request Help</button>
+                                </div>
                             </div>
                         ) : (
                             filteredListings.map(listing => {

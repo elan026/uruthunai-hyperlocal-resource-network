@@ -62,7 +62,7 @@ export default function RequestResource() {
             };
 
             await requestService.create(dataToSubmit);
-            navigate('/dashboard');
+            navigate('/home');
 
         } catch (err) {
             console.error('Error sending request', err);

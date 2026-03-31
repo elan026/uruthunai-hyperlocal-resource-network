@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -6,10 +6,9 @@ import { getLocationsDropdownOptions } from '../data/erodeLocations';
 
 export default function AuthPage() {
     const navigate = useNavigate();
-    const { login, sendOtp } = useAuth();
+    const { login, sendOtp, updateProfile } = useAuth();
 
-    const [isLogin, setIsLogin] = useState(true);
-    const [authStep, setAuthStep] = useState(1); // 1 = Phone/Details, 2 = OTP
+    const [authStep, setAuthStep] = useState(1); // 1 = Phone, 2 = OTP, 3 = Profile Setup
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -18,25 +17,28 @@ export default function AuthPage() {
     const [otp, setOtp] = useState('');
     const [name, setName] = useState('');
     const [areaCode, setAreaCode] = useState('');
+    const [tempUserId, setTempUserId] = useState(null);
 
-    const handleToggleMode = () => {
-        setIsLogin(!isLogin);
-        setAuthStep(1);
-        setPhone('');
-        setOtp('');
-        setName('');
-        setAreaCode('');
-        setError('');
-    };
+    // Timer for OTP
+    const [timer, setTimer] = useState(30);
+
+    useEffect(() => {
+        let interval;
+        if (authStep === 2 && timer > 0) {
+            interval = setInterval(() => setTimer(t => t - 1), 1000);
+        }
+        return () => clearInterval(interval);
+    }, [authStep, timer]);
 
     const handleSendOtp = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         setLoading(true);
         setError('');
         try {
-            const res = await sendOtp(phone);
-            console.log('OTP details:', res.data); // Helpful for testing "free" OTP
+            await sendOtp(phone);
             setAuthStep(2);
+            setTimer(30);
+            setOtp('');
         } catch (err) {
             setError(err.response?.data?.error || 'Failed to send OTP');
         } finally {
@@ -54,22 +56,38 @@ export default function AuthPage() {
                 otp: otp,
             };
 
-            // If registering, pass additional details
-            if (!isLogin) {
-                payload.name = name || 'New User';
-                payload.area_code = areaCode || '638052 - Perundurai';
-                payload.role = 'user';
-                payload.user_type = 'resident';
+            const user = await login(payload);
+            
+            // If user is new (e.g. name is Anonymous or missing), go to step 3
+            if (!user.name || user.name === 'Anonymous') {
+                setTempUserId(user.id);
+                setAuthStep(3);
+            } else {
+                navigate('/home');
             }
-
-            await login(payload);
-            navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.error || 'Invalid OTP');
         } finally {
             setLoading(false);
         }
     };
+
+    const handleSetupProfile = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+        try {
+            await updateProfile(tempUserId, {
+                name: name,
+                area_code: areaCode || '638001 - Erode City'
+            });
+            navigate('/home');
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to update profile');
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <div className="min-h-screen w-full flex bg-slate-50 font-sans text-slate-900">
@@ -84,7 +102,7 @@ export default function AuthPage() {
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-primary shadow-lg shadow-black/10">
                             <span className="material-symbols-outlined text-xl">diversity_3</span>
                         </div>
-                        <span className="text-2xl font-black text-white tracking-tight">Uruthunai</span>
+                        <span className="text-2xl font-black text-white tracking-tight">Namma Thunai</span>
                     </Link>
 
                     <div className="mb-20">
@@ -122,7 +140,7 @@ export default function AuthPage() {
                     <Link to="/" className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white shadow-lg shadow-primary/20">
                         <span className="material-symbols-outlined text-xl">diversity_3</span>
                     </Link>
-                    <span className="text-xl font-black text-slate-900 tracking-tight">Uruthunai</span>
+                    <span className="text-xl font-black text-slate-900 tracking-tight">Namma Thunai</span>
                 </div>
 
                 <div className="w-full max-w-md">
@@ -133,14 +151,14 @@ export default function AuthPage() {
                     >
                         <div className="mb-8">
                             <h2 className="text-3xl font-black text-slate-900 mb-2">
-                                {authStep === 1
-                                    ? (isLogin ? 'Welcome Back' : 'Create Account')
-                                    : 'Verify OTP'}
+                                {authStep === 1 && 'Welcome to Namma Thunai'}
+                                {authStep === 2 && 'Verify your number'}
+                                {authStep === 3 && 'Complete your profile'}
                             </h2>
                             <p className="text-sm text-slate-500 font-medium">
-                                {authStep === 1
-                                    ? (isLogin ? 'Enter your mobile number to securely login.' : 'Join the community for free.')
-                                    : `We've sent a 6-digit code to ${phone}.`}
+                                {authStep === 1 && 'Enter your phone number to connect with your community.'}
+                                {authStep === 2 && `We sent a 6-digit code to ${phone}.`}
+                                {authStep === 3 && 'Help neighbors recognize and locate you.'}
                             </p>
                         </div>
 
@@ -152,7 +170,7 @@ export default function AuthPage() {
                         )}
 
                         <AnimatePresence mode="wait">
-                            {authStep === 1 ? (
+                            {authStep === 1 && (
                                 <motion.form
                                     key="step1"
                                     initial={{ opacity: 0, x: -20 }}
@@ -161,38 +179,7 @@ export default function AuthPage() {
                                     onSubmit={handleSendOtp}
                                     className="space-y-5"
                                 >
-                                    {!isLogin && (
-                                        <>
-                                            <div>
-                                                <label className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-500">Full Name</label>
-                                                <input
-                                                    type="text"
-                                                    value={name}
-                                                    onChange={(e) => setName(e.target.value)}
-                                                    placeholder="e.g. Karthik S"
-                                                    className="w-full rounded-xl border-2 border-slate-100 bg-slate-50 px-4 py-3.5 text-base font-semibold text-slate-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-500">Area / Locality (Erode Govt Data)</label>
-                                                <select
-                                                    value={areaCode}
-                                                    onChange={(e) => setAreaCode(e.target.value)}
-                                                    className="w-full rounded-xl border-2 border-slate-100 bg-slate-50 px-4 py-3.5 text-base font-semibold text-slate-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all capitalize cursor-pointer"
-                                                    required
-                                                >
-                                                    <option value="" disabled>Select your nearest Taluka/Pincode</option>
-                                                    {getLocationsDropdownOptions().map((opt, i) => (
-                                                        <option key={i} value={opt.value}>{opt.label}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </>
-                                    )}
-
                                     <div>
-                                        <label className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-500">Mobile Number</label>
                                         <div className="relative">
                                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">+91</span>
                                             <input
@@ -218,13 +205,19 @@ export default function AuthPage() {
                                             <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                                         ) : (
                                             <>
-                                                {isLogin ? 'Send Login OTP' : 'Send Verification OTP'}
+                                                Get OTP
                                                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
                                             </>
                                         )}
                                     </motion.button>
+
+                                    <div className="text-center pt-2">
+                                        <p className="text-xs text-slate-400 font-medium">By continuing, you agree to our Terms & Conditions.</p>
+                                    </div>
                                 </motion.form>
-                            ) : (
+                            )}
+
+                            {authStep === 2 && (
                                 <motion.form
                                     key="step2"
                                     initial={{ opacity: 0, x: -20 }}
@@ -260,7 +253,7 @@ export default function AuthPage() {
                                             <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
                                         ) : (
                                             <>
-                                                Verify & {isLogin ? 'Login' : 'Create Account'}
+                                                Verify
                                                 <span className="material-symbols-outlined text-[18px]">check_circle</span>
                                             </>
                                         )}
@@ -270,31 +263,69 @@ export default function AuthPage() {
                                         <button
                                             type="button"
                                             onClick={handleSendOtp}
-                                            disabled={loading}
-                                            className="text-xs font-bold text-slate-500 hover:text-primary transition-colors. disabled:opacity-50"
+                                            disabled={loading || timer > 0}
+                                            className="text-xs font-bold text-slate-500 hover:text-primary transition-colors disabled:opacity-50"
                                         >
-                                            Didn't receive code? <span className="text-primary">Resend</span>
+                                            Resend code {timer > 0 ? `in 0:${timer.toString().padStart(2, '0')}s` : ''}
                                         </button>
                                     </div>
                                 </motion.form>
                             )}
+
+                            {authStep === 3 && (
+                                <motion.form
+                                    key="step3"
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 20 }}
+                                    onSubmit={handleSetupProfile}
+                                    className="space-y-5"
+                                >
+                                    <div>
+                                        <label className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-500">Full Name</label>
+                                        <input
+                                            type="text"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            placeholder="e.g. Karthik S"
+                                            className="w-full rounded-xl border-2 border-slate-100 bg-slate-50 px-4 py-3.5 text-base font-semibold text-slate-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="mb-2 block text-xs font-black uppercase tracking-widest text-slate-500">Primary Neighborhood</label>
+                                        <select
+                                            value={areaCode}
+                                            onChange={(e) => setAreaCode(e.target.value)}
+                                            className="w-full rounded-xl border-2 border-slate-100 bg-slate-50 px-4 py-3.5 text-base font-semibold text-slate-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all capitalize cursor-pointer"
+                                            required
+                                        >
+                                            <option value="" disabled>Select nearest area</option>
+                                            {getLocationsDropdownOptions().map((opt, i) => (
+                                                <option key={i} value={opt.value}>{opt.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <motion.button
+                                        whileHover={{ scale: 1.01 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        type="submit"
+                                        disabled={loading || !name}
+                                        className="w-full rounded-xl bg-primary py-4 mt-2 text-sm font-bold text-white shadow-lg shadow-primary/25 disabled:opacity-50 disabled:shadow-none transition-all flex justify-center items-center gap-2"
+                                    >
+                                        {loading ? (
+                                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                        ) : (
+                                            <>
+                                                Complete Setup
+                                                <span className="material-symbols-outlined text-[18px]">task_alt</span>
+                                            </>
+                                        )}
+                                    </motion.button>
+                                </motion.form>
+                            )}
                         </AnimatePresence>
                     </motion.div>
-
-                    {/* Toggle Login/Registration */}
-                    {authStep === 1 && (
-                        <div className="mt-8 text-center">
-                            <p className="text-sm font-medium text-slate-600">
-                                {isLogin ? "Don't have an account?" : "Already a member?"}{' '}
-                                <button
-                                    onClick={handleToggleMode}
-                                    className="font-bold text-primary hover:text-primary-dark transition-colors"
-                                >
-                                    {isLogin ? "Create Account" : "Login Here"}
-                                </button>
-                            </p>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

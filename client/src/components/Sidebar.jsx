@@ -2,8 +2,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const menuItems = [
-    { path: '/dashboard', label: 'Home', icon: 'home' },
-    { path: '/map', label: 'Resource Map', icon: 'map' },
+    { path: '/home', label: 'Home Map', icon: 'map' },
+    { path: '/dashboard', label: 'Feed', icon: 'list_alt' },
     { path: '/post-resource', label: 'Post Resource', icon: 'add_box' },
     { path: '/request-resource', label: 'Requests', icon: 'volunteer_activism' },
     { path: '/emergency', label: 'Emergency Mode', icon: 'emergency' },

@@ -6,18 +6,18 @@ export default function AdminModeration() {
     const { adminToken } = useAuth();
     const [reports, setReports] = useState([]);
 
-    useEffect(() => {
-        const fetchReports = async () => {
-            try {
-                const res = await axios.get('http://localhost:5000/api/admin/reports', {
-                    headers: { Authorization: `Bearer ${adminToken}` }
-                });
-                setReports(res.data);
-            } catch (error) {
-                console.error('Failed to fetch reports', error);
-            }
-        };
+    const fetchReports = async () => {
+        try {
+            const res = await axios.get('http://localhost:5000/api/admin/reports', {
+                headers: { Authorization: `Bearer ${adminToken}` }
+            });
+            setReports(res.data);
+        } catch (error) {
+            console.error('Failed to fetch reports', error);
+        }
+    };
 
+    useEffect(() => {
         if (adminToken) fetchReports();
     }, [adminToken]);
 
@@ -50,9 +50,16 @@ export default function AdminModeration() {
                 </div>
                 <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
                     {reports.length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center text-slate-400 py-12">
-                            <span className="material-symbols-outlined text-4xl mb-2">done_all</span>
-                            <p className="font-bold">No pending reports!</p>
+                        <div className="h-full flex flex-col items-center justify-center text-center py-20 border-2 border-dashed border-slate-200 rounded-2xl bg-white mt-4">
+                            <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mb-6 shadow-inner border border-emerald-100">
+                                <span className="material-symbols-outlined text-[60px] text-emerald-500">playlist_add_check</span>
+                            </div>
+                            <h3 className="font-black text-slate-800 text-2xl mb-2">Queue Empty</h3>
+                            <p className="text-slate-500 font-medium text-lg mb-8 max-w-sm">No flagged content requiring review at this time.</p>
+                            <button onClick={fetchReports} className="bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800 px-8 py-4 rounded-xl font-bold transition-colors flex items-center gap-2">
+                                <span className="material-symbols-outlined text-lg">refresh</span>
+                                Refresh Queue
+                            </button>
                         </div>
                     ) : reports.map(report => (
                         <div key={report.id} className="border border-slate-200 rounded-xl p-4 bg-slate-50">

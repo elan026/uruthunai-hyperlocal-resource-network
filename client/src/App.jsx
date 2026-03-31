@@ -35,7 +35,7 @@ function ProtectedLayout({ children }) {
 
 function AdminRoute({ children }) {
   const { user } = useAuth();
-  if (user?.role !== 'admin') return <Navigate to="/dashboard" />;
+  if (user?.role !== 'admin') return <Navigate to="/home" />;
   return children;
 }
 
@@ -45,8 +45,9 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<AuthPage />} />
+      <Route path="/home" element={<ProtectedLayout><PageTransition><ResourceMap /></PageTransition></ProtectedLayout>} />
       <Route path="/dashboard" element={<ProtectedLayout><PageTransition><Dashboard /></PageTransition></ProtectedLayout>} />
-      <Route path="/map" element={<ProtectedLayout><PageTransition><ResourceMap /></PageTransition></ProtectedLayout>} />
+      <Route path="/map" element={<Navigate to="/home" />} />
       <Route path="/post-resource" element={<ProtectedLayout><PageTransition><PostResource /></PageTransition></ProtectedLayout>} />
       <Route path="/request-resource" element={<ProtectedLayout><PageTransition><RequestResource /></PageTransition></ProtectedLayout>} />
       <Route path="/resource/:id" element={<ProtectedLayout><PageTransition><ResourceDetail /></PageTransition></ProtectedLayout>} />
