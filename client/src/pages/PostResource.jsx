@@ -53,7 +53,7 @@ export default function PostResource() {
             };
 
             await resourceService.create(dataToSubmit);
-            navigate('/dashboard');
+            navigate('/home');
 
         } catch (err) {
             console.error('Error posting resource', err);

@@ -207,11 +207,11 @@ export default function CommunityAlerts() {
                         </StaggerContainer>
                     ) : (
                         <div className="bg-white rounded-3xl p-16 text-center border-2 border-dashed border-slate-200">
-                            <div className="w-24 h-24 mx-auto mb-6 bg-slate-50 rounded-full flex items-center justify-center">
-                                <span className="material-symbols-outlined text-[60px] text-slate-300">notifications_off</span>
+                            <div className="w-24 h-24 mx-auto mb-6 bg-slate-50 rounded-full flex items-center justify-center hover-scale">
+                                <span className="material-symbols-outlined text-[60px] text-emerald-400">notifications_active</span>
                             </div>
-                            <h3 className="font-black text-slate-800 text-2xl mb-2">No Active Alerts</h3>
-                            <p className="text-slate-500 font-medium text-lg">Your neighborhood is currently clear. Area admins will post important updates here when necessary.</p>
+                            <h3 className="font-black text-slate-800 text-2xl mb-2">All clear!</h3>
+                            <p className="text-slate-500 font-medium text-lg">No active emergencies or alerts in your verified areas. Safe and sound.</p>
                         </div>
                     )}
                 </div>
