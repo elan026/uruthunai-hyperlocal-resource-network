@@ -13,9 +13,18 @@ const menuItems = [
 
 const adminItem = { path: '/admin', label: 'Admin Control', icon: 'shield_with_heart' };
 
-export default function Sidebar({ isAdmin, isOpen, onClose }) {
+export default function Sidebar({ isAdmin, isOpen, onClose, emergencyMode }) {
     const location = useLocation();
-    const items = isAdmin ? [...menuItems, adminItem] : menuItems;
+    let items = isAdmin ? [...menuItems, adminItem] : menuItems;
+
+    if (emergencyMode && !isAdmin) {
+        items = items.map(item => {
+            if (item.path === '/dashboard' || item.path === '/volunteers') {
+                return { ...item, disabled: true };
+            }
+            return item;
+        });
+    }
 
     return (
         <aside className={`w-72 bg-white border-r border-slate-200 flex flex-col fixed h-screen z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
@@ -45,6 +54,18 @@ export default function Sidebar({ isAdmin, isOpen, onClose }) {
             <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
                 {items.map((item) => {
                     const isActive = location.pathname === item.path;
+                    
+                    if (item.disabled) {
+                        return (
+                            <div key={item.path} className="flex items-center gap-3 px-4 py-3 rounded-xl font-semibold opacity-50 cursor-not-allowed">
+                                <span className="material-symbols-outlined relative z-10 transition-transform duration-300">
+                                    {item.icon}
+                                </span>
+                                <span className="text-sm relative z-10">{item.label} (Blocked)</span>
+                            </div>
+                        );
+                    }
+
                     return (
                         <Link
                             key={item.path}

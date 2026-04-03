@@ -6,6 +6,8 @@ export default function AdminEmergency() {
     const { adminToken } = useAuth();
     const [emergencyMode, setEmergencyMode] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [title, setTitle] = useState('');
+    const [message, setMessage] = useState('');
 
     useEffect(() => {
         const fetchEmergencyStatus = async () => {
@@ -14,6 +16,8 @@ export default function AdminEmergency() {
                     headers: { Authorization: `Bearer ${adminToken}` }
                 });
                 setEmergencyMode(res.data.isEmergency);
+                setTitle(res.data.title || '');
+                setMessage(res.data.message || '');
             } catch (error) {
                 console.error('Failed to fetch emergency data', error);
             }
@@ -22,14 +26,21 @@ export default function AdminEmergency() {
         if (adminToken) fetchEmergencyStatus();
     }, [adminToken]);
 
-    const toggleEmergency = async () => {
+    const toggleEmergency = async (isBroadcast = false) => {
         setIsLoading(true);
         try {
-            const newState = !emergencyMode;
+            const newState = isBroadcast ? true : !emergencyMode;
             await axios.post('http://localhost:5000/api/admin/emergency', {
-                active: newState
+                active: newState,
+                title: isBroadcast ? title : undefined,
+                message: isBroadcast ? message : undefined
             }, { headers: { Authorization: `Bearer ${adminToken}` } });
             setEmergencyMode(newState);
+            if (!newState) {
+                // Clear when deactivating
+                setTitle('');
+                setMessage('');
+            }
         } catch (error) {
             console.error('Failed to toggle emergency mode', error);
         } finally {
@@ -63,7 +74,7 @@ export default function AdminEmergency() {
                         </div>
                     </div>
                     <button
-                        onClick={toggleEmergency}
+                        onClick={() => toggleEmergency(false)}
                         disabled={isLoading}
                         className={`px-8 py-4 w-full md:w-auto rounded-xl font-black text-white transition-all shrink-0 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''
                             } ${emergencyMode
@@ -76,16 +87,32 @@ export default function AdminEmergency() {
                 </div>
             </div>
 
-            {/* Future expansions like sending manual push notifications to areas could go here */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm opacity-50 select-none">
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
                 <h3 className="font-black text-slate-900 flex items-center gap-2 mb-4">
                     <span className="material-symbols-outlined text-primary">campaign</span>
-                    Broadcast Community Alert (Coming Soon)
+                    Broadcast Community Alert
                 </h3>
                 <div className="space-y-4">
-                    <input type="text" disabled placeholder="Alert Title..." className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl font-bold cursor-not-allowed" />
-                    <textarea disabled placeholder="Describe the crisis and instructions..." className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl font-medium h-32 cursor-not-allowed"></textarea>
-                    <button disabled className="px-6 py-3 bg-slate-200 text-slate-500 font-bold rounded-xl w-full cursor-not-allowed">Deploy Broadcast</button>
+                    <input 
+                        type="text" 
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="Alert Title (e.g. Flooding Alert: Move to higher ground)" 
+                        className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl font-bold focus:border-primary focus:outline-none" 
+                    />
+                    <textarea 
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Describe the crisis and instructions..." 
+                        className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl font-medium h-32 focus:border-primary focus:outline-none"
+                    ></textarea>
+                    <button 
+                        onClick={() => toggleEmergency(true)}
+                        disabled={isLoading || !title || !message}
+                        className="px-6 py-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl w-full disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        {isLoading ? 'BROADCASTING...' : 'Deploy Broadcast & Activate Emergency Mode'}
+                    </button>
                 </div>
             </div>
         </div>

@@ -121,6 +121,21 @@ const initDb = async () => {
             );
         `);
 
+        // Create System Settings Table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS system_settings (
+                setting_key VARCHAR(50) PRIMARY KEY,
+                setting_value VARCHAR(255) NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Insert Default System Settings
+        await pool.query(`
+            INSERT IGNORE INTO system_settings (setting_key, setting_value)
+            VALUES ('is_emergency_active', 'false');
+        `);
+
         /* Insert Default Admin User 
            We use a raw password since bcrypt adds dependency overhead and we're demonstrating the system structure. 
            In prod this would be hashed. */

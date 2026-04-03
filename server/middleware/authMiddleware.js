@@ -1,39 +1,38 @@
-/**
- * Auth Middleware
- * Lightweight session check for demo purposes.
- * In production, this would validate a JWT or session token.
- */
+const jwt = require('jsonwebtoken');
 
-const authMiddleware = (req, res, next) => {
-    // For this project, auth is handled client-side via user state.
-    // This middleware is a placeholder for JWT-based auth.
-    // To enforce, check for Authorization header or session cookie here.
+const protect = async (req, res, next) => {
+    let token;
 
-    const userId = req.headers['x-user-id'];
-
-    if (!userId) {
-        // Allow requests without auth for now (demo mode)
-        return next();
+    // Check for token in cookies first, fallback to Auth header
+    if (req.cookies && req.cookies.token) {
+        token = req.cookies.token;
+    } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
     }
 
-    // Attach user ID to request for downstream controllers
-    req.userId = parseInt(userId, 10);
-    next();
-};
+    if (!token) {
+        return res.status(401).json({ error: 'Not authorized, no token' });
+    }
 
-/**
- * Role-based access control middleware factory
- * @param  {...string} roles - Allowed roles (e.g., 'Admin', 'Volunteer')
- */
-const requireRole = (...roles) => {
-    return (req, res, next) => {
-        // In production, fetch user role from DB or JWT payload
-        // For demo, this is a structural placeholder
-        if (req.userRole && !roles.includes(req.userRole)) {
-            return res.status(403).json({ error: 'Access denied. Insufficient permissions.' });
-        }
+    try {
+        // Verify token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'uruthunai_fallback_secret_key');
+        
+        // Add user payload to request
+        req.user = decoded;
         next();
-    };
+    } catch (error) {
+        console.error('Token verification failed:', error);
+        res.status(401).json({ error: 'Not authorized, token failed' });
+    }
 };
 
-module.exports = { authMiddleware, requireRole };
+const adminOnly = (req, res, next) => {
+    if (req.user && req.user.role === 'admin') {
+        next();
+    } else {
+        res.status(403).json({ error: 'Not authorized as an admin' });
+    }
+};
+
+module.exports = { protect, adminOnly };

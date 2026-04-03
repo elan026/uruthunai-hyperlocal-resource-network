@@ -6,7 +6,7 @@ const Resource = {
             SELECT r.*, u.name as provider_name, u.role as provider_role, u.trust_score as provider_trust_score 
             FROM resources r 
             JOIN users u ON r.user_id = u.id 
-            WHERE 1=1
+            WHERE r.visibility_status = 'visible'
         `;
         const params = [];
 

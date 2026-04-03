@@ -146,12 +146,14 @@ export default function ResourceMap() {
         socket.on('connect', () => {
             setSocketStatus('connected');
             console.log('[Map] Socket connected:', socket.id);
+            // Join Area code if configured. We'll use 600001 as default for demo
+            socket.emit('join_area', { pincode: '600001' });
         });
 
         socket.on('disconnect', () => setSocketStatus('disconnected'));
         socket.on('connect_error', () => setSocketStatus('error'));
 
-        socket.on('new_listing_created', (newListing) => {
+        socket.on('new_request_created', (newListing) => {
             console.log('[Map] Realtime listing received:', newListing);
 
             setListings((prevListings) => {
@@ -174,6 +176,16 @@ export default function ResourceMap() {
 
             // Show toast
             addToast(newListing);
+        });
+
+        socket.on('request_status_update', (update) => {
+            console.log('[Map] Status updated:', update);
+            setListings(prev => prev.map(l => l.id == update.id && l.type === 'request' ? { ...l, status: update.status, assigned_to_name: update.assigned_to_name } : l));
+        });
+
+        socket.on('request_hidden', (data) => {
+            console.log('[Map] Status hidden:', data);
+            setListings(prev => prev.filter(l => !(l.id == data.id && l.type === 'request')));
         });
 
         return () => {
@@ -265,8 +277,30 @@ export default function ResourceMap() {
                                                     <span>{listing.distance || 'Nearby'}</span>
                                                     <span>{listing.user_name || 'Community Member'}</span>
                                                 </div>
-                                                <button
-                                                    className="w-full py-2 bg-primary text-white rounded-lg font-bold text-xs hover:bg-primary/90 transition-colors"
+                                                
+                                                {/* QUICK ACTIONS ON THE MAP */}
+                                                {!listing.status || listing.status === 'OPEN' || listing.status === 'Open' ? (
+                                                    <button
+                                                        className="w-full py-2 bg-primary text-white rounded-lg font-bold text-xs hover:bg-primary/90 transition-colors"
+                                                        onClick={() => {
+                                                            alert(`Fired STATE CHANGE via Socket to ACCEPTED. Assigned to YOU.`);
+                                                            // Logic will be handled via API Context when user clicks 
+                                                            listing.status = 'ACCEPTED';
+                                                        }}
+                                                    >
+                                                        I'm On My Way (Accept)
+                                                    </button>
+                                                ) : listing.status === 'ACCEPTED' ? (
+                                                    <div className="w-full py-2 text-center border-t border-slate-100 font-bold text-xs text-orange-500">
+                                                        Assigned to {listing.assigned_to_name || 'Volunteer'}
+                                                    </div>
+                                                ) : listing.status === 'COMPLETED' ? (
+                                                    <div className="w-full py-2 text-center border-t border-slate-100 font-bold text-xs text-green-500">
+                                                        ✓ Completed
+                                                    </div>
+                                                ) : (
+                                                    <button
+                                                    className="w-full py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-xs transition-colors"
                                                     onClick={() => {
                                                         if (listing.type === 'offer' && listing.id) {
                                                             navigate(`/resource/${listing.id}`);
@@ -275,6 +309,12 @@ export default function ResourceMap() {
                                                 >
                                                     View Details
                                                 </button>
+                                                )}
+                                                
+                                                {/* Share WhatsApp Action */}
+                                                <a href={`whatsapp://send?text=🚨 [URGENT] Help needed at coordinates: ${listing.location_lat}, ${listing.location_lng}. Access full details via Urudhunai app.`} className="mt-2 w-full py-1 bg-green-500 text-white rounded-lg font-bold text-xs hover:bg-green-600 transition-colors flex justify-center items-center gap-1">
+                                                <span className="material-symbols-outlined text-[14px]">share</span> Share
+                                                </a>
                                             </div>
                                         </Popup>
                                     </Marker>

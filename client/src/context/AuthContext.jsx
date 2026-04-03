@@ -1,12 +1,37 @@
-import { createContext, useContext, useState } from 'react';
-import { authService } from '../services/api';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { authService, systemService } from '../services/api';
+import { io } from 'socket.io-client';
 
 const AuthContext = createContext(null);
+const socket = io('http://localhost:5000');
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [adminToken, setAdminToken] = useState(localStorage.getItem('adminToken') || null);
     const [emergencyMode, setEmergencyMode] = useState(false);
+    const [emergencyInfo, setEmergencyInfo] = useState({ title: '', message: '' });
+
+    useEffect(() => {
+        // Fetch initial state
+        systemService.getEmergencyState()
+            .then(res => {
+                setEmergencyMode(res.data.isEmergency);
+                setEmergencyInfo({ title: res.data.title, message: res.data.message });
+            })
+            .catch(err => console.error("Failed to fetch emergency state", err));
+
+        // Listen for real-time toggles
+        socket.on('emergency_mode', (data) => {
+            setEmergencyMode(data.active);
+            if (data.title !== undefined) {
+                setEmergencyInfo({ title: data.title, message: data.message });
+            }
+        });
+
+        return () => {
+            socket.off('emergency_mode');
+        };
+    }, []);
 
     const login = async (credentials) => {
         const res = await authService.login(credentials);
@@ -52,7 +77,9 @@ export function AuthProvider({ children }) {
         loadProfile,
         deleteProfile,
         emergencyMode,
-        setEmergencyMode
+        setEmergencyMode,
+        emergencyInfo,
+        setEmergencyInfo
     };
 
     return (
