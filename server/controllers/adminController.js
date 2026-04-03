@@ -141,21 +141,47 @@ exports.verifyUser = async (req, res, next) => {
 };
 
 // ─── Emergency ──────────────────────────────
-let globalEmergencyState = false;
+exports.getEmergencyState = async (req, res, next) => {
+    try {
+        const [rows] = await db.execute('SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ("is_emergency_active", "emergency_title", "emergency_message")');
+        let isActive = false;
+        let title = '';
+        let message = '';
+        
+        rows.forEach(r => {
+            if (r.setting_key === 'is_emergency_active') isActive = r.setting_value === 'true';
+            if (r.setting_key === 'emergency_title') title = r.setting_value;
+            if (r.setting_key === 'emergency_message') message = r.setting_value;
+        });
 
-exports.getEmergencyState = async (req, res) => {
-    res.json({ isEmergency: globalEmergencyState });
+        res.json({ isEmergency: isActive, title, message });
+    } catch (err) {
+        next(err);
+    }
 };
 
 exports.activateEmergency = async (req, res, next) => {
     try {
-        const { active } = req.body;
-        globalEmergencyState = active;
+        const { active, title, message } = req.body;
+        const activeStr = active ? 'true' : 'false';
+        
+        await db.execute(
+            'INSERT INTO system_settings (setting_key, setting_value) VALUES ("is_emergency_active", ?) ON DUPLICATE KEY UPDATE setting_value = ?',
+            [activeStr, activeStr]
+        );
+
+        if (title !== undefined) {
+            await db.execute('INSERT INTO system_settings (setting_key, setting_value) VALUES ("emergency_title", ?) ON DUPLICATE KEY UPDATE setting_value = ?', [title, title]);
+        }
+        if (message !== undefined) {
+            await db.execute('INSERT INTO system_settings (setting_key, setting_value) VALUES ("emergency_message", ?) ON DUPLICATE KEY UPDATE setting_value = ?', [message, message]);
+        }
+
         const io = req.app.get('io');
         if (io) {
-            io.emit('emergency_mode', { active });
+            io.emit('emergency_mode', { active, title, message });
         }
-        res.json({ message: `Emergency mode ${active ? 'Activated' : 'Disabled'}`, isEmergency: globalEmergencyState });
+        res.json({ message: `Emergency mode ${active ? 'Activated' : 'Disabled'}`, isEmergency: active, title, message });
     } catch (err) {
         next(err);
     }

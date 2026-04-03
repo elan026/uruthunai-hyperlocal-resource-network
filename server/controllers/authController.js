@@ -1,6 +1,6 @@
 const User = require('../models/userModel');
-
 const OtpModel = require('../models/otpModel');
+const jwt = require('jsonwebtoken');
 
 // POST /api/auth/send-otp
 exports.sendOtp = async (req, res, next) => {
@@ -54,7 +54,22 @@ exports.verifyOtp = async (req, res, next) => {
             });
         }
 
-        res.json({ message: 'Verification successful', user });
+        // Generate JWT Ticket
+        const token = jwt.sign(
+            { id: user.id, role: user.role, phone_number: user.phone_number },
+            process.env.JWT_SECRET || 'uruthunai_fallback_secret_key',
+            { expiresIn: '7d' } // Extend to 7 days for disaster scenario reliability
+        );
+
+        // Set HttpOnly, Secure cookie
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+
+        res.json({ message: 'Verification successful', user, token });
     } catch (err) {
         next(err);
     }

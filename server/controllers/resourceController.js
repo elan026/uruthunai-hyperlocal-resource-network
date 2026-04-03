@@ -1,11 +1,20 @@
 const Resource = require('../models/resourceModel');
 const { validateRequiredFields } = require('../utils/helpers');
+const db = require('../config/db');
 
 // GET /api/resources
 exports.getAllResources = async (req, res, next) => {
     try {
+        const [rows] = await db.execute('SELECT setting_value FROM system_settings WHERE setting_key = "is_emergency_active"');
+        const isEmergency = rows.length > 0 ? rows[0].setting_value === 'true' : false;
+
         const { minLat, maxLat, minLng, maxLng } = req.query;
-        const resources = await Resource.findAll({ minLat, maxLat, minLng, maxLng });
+        let resources = await Resource.findAll({ minLat, maxLat, minLng, maxLng });
+
+        if (isEmergency) {
+            resources = resources.filter(r => r.is_emergency || ['Medical', 'Shelter', 'Water'].includes(r.category));
+        }
+
         res.json(resources);
     } catch (err) {
         next(err);
@@ -77,6 +86,33 @@ exports.updateResourceStatus = async (req, res, next) => {
         }
         await Resource.updateStatus(req.params.id, status);
         res.json({ message: 'Resource status updated' });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// POST /api/resources/:id/report
+exports.reportResource = async (req, res, next) => {
+    try {
+        const resourceId = req.params.id;
+        const { reason } = req.body;
+        const reporterId = req.user.id; // from protect middleware
+
+        // Insert report
+        const db = require('../config/db');
+        await db.execute('INSERT INTO reports (resource_id, reported_by, reason) VALUES (?, ?, ?)', [resourceId, reporterId, reason]);
+
+        // Check report count
+        const [rows] = await db.execute('SELECT COUNT(*) as count FROM reports WHERE resource_id = ?', [resourceId]);
+        const reportCount = rows[0].count;
+
+        // Threshold-based auto-hide
+        if (reportCount >= 5) {
+            await db.execute('UPDATE resources SET visibility_status = "hidden" WHERE id = ?', [resourceId]);
+            console.log(`Resource ${resourceId} auto-hidden due to ${reportCount} reports.`);
+        }
+
+        res.json({ message: 'Resource reported successfully' });
     } catch (err) {
         next(err);
     }

@@ -3,7 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { requestService } from '../services/api';
 
 export default function EmergencyDashboard() {
-    const { emergencyMode, setEmergencyMode } = useAuth();
+    const { emergencyMode, emergencyInfo } = useAuth();
     const [requests, setRequests] = useState([]);
 
     useEffect(() => {
@@ -27,8 +27,8 @@ export default function EmergencyDashboard() {
                         <span className="material-symbols-outlined text-4xl">flood</span>
                     </div>
                     <div className="flex-1 text-center md:text-left">
-                        <h2 className="text-xl sm:text-2xl md:text-3xl font-black mb-2">Flooding Alert: Move to higher ground</h2>
-                        <p className="text-white/90 text-sm sm:text-lg">Emergency shelter is now available at <span className="font-bold underline">Adyar Government School</span>. High-priority evacuation for Sector 4 is in progress.</p>
+                        <h2 className="text-xl sm:text-2xl md:text-3xl font-black mb-2">{emergencyInfo?.title || 'System Alert Active'}</h2>
+                        <p className="text-white/90 text-sm sm:text-lg">{emergencyInfo?.message || 'Please follow instructions provided by local authorities.'}</p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3">
                         <button className="px-6 py-3 bg-white text-red-500 font-bold rounded-xl hover:bg-slate-100 transition-colors whitespace-nowrap">View Shelters</button>
@@ -40,7 +40,7 @@ export default function EmergencyDashboard() {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {[
-                    { label: 'Active Requests', value: requests.length || '128', icon: 'priority_high', iconColor: 'text-red-500', trend: '15% from last hour', trendColor: 'text-red-500' },
+                    { label: 'Active Requests', value: requests.length, icon: 'priority_high', iconColor: 'text-red-500', trend: 'Live system count', trendColor: 'text-red-500' },
                     { label: 'Available Volunteers', value: '45', icon: 'person_check', iconColor: 'text-blue-500', trend: 'Sufficient coverage', trendColor: 'text-green-600', trendIcon: 'check_circle' },
                     { label: 'Shelter Capacity', value: '82%', icon: 'home_work', iconColor: 'text-orange-500', trend: 'Near full capacity', trendColor: 'text-orange-500', trendIcon: 'warning' },
                     { label: 'Power Status', value: emergencyMode ? 'OFF' : 'ON', icon: 'bolt', iconColor: 'text-yellow-500', trend: emergencyMode ? 'Grid down in 600020' : 'Grid stable', trendColor: 'text-slate-400', trendIcon: emergencyMode ? 'error' : 'check_circle' },
@@ -62,7 +62,7 @@ export default function EmergencyDashboard() {
             {/* Main Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* High Priority Requests */}
-                <div className="lg:col-span-2 space-y-4">
+                <div className="lg:col-span-2">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-black flex items-center gap-2">
                             <span className="material-symbols-outlined text-red-500">notification_important</span>
@@ -71,81 +71,41 @@ export default function EmergencyDashboard() {
                         <button className="text-sm font-bold text-red-500 hover:underline">View All</button>
                     </div>
 
-                    {/* Request Cards */}
-                    {requests.length > 0 ? requests.slice(0, 3).map((req, i) => (
-                        <div key={req.id} className={`bg-white rounded-2xl p-5 shadow relative overflow-hidden ${i === 0 ? 'border-2 border-red-500 shadow-lg' : 'border-2 border-red-500/40'}`}>
-                            {i === 0 && <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-lg tracking-widest uppercase">Critical</div>}
-                            <div className="flex gap-4">
-                                <div className={`flex-shrink-0 h-12 w-12 rounded-xl ${i === 0 ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'} flex items-center justify-center`}>
-                                    <span className="material-symbols-outlined text-2xl font-bold">{i === 0 ? 'medical_services' : 'water_drop'}</span>
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex justify-between items-start mb-1">
-                                        <h4 className="font-bold text-base sm:text-lg">{req.description?.substring(0, 50) || 'Emergency request'}</h4>
-                                        <span className="text-slate-400 text-xs font-medium">{new Date(req.created_at).toLocaleTimeString()}</span>
-                                    </div>
-                                    <p className="text-slate-600 text-sm mb-4">{req.description || 'Emergency assistance needed in your area.'}</p>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded">{req.category || 'Supply'}</span>
-                                            <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded">{req.urgency_level}</span>
-                                        </div>
-                                        <button className="px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-lg hover:bg-red-600 transition-colors">
-                                            {i === 0 ? 'Assign Team' : 'Dispatch'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )) : (
-                        /* Static fallback */
-                        <>
-                            <div className="bg-white rounded-2xl border-2 border-red-500 p-5 shadow-lg relative overflow-hidden">
-                                <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-lg tracking-widest uppercase">Critical</div>
+                    {/* Request Cards Scroll Container */}
+                    <div className="max-h-[600px] overflow-y-auto pr-2 space-y-4 -mr-2">
+                        {requests.length > 0 ? requests.map((req, i) => (
+                            <div key={req.id || i} className={`bg-white rounded-2xl p-5 shadow relative overflow-hidden ${i === 0 ? 'border-2 border-red-500 shadow-lg' : 'border-2 border-red-500/40'}`}>
+                                {i === 0 && <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-lg tracking-widest uppercase">Critical</div>}
                                 <div className="flex gap-4">
-                                    <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500">
-                                        <span className="material-symbols-outlined text-2xl font-bold">medical_services</span>
+                                    <div className={`flex-shrink-0 h-12 w-12 rounded-xl ${i === 0 ? 'bg-red-500/10 text-red-500' : 'bg-blue-500/10 text-blue-500'} flex items-center justify-center`}>
+                                        <span className="material-symbols-outlined text-2xl font-bold">{i === 0 ? 'medical_services' : 'water_drop'}</span>
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex justify-between items-start mb-1">
-                                            <h4 className="font-bold text-lg">Elderly medical evacuation needed</h4>
-                                            <span className="text-slate-400 text-xs font-medium">2 mins ago</span>
+                                            <h4 className="font-bold text-base sm:text-lg">{req.title_or_description || req.description?.substring(0, 50) || 'Emergency request'}</h4>
+                                            <span className="text-slate-400 text-xs font-medium">{new Date(req.created_at).toLocaleTimeString()}</span>
                                         </div>
-                                        <p className="text-slate-600 text-sm mb-4">Besant Nagar, 4th Cross St. Water level rising. Requires oxygen cylinder support.</p>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex -space-x-2">
-                                                <div className="h-8 w-8 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 text-xs font-bold border-2 border-white">K</div>
-                                                <div className="h-8 w-8 rounded-full bg-emerald-200 flex items-center justify-center text-emerald-700 text-xs font-bold border-2 border-white">A</div>
-                                                <div className="h-8 w-8 rounded-full bg-slate-100 border-2 border-white flex items-center justify-center text-[10px] font-bold">+2</div>
-                                            </div>
-                                            <button className="px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-lg hover:bg-red-600 transition-colors">Assign Team</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="bg-white rounded-2xl border-2 border-red-500/40 p-5 shadow relative">
-                                <div className="flex gap-4">
-                                    <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
-                                        <span className="material-symbols-outlined text-2xl font-bold">water_drop</span>
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex justify-between items-start mb-1">
-                                            <h4 className="font-bold text-lg">Drinking water shortage</h4>
-                                            <span className="text-slate-400 text-xs font-medium">10 mins ago</span>
-                                        </div>
-                                        <p className="text-slate-600 text-sm mb-4">Adyar Community Hall. 50+ people without potable water. Supply requested urgently.</p>
+                                        <p className="text-slate-600 text-sm mb-4">{req.description || 'Emergency assistance needed in your area.'}</p>
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded">Supply</span>
-                                                <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded">Urgent</span>
+                                                <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded">{req.category || 'Supply'}</span>
+                                                <span className="bg-slate-100 text-slate-600 text-[10px] font-bold px-2 py-1 rounded">{req.urgency_level}</span>
                                             </div>
-                                            <button className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg transition-colors">Dispatch</button>
+                                            <button className="px-4 py-2 bg-red-500 text-white text-xs font-bold rounded-lg hover:bg-red-600 transition-colors">
+                                                {i === 0 ? 'Assign Team' : 'Dispatch'}
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </>
-                    )}
+                        )) : (
+                            <div className="bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl p-10 text-center flex flex-col items-center justify-center text-slate-500">
+                                <span className="material-symbols-outlined text-5xl mb-3 text-emerald-500">verified</span>
+                                <h3 className="text-lg font-black text-slate-900 mb-1">No Active Critical Requests</h3>
+                                <p className="text-sm">The community is currently stable. Stay alert for incoming emergency queries.</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Right Sidebar */}

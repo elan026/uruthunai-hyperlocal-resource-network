@@ -23,6 +23,14 @@ import AdminDashboardNew from './pages/admin/AdminDashboard'; // new separate da
 import AdminModeration from './pages/admin/AdminModeration';
 import AdminVerification from './pages/admin/AdminVerification';
 import AdminEmergency from './pages/admin/AdminEmergency';
+
+function EmergencyGuard({ children, fallback = "/emergency" }) {
+  const { emergencyMode, user } = useAuth();
+  if (emergencyMode && user?.role !== 'admin') {
+    return <Navigate to={fallback} replace />;
+  }
+  return children;
+}
 function ProtectedLayout({ children }) {
   const { user, emergencyMode, logout } = useAuth();
   if (!user) return <Navigate to="/login" />; // Redirect to login page instead of "/"
@@ -46,13 +54,13 @@ function AppRoutes() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<AuthPage />} />
       <Route path="/home" element={<ProtectedLayout><PageTransition><ResourceMap /></PageTransition></ProtectedLayout>} />
-      <Route path="/dashboard" element={<ProtectedLayout><PageTransition><Dashboard /></PageTransition></ProtectedLayout>} />
+      <Route path="/dashboard" element={<ProtectedLayout><PageTransition><EmergencyGuard><Dashboard /></EmergencyGuard></PageTransition></ProtectedLayout>} />
       <Route path="/map" element={<Navigate to="/home" />} />
       <Route path="/post-resource" element={<ProtectedLayout><PageTransition><PostResource /></PageTransition></ProtectedLayout>} />
       <Route path="/request-resource" element={<ProtectedLayout><PageTransition><RequestResource /></PageTransition></ProtectedLayout>} />
       <Route path="/resource/:id" element={<ProtectedLayout><PageTransition><ResourceDetail /></PageTransition></ProtectedLayout>} />
       <Route path="/emergency" element={<ProtectedLayout><PageTransition><EmergencyDashboard /></PageTransition></ProtectedLayout>} />
-      <Route path="/volunteers" element={<ProtectedLayout><PageTransition><Volunteers /></PageTransition></ProtectedLayout>} />
+      <Route path="/volunteers" element={<ProtectedLayout><PageTransition><EmergencyGuard><Volunteers /></EmergencyGuard></PageTransition></ProtectedLayout>} />
       <Route path="/alerts" element={<ProtectedLayout><PageTransition><CommunityAlerts /></PageTransition></ProtectedLayout>} />
       <Route path="/profile" element={<ProtectedLayout><PageTransition><Profile /></PageTransition></ProtectedLayout>} />
 

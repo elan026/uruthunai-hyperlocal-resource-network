@@ -5,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { resourceService } from '../services/api';
 
 export default function PostResource() {
-    const { user } = useAuth();
+    const { user, emergencyMode } = useAuth();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         category: 'Medical Supplies',
@@ -147,17 +147,25 @@ export default function PostResource() {
                                 <span className="material-symbols-outlined text-slate-400">location_on</span>
                                 <p className="text-sm font-medium">{user?.area_code || '638052 - Perundurai'}</p>
                             </div>
-                            <div className="h-48 rounded-lg overflow-hidden border border-slate-200 relative bg-slate-100 z-0">
-                                {location && !isLocating ? (
-                                    <MapContainer center={[location.lat, location.lng]} zoom={15} style={{ height: '100%', width: '100%' }} zoomControl={false} dragging={false}>
-                                        <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
-                                        <Circle center={[location.lat, location.lng]} radius={400} pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.2 }} />
-                                    </MapContainer>
+                            <div className={`h-48 rounded-lg overflow-hidden border ${emergencyMode ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-slate-100'} relative z-0 flex flex-col items-center justify-center p-4 text-center`}>
+                                {emergencyMode ? (
+                                    <>
+                                        <span className="material-symbols-outlined text-4xl text-red-400 mb-2">signal_wifi_off</span>
+                                        <p className="text-red-700 font-bold text-sm">Map rendering disabled to save bandwidth.</p>
+                                        <p className="text-red-600/70 text-xs mt-1">Your exact GPS coordinates ({location?.lat?.toFixed(4)}, {location?.lng?.toFixed(4)}) will still be securely attached to your post.</p>
+                                    </>
                                 ) : (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2"></div>
-                                        <span className="text-xs text-slate-500 font-bold">Acquiring GPS Signal...</span>
-                                    </div>
+                                    location && !isLocating ? (
+                                        <MapContainer center={[location.lat, location.lng]} zoom={15} style={{ height: '100%', width: '100%' }} zoomControl={false} dragging={false}>
+                                            <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+                                            <Circle center={[location.lat, location.lng]} radius={400} pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.2 }} />
+                                        </MapContainer>
+                                    ) : (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-2"></div>
+                                            <span className="text-xs text-slate-500 font-bold">Acquiring GPS Signal...</span>
+                                        </div>
+                                    )
                                 )}
                             </div>
                         </div>
@@ -174,58 +182,60 @@ export default function PostResource() {
                         </div>
                     </form>
 
-                    {/* Preview Sidebar */}
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-bold flex items-center gap-2 px-2">
-                            <span className="material-symbols-outlined">visibility</span>
-                            Live Preview
-                        </h3>
-                        <div className="sticky top-0">
-                            <div className="bg-white rounded-xl overflow-hidden shadow-xl border-2 border-primary/30">
-                                <div className="h-32 bg-primary/10 relative flex items-center justify-center">
-                                    <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-primary border border-primary/20">
-                                        Available
-                                    </div>
-                                    <span className="material-symbols-outlined text-primary text-5xl opacity-40">medical_services</span>
-                                </div>
-                                <div className="p-6">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="px-2 py-0.5 bg-slate-100 text-[10px] font-bold rounded text-slate-500 uppercase">{formData.category}</span>
-                                        <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
-                                            <span className="material-symbols-outlined text-[12px]">schedule</span>
-                                            {formData.availability}
-                                        </span>
-                                    </div>
-                                    <h4 className="text-xl font-bold mb-2">{formData.title || 'Resource Title Preview'}</h4>
-                                    <p className="text-sm text-slate-500 mb-6 line-clamp-3">
-                                        {formData.description || 'Your description will appear here as you type. Provide clear details about what you\'re offering and how people can collect it.'}
-                                    </p>
-                                    <div className="flex items-center gap-4 py-4 border-t border-slate-100">
-                                        <div className="size-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
-                                            {user?.name?.charAt(0) || 'U'}
+                    {/* Preview Sidebar - Hidden in Emergency Mode strictly to save DOM/rendering time */}
+                    {!emergencyMode && (
+                        <div className="space-y-6">
+                            <h3 className="text-lg font-bold flex items-center gap-2 px-2">
+                                <span className="material-symbols-outlined">visibility</span>
+                                Live Preview
+                            </h3>
+                            <div className="sticky top-0">
+                                <div className="bg-white rounded-xl overflow-hidden shadow-xl border-2 border-primary/30">
+                                    <div className="h-32 bg-primary/10 relative flex items-center justify-center">
+                                        <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-primary border border-primary/20">
+                                            Available
                                         </div>
-                                        <div>
-                                            <p className="text-xs font-bold leading-none">{user?.name || 'Your Name'}</p>
-                                            <p className="text-[10px] text-slate-400 mt-1">{user?.area_code || 'Your location'}</p>
-                                        </div>
+                                        <span className="material-symbols-outlined text-primary text-5xl opacity-40">medical_services</span>
                                     </div>
-                                    <button className="w-full bg-slate-100 text-slate-400 font-bold py-3 rounded-lg text-sm mt-2" disabled>
-                                        View Details
-                                    </button>
+                                    <div className="p-6">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="px-2 py-0.5 bg-slate-100 text-[10px] font-bold rounded text-slate-500 uppercase">{formData.category}</span>
+                                            <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400">
+                                                <span className="material-symbols-outlined text-[12px]">schedule</span>
+                                                {formData.availability}
+                                            </span>
+                                        </div>
+                                        <h4 className="text-xl font-bold mb-2">{formData.title || 'Resource Title Preview'}</h4>
+                                        <p className="text-sm text-slate-500 mb-6 line-clamp-3">
+                                            {formData.description || 'Your description will appear here as you type. Provide clear details about what you\'re offering and how people can collect it.'}
+                                        </p>
+                                        <div className="flex items-center gap-4 py-4 border-t border-slate-100">
+                                            <div className="size-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">
+                                                {user?.name?.charAt(0) || 'U'}
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-bold leading-none">{user?.name || 'Your Name'}</p>
+                                                <p className="text-[10px] text-slate-400 mt-1">{user?.area_code || 'Your location'}</p>
+                                            </div>
+                                        </div>
+                                        <button className="w-full bg-slate-100 text-slate-400 font-bold py-3 rounded-lg text-sm mt-2" disabled>
+                                            View Details
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="mt-8 p-6 bg-primary/5 rounded-xl border border-primary/10">
-                                <h5 className="text-sm font-bold text-primary mb-2 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-sm">info</span>
-                                    Did you know?
-                                </h5>
-                                <p className="text-xs text-slate-600 leading-relaxed">
-                                    Emergency resources are prioritized for users in active red zones. Ensure the 'Emergency Flag' is only used for life-critical supplies.
-                                </p>
+                                <div className="mt-8 p-6 bg-primary/5 rounded-xl border border-primary/10">
+                                    <h5 className="text-sm font-bold text-primary mb-2 flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-sm">info</span>
+                                        Did you know?
+                                    </h5>
+                                    <p className="text-xs text-slate-600 leading-relaxed">
+                                        Emergency resources are prioritized for users in active red zones. Ensure the 'Emergency Flag' is only used for life-critical supplies.
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>

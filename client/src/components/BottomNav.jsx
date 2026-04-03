@@ -9,12 +9,23 @@ const navItems = [
     { path: '/profile', label: 'Profile', icon: 'person' },
 ];
 
-export default function BottomNav() {
+export default function BottomNav({ emergencyMode }) {
     const location = useLocation();
+
+    let currentNavItems = [...navItems];
+    if (emergencyMode) {
+        currentNavItems = [
+            { path: '/home', label: 'Home', icon: 'map' },
+            { path: '/emergency', label: 'Emergency', icon: 'warning' },
+            { path: '/create', label: 'Create', icon: 'add_circle', isFab: true },
+            { path: '/alerts', label: 'Alerts', icon: 'notifications_active' },
+            { path: '/profile', label: 'Profile', icon: 'person' },
+        ];
+    }
 
     return (
         <nav className="fixed bottom-0 w-full bg-white border-t border-slate-200 pb-safe pt-2 px-2 z-40 md:hidden flex justify-around items-center shadow-[0_-4px_24px_rgba(0,0,0,0.05)]">
-            {navItems.map((item) => {
+            {currentNavItems.map((item) => {
                 const isActive = location.pathname === item.path || (item.path === '/home' && location.pathname === '/map');
                 
                 if (item.isFab) {

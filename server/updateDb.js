@@ -37,6 +37,27 @@ const updateDb = async () => {
         }
 
         try {
+            await pool.query('ALTER TABLE resources ADD COLUMN visibility_status ENUM("visible", "hidden") DEFAULT "visible"');
+            console.log('Added visibility_status to resources table.');
+        } catch (e) {
+            if (e.code !== 'ER_DUP_FIELDNAME' && e.code !== 'ER_BAD_TABLE_ERROR') throw e;
+        }
+
+        try {
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS system_settings (
+                    setting_key VARCHAR(50) PRIMARY KEY,
+                    setting_value VARCHAR(255) NOT NULL,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+                );
+            `);
+            await pool.query(`INSERT IGNORE INTO system_settings (setting_key, setting_value) VALUES ('is_emergency_active', 'false')`);
+            console.log('Created system_settings table.');
+        } catch (e) {
+            console.log('Error creating system_settings table:', e);
+        }
+
+        try {
             console.log('Migrating users table roles and types...');
             // Step 1: Add new columns if they don't exist
             let columnsAdded = false;

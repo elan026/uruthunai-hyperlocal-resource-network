@@ -1,0 +1,9 @@
+function updateTrustScore(user, action) {
+    if (action === 'HELP_DELIVERED') user.trust_score += 5;
+    if (action === 'POST_REPORTED') user.trust_score -= 10;
+    
+    // Confidence levels dictate if posts auto-publish or go to Admin Queue
+    if (user.trust_score >= 80) user.confidence_level = 'HIGH';
+    else if (user.trust_score >= 40) user.confidence_level = 'MEDIUM';
+    else user.confidence_level = 'LOW';
+}

@@ -43,4 +43,16 @@ export const listingService = {
     getNearby: (lat, lng, radiusKm = 5) => api.get(`/listings/nearby?lat=${lat}&lng=${lng}&radius=${radiusKm}`)
 };
 
+// ─── System ──────────────────────────────────
+export const systemService = {
+    getEmergencyState: () => api.get('/system/emergency')
+};
+
+// ─── Admin ───────────────────────────────────
+export const adminService = {
+    setEmergencyState: (active, token) => api.post('/admin/emergency', { active }, {
+        headers: { Authorization: `Bearer ${token}` }
+    })
+};
+
 export default api;
