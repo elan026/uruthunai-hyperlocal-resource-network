@@ -1,0 +1,90 @@
+Make this project fully responsive across all breakpoints using React + Vite + Tailwind CSS. Follow these rules strictly:
+
+── BREAKPOINT SYSTEM ──────────────────────────────
+Use Tailwind's standard breakpoint scale only:
+  xs  → default (no prefix)  — < 640px   (mobile first)
+  sm  → sm:                  — ≥ 640px   (large mobile / small tablet)
+  md  → md:                  — ≥ 768px   (tablet)
+  lg  → lg:                  — ≥ 1024px  (laptop)
+  xl  → xl:                  — ≥ 1280px  (desktop)
+  2xl → 2xl:                 — ≥ 1536px  (wide screen)
+
+Always write mobile-first. Base classes handle mobile;
+prefixed classes progressively enhance for larger screens.
+
+── LAYOUT RULES ────────────────────────────────────
+- Use flex and grid with responsive variants:
+    flex-col → md:flex-row
+    grid-cols-1 → md:grid-cols-2 → lg:grid-cols-3/4
+- Avoid fixed px widths on containers. Prefer:
+    w-full, max-w-screen-xl, mx-auto, px-4 md:px-8
+- Gaps: gap-4 → md:gap-6 → lg:gap-8
+
+── TYPOGRAPHY ──────────────────────────────────────
+- Scale text responsively:
+    text-sm → md:text-base → lg:text-lg
+    text-xl → md:text-2xl → lg:text-4xl  (headings)
+- Never hardcode a single font size for all viewports.
+- Line height: leading-snug on mobile → leading-relaxed on desktop.
+
+── SPACING ─────────────────────────────────────────
+- Padding/margin must scale:
+    p-4 → md:p-6 → lg:p-10
+- Section vertical spacing:
+    py-8 → md:py-12 → lg:py-20
+
+── COMPONENTS ──────────────────────────────────────
+For every component currently built for desktop/laptop view:
+  1. Audit it for overflow, clipping, or fixed-width issues.
+  2. If it breaks below md, recreate or restructure it for mobile.
+  3. Use conditional Tailwind classes — do NOT use separate
+     mobile/desktop component copies unless absolutely necessary.
+  4. Common patterns to handle:
+       Navbar    → hamburger menu on mobile (hidden md:flex / block md:hidden)
+       Tables    → horizontal scroll wrapper or card-list layout on mobile
+       Sidebars  → drawer/sheet on mobile, static on lg+
+       Cards     → stacked single column on mobile, grid on md+
+       Modals    → full-screen on mobile, centered dialog on md+
+       Hero      → stacked text+image on mobile, side-by-side on lg+
+       Forms     → full-width inputs on mobile, grid on md+
+
+── IMAGES & MEDIA ──────────────────────────────────
+- All images: w-full h-auto or use aspect-ratio classes.
+- Use object-cover with fixed height containers responsively.
+- Avoid fixed height on image wrappers without responsive override.
+
+── OVERFLOW & SCROLLING ────────────────────────────
+- No horizontal scroll allowed on any viewport.
+- Detect and fix: overflow-x-hidden on root if needed,
+  but prefer fixing the root cause (wide elements/flex children).
+- Tables and code blocks: wrap with overflow-x-auto.
+
+── TOUCH & INTERACTION ─────────────────────────────
+- Tap targets minimum 44×44px on mobile (use min-h-[44px] min-w-[44px]).
+- Hover-only interactions must have a touch fallback.
+- Spacing between clickable elements: gap-3 minimum on mobile.
+
+── DO NOT ──────────────────────────────────────────
+- Do not use arbitrary px values for breakpoints ([min-width:900px]).
+- Do not use @media queries in component files — use Tailwind prefixes.
+- Do not duplicate components for mobile vs desktop unless layout
+  is structurally incompatible (then use hidden/block toggling).
+- Do not leave any component untouched if it was desktop-only.
+
+── TESTING CHECKLIST ───────────────────────────────
+After changes, verify on:
+  [ ] 375px  — iPhone SE / small Android
+  [ ] 390px  — iPhone 14
+  [ ] 768px  — iPad portrait
+  [ ] 1024px — iPad landscape / small laptop
+  [ ] 1280px — standard desktop
+  [ ] 1536px — wide monitor
+
+── OUTPUT EXPECTATIONS ─────────────────────────────
+- Modify existing component files in-place.
+- Add responsive Tailwind classes alongside existing ones.
+- If a component needs structural changes for mobile,
+  rewrite that component fully.
+- Do not add external CSS files or override Tailwind with
+  custom @media queries unless Tailwind cannot express it.
+- Keep all logic and state unchanged — only layout/styles update.

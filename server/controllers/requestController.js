@@ -33,13 +33,19 @@ exports.getAllRequests = async (req, res, next) => {
 // POST /api/requests
 exports.createRequest = async (req, res, next) => {
     try {
-        const { user_id, category, description, priority } = req.body;
+        const { user_id, category, description, priority, location_lat, location_lng, quantity_needed, is_shelter_needed, is_path_reachable, emergency_type, area_name, location_type } = req.body;
         const missing = validateRequiredFields({ user_id, category, description });
         if (missing) {
             return res.status(400).json({ error: `Missing required field: ${missing}` });
         }
 
         const result = await Request.create(req.body);
+
+        // Audit Trail
+        await db.execute(
+            'INSERT INTO request_activities (request_id, user_id, action) VALUES (?, ?, "POSTED")',
+            [result.id, user_id]
+        );
 
         try {
             const io = req.app.get('io');
@@ -75,22 +81,35 @@ exports.createRequest = async (req, res, next) => {
 exports.updateRequestState = async (req, res, next) => {
     try {
         const { newState, user_id } = req.body; // user_id is the volunteer accepting/completing
-        if (!['OPEN', 'ACCEPTED', 'IN_PROGRESS', 'COMPLETED', 'HIDDEN'].includes(newState)) {
+        if (!['OPEN', 'ACCEPTED', 'ACKNOWLEDGED', 'IN_PROGRESS', 'COMPLETED', 'HIDDEN', 'NOT_RECEIVED'].includes(newState)) {
             return res.status(400).json({ error: 'Invalid state transition.' });
         }
         
         const reqItem = await Request.findById(req.params.id);
         if (!reqItem) return res.status(404).json({error: 'Request not found'});
 
-        await Request.updateState(req.params.id, newState, newState === 'ACCEPTED' ? user_id : reqItem.assigned_to_user_id);
+        const assigningUser = (newState === 'ACCEPTED' || newState === 'ACKNOWLEDGED') ? user_id : reqItem.assigned_to_user_id;
+        await Request.updateState(req.params.id, newState, assigningUser);
+
+        if (newState === 'ACKNOWLEDGED') {
+            await db.execute('UPDATE requests SET acknowledged_at = CURRENT_TIMESTAMP WHERE id = ?', [req.params.id]);
+            await db.execute('INSERT INTO request_activities (request_id, user_id, action) VALUES (?, ?, "ACKNOWLEDGED")', [req.params.id, user_id]);
+        }
 
         if (newState === 'COMPLETED' && reqItem.assigned_to_user_id) {
+            // Log Fulfillment
+            await db.execute('INSERT INTO request_activities (request_id, user_id, action) VALUES (?, ?, "FULFILLED")', [req.params.id, reqItem.assigned_to_user_id]);
+
             // Apply Trust Score Bump (+5)
-            await db.execute('UPDATE users SET trust_score = trust_score + 5 WHERE id = ?', [reqItem.assigned_to_user_id]);
+            await db.execute('UPDATE users SET trust_score = LEAST(100, trust_score + 5) WHERE id = ?', [reqItem.assigned_to_user_id]);
             const [uRows] = await db.execute('SELECT trust_score FROM users WHERE id = ?', [reqItem.assigned_to_user_id]);
             const newScore = uRows[0].trust_score;
             const newConfLevel = updateTrustScoreConfig(newScore);
             await db.execute('UPDATE users SET confidence_level = ? WHERE id = ?', [newConfLevel, reqItem.assigned_to_user_id]);
+        }
+        
+        if (newState === 'NOT_RECEIVED') {
+            await db.execute('INSERT INTO request_activities (request_id, user_id, action) VALUES (?, ?, "FAILED_SLA")', [req.params.id, reqItem.assigned_to_user_id || reqItem.user_id]);
         }
 
         // Emit state change update

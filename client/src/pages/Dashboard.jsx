@@ -8,7 +8,7 @@ import Reveal from '../components/Reveal';
 import { StaggerContainer, StaggerItem } from '../components/StaggerContainer';
 
 export default function Dashboard() {
-    const { user } = useAuth();
+    const { user, hillStationDangerMode } = useAuth();
     const navigate = useNavigate();
     const [resources, setResources] = useState([]);
     const [requests, setRequests] = useState([]);
@@ -40,18 +40,37 @@ export default function Dashboard() {
     ];
 
     return (
-        <div className="p-4 sm:p-6 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 max-w-[1600px] mx-auto">
+        <div className="p-4 md:p-6 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 lg:gap-8 max-w-[1600px] mx-auto">
+            {/* Top Banner for Hill Station Danger Mode */}
+            {hillStationDangerMode && (
+                <div className="lg:col-span-12">
+                    <FadeUp>
+                        <div className="bg-orange-500 text-white rounded-2xl p-4 flex items-center justify-between shadow-lg shadow-orange-500/20">
+                            <div className="flex items-center gap-4">
+                                <div className="h-12 w-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                                    <span className="material-symbols-outlined text-2xl">landscape</span>
+                                </div>
+                                <div>
+                                    <h3 className="font-black text-lg">Hill Station Danger Mode Active</h3>
+                                    <p className="text-sm font-medium text-orange-100">Landslide or extreme weather alert for this zone. Resources and paths may be restricted.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </FadeUp>
+                </div>
+            )}
+
             {/* Left Section (Main) */}
             <div className="lg:col-span-8 space-y-8 lg:space-y-10">
                 <FadeUp y={20}>
                     <div className="flex flex-col gap-1">
-                        <h2 className="text-3xl font-black text-slate-900 tracking-tight">Community Dashboard</h2>
+                        <h2 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">Community Dashboard</h2>
                         <p className="text-slate-500">Real-time resource and request overview for your area.</p>
                     </div>
                 </FadeUp>
 
                 {/* Resource Overview Cards */}
-                <StaggerContainer staggerDelay={0.1} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StaggerContainer staggerDelay={0.1} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     {stats.map((stat, i) => (
                         <StaggerItem key={i} variant="scale">
                             <motion.div
@@ -88,7 +107,7 @@ export default function Dashboard() {
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3 text-rose-600">
                                 <span className="material-symbols-outlined text-2xl icon-bounce">warning</span>
-                                <h3 className="text-xl font-bold">Urgent Emergency Alerts</h3>
+                                <h3 className="text-lg md:text-xl lg:text-2xl font-bold">Urgent Emergency Alerts</h3>
                             </div>
                             <span className="text-xs font-black tracking-widest text-rose-600 bg-rose-100 px-3 py-1.5 rounded-full animate-pulse">2 LIVE</span>
                         </div>
@@ -104,7 +123,7 @@ export default function Dashboard() {
                                             <span className="material-symbols-outlined">{i === 0 ? 'water_damage' : 'electric_bolt'}</span>
                                         </div>
                                         <div className="flex-1 pr-4">
-                                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 mb-1">
+                                            <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-1 mb-1">
                                                 <h4 className="font-bold text-slate-900 group-hover:text-primary transition-colors">{req.title || req.description?.substring(0, 40) || 'Emergency Alert'}</h4>
                                                 <span className="text-xs font-semibold text-slate-400 whitespace-nowrap">{new Date(req.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                             </div>
@@ -154,7 +173,7 @@ export default function Dashboard() {
                 <Reveal delay={0.3}>
                     <section className="space-y-5">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-xl font-bold text-slate-900">Nearby Resources</h3>
+                            <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-slate-900">Nearby Resources</h3>
                             <motion.button
                                 whileHover={{ x: 4 }}
                                 onClick={() => navigate('/map')}
@@ -210,7 +229,7 @@ export default function Dashboard() {
                             <div className="p-2 bg-primary/10 rounded-xl text-primary">
                                 <span className="material-symbols-outlined">campaign</span>
                             </div>
-                            <h3 className="text-lg font-bold">Announcements</h3>
+                            <h3 className="text-base md:text-lg lg:text-xl font-bold">Announcements</h3>
                         </div>
                         <div className="space-y-5">
                             {[
@@ -246,7 +265,7 @@ export default function Dashboard() {
                 <FadeUp delay={0.3}>
                     <section className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-5">
                         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                            <h3 className="text-lg font-bold">Volunteer Activity</h3>
+                            <h3 className="text-base md:text-lg lg:text-xl font-bold">Volunteer Activity</h3>
                             <button className="text-slate-400 hover:text-primary transition-colors hover-scale">
                                 <span className="material-symbols-outlined">more_horiz</span>
                             </button>
@@ -306,7 +325,7 @@ export default function Dashboard() {
                             <div className="p-3 bg-white/10 rounded-2xl w-fit mb-5 backdrop-blur-sm">
                                 <span className="material-symbols-outlined text-2xl">flash_on</span>
                             </div>
-                            <h4 className="text-xl font-black mb-3 text-white">Need Immediate Help?</h4>
+                            <h4 className="text-lg md:text-xl lg:text-2xl font-black mb-3 text-white">Need Immediate Help?</h4>
                             <p className="text-sm font-medium text-slate-300 mb-8 leading-relaxed">Post a request and our verified community volunteers will reach out within minutes.</p>
                             <motion.button
                                 onClick={() => navigate('/request-resource')}

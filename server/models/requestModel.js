@@ -25,12 +25,18 @@ const Request = {
         return rows[0];
     },
 
-    create: async ({ user_id, category, description, priority, location_lat, location_lng }) => {
+    create: async ({ user_id, category, description, priority, location_lat, location_lng, quantity_needed, is_shelter_needed, is_path_reachable, emergency_type, area_name, location_type }) => {
         const [result] = await db.execute(
             `INSERT INTO requests 
-            (user_id, category, description, priority, location_lat, location_lng, status) 
-            VALUES (?, ?, ?, ?, ?, ?, 'OPEN')`,
-            [user_id, category, description, priority || 'LOW', location_lat || null, location_lng || null]
+            (user_id, category, description, priority, location_lat, location_lng, quantity_needed, is_shelter_needed, is_path_reachable, emergency_type, area_name, location_type, status) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN')`,
+            [
+                user_id, category, description, priority || 'LOW', 
+                location_lat || null, location_lng || null, 
+                quantity_needed || null, is_shelter_needed || false, 
+                is_path_reachable !== undefined ? is_path_reachable : true, 
+                emergency_type || null, area_name || null, location_type || 'CITY'
+            ]
         );
         return { id: result.insertId };
     },

@@ -11,6 +11,7 @@ export default function PostResource() {
         category: 'Medical Supplies',
         title: '',
         description: '',
+        quantity: 1,
         availability: 'Next 24 hours',
         emergencyFlag: false
     });
@@ -36,7 +37,7 @@ export default function PostResource() {
         }
     }, []);
 
-    const categories = ['Medical Supplies', 'Emergency Shelter', 'Food & Water', 'Clothing & Bedding', 'Rescue Tools', 'Other'];
+    const categories = ['Medical Supplies', 'Emergency Shelter', 'Food & Water', 'Clothing & Bedding', 'Rescue Tools', 'Fuel Bank', 'Gas Station', 'Other'];
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -46,6 +47,7 @@ export default function PostResource() {
                 category: formData.category,
                 title: formData.title,
                 description: formData.description,
+                quantity: formData.quantity,
                 availability_duration: formData.availability,
                 is_emergency: formData.emergencyFlag,
                 location_lat: location?.lat || 11.3410,
@@ -60,8 +62,30 @@ export default function PostResource() {
         }
     };
 
+    if (user?.user_type === 'resident' && !emergencyMode) {
+        return (
+            <div className="p-4 md:p-8 flex items-center justify-center min-h-[60vh]">
+                <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-lg border border-red-100 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 right-0 h-1.5 bg-red-500"></div>
+                    <span className="material-symbols-outlined text-5xl text-red-400 mb-6 block">block</span>
+                    <h2 className="text-2xl font-black text-slate-900 mb-3">Action Restricted</h2>
+                    <p className="text-slate-600 mb-8 font-medium leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
+                        Residents are only permitted to post new resources when a global <strong className="text-red-500">Emergency Mode</strong> is declared.
+                        During normal operations, only verified Organizations, NGOs, and Volunteers can post to keep the system uncluttered.
+                    </p>
+                    <button
+                        onClick={() => navigate('/home')}
+                        className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition-colors"
+                    >
+                        Return to Dashboard
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="p-4 sm:p-8">
+        <div className="p-4 md:p-8">
             <div className="max-w-6xl mx-auto">
                 <div className="mb-8">
                     <h2 className="text-3xl font-black tracking-tight text-slate-900">Post a New Resource</h2>
@@ -87,9 +111,21 @@ export default function PostResource() {
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Resource Title</label>
                                     <input
                                         type="text"
-                                        placeholder="e.g., 20 Hygiene Kits"
+                                        placeholder="e.g., Hygiene Kits"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        className="w-full bg-slate-50 border-slate-200 rounded-lg p-3 text-sm focus:ring-primary focus:border-primary"
+                                        required
+                                    />
+                                </div>
+                                <div className="col-span-1">
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Quantity</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        placeholder="1"
+                                        value={formData.quantity}
+                                        onChange={(e) => setFormData({ ...formData, quantity: parseInt(e.target.value) || 1 })}
                                         className="w-full bg-slate-50 border-slate-200 rounded-lg p-3 text-sm focus:ring-primary focus:border-primary"
                                         required
                                     />
@@ -171,11 +207,11 @@ export default function PostResource() {
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 border-t border-slate-200 pt-8 pb-4">
-                            <button type="button" className="w-full sm:w-auto px-8 py-4 bg-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-300 transition-all">
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-4 border-t border-slate-200 pt-8 pb-4">
+                            <button type="button" className="w-full md:w-auto px-8 py-4 bg-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-300 transition-all">
                                 Save as Draft
                             </button>
-                            <button type="submit" className="w-full sm:w-auto px-12 py-4 bg-primary text-white font-black rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                            <button type="submit" className="w-full md:w-auto px-12 py-4 bg-primary text-white font-black rounded-xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3">
                                 <span className="material-symbols-outlined">send</span>
                                 Publish Resource
                             </button>

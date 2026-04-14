@@ -68,7 +68,7 @@ export default function CommunityAlerts() {
     };
 
     return (
-        <div className="p-4 sm:p-6 lg:p-10 max-w-5xl mx-auto">
+        <div className="p-4 md:p-6 lg:p-10 max-w-5xl mx-auto">
             {/* Header */}
             <FadeUp>
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-6 border-b border-slate-200">
@@ -135,7 +135,7 @@ export default function CommunityAlerts() {
                                 placeholder="Write a clear, actionable message for the community. Include specific details like locations and timeframes."
                                 value={formData.message}
                                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 sm:px-5 py-3 sm:py-4 text-sm sm:text-base font-medium focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none shadow-inner"
+                                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-4 md:px-5 py-3 md:py-4 text-sm md:text-base font-medium focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all resize-none shadow-inner"
                                 required
                             />
                         </div>
@@ -144,7 +144,7 @@ export default function CommunityAlerts() {
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                                 type="submit"
-                                className="flex items-center justify-center gap-2 w-full sm:w-auto bg-primary text-white font-bold px-10 py-4 rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors"
+                                className="flex items-center justify-center gap-2 w-full md:w-auto bg-primary text-white font-bold px-10 py-4 rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors"
                             >
                                 <span className="material-symbols-outlined text-lg">campaign</span>
                                 Publish Global Alert
@@ -165,7 +165,7 @@ export default function CommunityAlerts() {
                                     <StaggerItem key={alert.id} variant="scale">
                                         <motion.div
                                             whileHover={{ y: -4, boxShadow: '0 20px 40px -10px rgba(0,0,0,0.05)' }}
-                                            className={`p-6 lg:p-8 rounded-3xl border-2 ${style.bg} ${style.border} ${style.ring} flex flex-col sm:flex-row items-start gap-6 transition-all ${!alert.is_active ? 'opacity-70 saturate-[0.8]' : ''}`}
+                                            className={`p-6 lg:p-8 rounded-3xl border-2 ${style.bg} ${style.border} ${style.ring} flex flex-col md:flex-row items-start gap-6 transition-all ${!alert.is_active ? 'opacity-70 saturate-[0.8]' : ''}`}
                                         >
                                             <div className="flex-shrink-0 bg-white p-3.5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center relative">
                                                 {alert.alert_type === 'Critical' && alert.is_active && (
@@ -181,7 +181,7 @@ export default function CommunityAlerts() {
                                                     <span className="text-sm text-slate-500 font-semibold">{timeAgo(alert.created_at)}</span>
                                                     {!alert.is_active && <span className="text-[11px] font-black uppercase tracking-widest text-slate-500 bg-slate-200 px-3 py-1.5 rounded-lg leading-none border border-slate-300">Resolved</span>}
                                                 </div>
-                                                <p className={`text-lg sm:text-xl lg:text-2xl font-semibold leading-relaxed tracking-tight ${style.textColor}`}>{alert.message}</p>
+                                                <p className={`text-lg md:text-xl lg:text-2xl font-semibold leading-relaxed tracking-tight ${style.textColor}`}>{alert.message}</p>
                                                 <div className="mt-5 flex items-center gap-2">
                                                     <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center border border-slate-300">
                                                         <span className="material-symbols-outlined text-[12px] text-slate-500">shield_person</span>
@@ -194,7 +194,7 @@ export default function CommunityAlerts() {
                                                     whileHover={{ scale: 1.05 }}
                                                     whileTap={{ scale: 0.95 }}
                                                     onClick={() => handleDeactivate(alert.id)}
-                                                    className="w-full sm:w-auto text-sm font-bold text-slate-500 hover:text-emerald-700 transition-colors bg-white px-5 py-3 rounded-2xl border-2 border-slate-200 hover:border-emerald-200 hover:bg-emerald-50 flex-shrink-0 flex items-center justify-center gap-2 shadow-sm"
+                                                    className="w-full md:w-auto text-sm font-bold text-slate-500 hover:text-emerald-700 transition-colors bg-white px-5 py-3 rounded-2xl border-2 border-slate-200 hover:border-emerald-200 hover:bg-emerald-50 flex-shrink-0 flex items-center justify-center gap-2 shadow-sm"
                                                 >
                                                     <span className="material-symbols-outlined text-lg">check_circle</span>
                                                     Mark Resolved

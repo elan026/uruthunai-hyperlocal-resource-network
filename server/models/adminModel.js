@@ -113,6 +113,17 @@ class AdminModel {
     }
 
     // ─── Moderation ─────────────────────────────
+    static async getActivityAuditLog() {
+        const [rows] = await db.execute(`
+            SELECT a.id, a.request_id, a.user_id, a.action, a.created_at,
+                   u.name as user_name, u.role, r.category as request_category, r.area_name
+            FROM request_activities a
+            JOIN users u ON a.user_id = u.id
+            JOIN requests r ON a.request_id = r.id
+            ORDER BY a.created_at DESC
+        `);
+        return rows;
+    }
     static async getPendingReports() {
         const [rows] = await db.execute(`
             SELECT r.*, u.name as reported_user_name, u.phone_number as reported_user_phone,
@@ -152,16 +163,25 @@ class AdminModel {
         return rows;
     }
 
-    static async updateVerificationStatus(requestId, status, userId, newType) {
+    static async updateVerificationStatus(requestId, status, userId, newType, method = 'TRUST_SCORE') {
         const conn = await db.getConnection();
         try {
             await conn.beginTransaction();
-            await conn.execute('UPDATE verification_requests SET status = ? WHERE id = ?', [status, requestId]);
-            if (status === 'Approved' && newType) {
-                await conn.execute(
-                    'UPDATE users SET user_type = ?, verification_status = "verified" WHERE id = ?',
-                    [newType, userId]
-                );
+            if (requestId) {
+                await conn.execute('UPDATE verification_requests SET status = ? WHERE id = ?', [status, requestId]);
+            }
+            if (status === 'Approved') {
+                if (newType) {
+                    await conn.execute(
+                        'UPDATE users SET user_type = ?, verification_status = "verified", verification_method = ? WHERE id = ?',
+                        [newType, method, userId]
+                    );
+                } else {
+                    await conn.execute(
+                        'UPDATE users SET verification_status = "verified", verification_method = ? WHERE id = ?',
+                        [method, userId]
+                    );
+                }
             }
             await conn.commit();
             return true;

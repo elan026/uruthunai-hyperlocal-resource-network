@@ -10,7 +10,12 @@ export default function RequestResource() {
     const [formData, setFormData] = useState({
         type: '',
         description: '',
-        urgency: 'Essential'
+        urgency: 'Essential',
+        emergency_type: 'GENERAL',
+        location_type: 'CITY',
+        quantity_needed: 1,
+        is_shelter_needed: false,
+        is_path_reachable: true
     });
     const [location, setLocation] = useState(null);
     const [isLocating, setIsLocating] = useState(true);
@@ -58,7 +63,12 @@ export default function RequestResource() {
                 description: formData.description,
                 urgency_level: formData.urgency,
                 location_lat: location?.lat || 11.3410,
-                location_lng: location?.lng || 77.7172
+                location_lng: location?.lng || 77.7172,
+                emergency_type: formData.emergency_type,
+                location_type: formData.location_type,
+                quantity_needed: formData.quantity_needed,
+                is_shelter_needed: formData.is_shelter_needed,
+                is_path_reachable: formData.is_path_reachable
             };
 
             await requestService.create(dataToSubmit);
@@ -70,7 +80,7 @@ export default function RequestResource() {
     };
 
     return (
-        <div className="p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto w-full grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
+        <div className="p-4 md:p-6 lg:p-10 max-w-7xl mx-auto w-full grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
             {/* Left Side: Form */}
             <div className="xl:col-span-2 space-y-8">
                 <div>
@@ -78,11 +88,11 @@ export default function RequestResource() {
                     <p className="text-slate-500 mt-2">Fill in the details to broadcast an emergency resource request to your nearby community members.</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6 bg-white p-5 sm:p-8 rounded-xl shadow-sm border border-slate-200">
+                <form onSubmit={handleSubmit} className="space-y-6 bg-white p-5 md:p-8 rounded-xl shadow-sm border border-slate-200">
                     {/* Urgency Level */}
                     <div className="space-y-4">
                         <label className="text-sm font-semibold uppercase tracking-wider text-slate-500">Urgency Level</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             {urgencies.map(u => (
                                 <label key={u.level} className="cursor-pointer">
                                     <input
@@ -127,6 +137,80 @@ export default function RequestResource() {
                             <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">expand_more</span>
                         </div>
                     </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Emergency Type */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Emergency Type</label>
+                            <div className="relative">
+                                <select
+                                    value={formData.emergency_type}
+                                    onChange={(e) => setFormData({ ...formData, emergency_type: e.target.value })}
+                                    className="w-full h-14 pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary appearance-none text-slate-900"
+                                >
+                                    <option value="GENERAL">General Emergency</option>
+                                    <option value="FLOOD">Flood</option>
+                                    <option value="EARTHQUAKE">Earthquake</option>
+                                    <option value="FIRE">Fire</option>
+                                </select>
+                                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">expand_more</span>
+                            </div>
+                        </div>
+
+                        {/* Location Type */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700">Location Terrain</label>
+                            <div className="relative">
+                                <select
+                                    value={formData.location_type}
+                                    onChange={(e) => setFormData({ ...formData, location_type: e.target.value })}
+                                    className="w-full h-14 pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary appearance-none text-slate-900"
+                                >
+                                    <option value="CITY">City / Urban</option>
+                                    <option value="RURAL">Rural / Village</option>
+                                    <option value="HILL">Hill Station / Mountain</option>
+                                </select>
+                                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">expand_more</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Conditional Fields */}
+                    {formData.location_type === 'HILL' && (
+                        <div className="p-4 bg-orange-50 border border-orange-100 rounded-lg flex items-center justify-between">
+                            <div>
+                                <h4 className="font-bold text-slate-800 text-sm">Is the path reachable?</h4>
+                                <p className="text-xs text-slate-500">Are roads clear for vehicles to reach you?</p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" className="sr-only peer" checked={formData.is_path_reachable} onChange={(e) => setFormData({ ...formData, is_path_reachable: e.target.checked })} />
+                                <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                            </label>
+                        </div>
+                    )}
+
+                    {formData.emergency_type === 'FLOOD' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-slate-700">Quantity Needed (People)</label>
+                                <input 
+                                    type="number" 
+                                    min="1" 
+                                    value={formData.quantity_needed}
+                                    onChange={(e) => setFormData({ ...formData, quantity_needed: parseInt(e.target.value) || 1 })}
+                                    className="w-full p-3 bg-white border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400"
+                                />
+                            </div>
+                            <div className="flex flex-col justify-center gap-1">
+                                <h4 className="font-bold text-slate-800 text-sm mt-3">Need Immediate Shelter?</h4>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" className="sr-only peer" checked={formData.is_shelter_needed} onChange={(e) => setFormData({ ...formData, is_shelter_needed: e.target.checked })} />
+                                    <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                    <span className="ml-3 text-sm font-medium text-slate-700">{formData.is_shelter_needed ? 'Yes' : 'No'}</span>
+                                </label>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Situation Description */}
                     <div className="space-y-2">

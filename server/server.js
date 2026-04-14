@@ -59,6 +59,32 @@ app.patch('/api/alerts/:id/deactivate', alertController.deactivateAlert);
 // Global Error Handler
 app.use(errorHandler);
 
+// SLA Task Background Job (runs every 10 mins)
+const db = require('./config/db');
+setInterval(async () => {
+    try {
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+        const [rows] = await db.execute(
+            'SELECT id, assigned_to_user_id FROM requests WHERE status = "ACKNOWLEDGED" AND acknowledged_at < ?',
+            [oneHourAgo]
+        );
+        for (const row of rows) {
+            await db.execute('UPDATE requests SET status = "NOT_RECEIVED" WHERE id = ?', [row.id]);
+            await db.execute(
+                'INSERT INTO request_activities (request_id, user_id, action) VALUES (?, ?, "FAILED_SLA")',
+                [row.id, row.assigned_to_user_id]
+            );
+            io.emit('request_status_update', { id: row.id, status: 'NOT_RECEIVED' });
+        }
+        if (rows.length > 0) {
+            console.log(`[SLA Task] Marked ${rows.length} requests as FAILED_SLA.`);
+        }
+    } catch (e) {
+        console.error('[SLA Task] Error running task:', e);
+    }
+}, 10 * 60 * 1000); // 10 mins
+
+
 // Socket config for Area-Based Rooms
 io.on('connection', (socket) => {
   console.log('User connected to socket:', socket.id);

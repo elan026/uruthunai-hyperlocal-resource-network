@@ -10,6 +10,7 @@ export function AuthProvider({ children }) {
     const [adminToken, setAdminToken] = useState(localStorage.getItem('adminToken') || null);
     const [emergencyMode, setEmergencyMode] = useState(false);
     const [emergencyInfo, setEmergencyInfo] = useState({ title: '', message: '' });
+    const [hillStationDangerMode, setHillStationDangerMode] = useState(false);
 
     useEffect(() => {
         // Fetch initial state
@@ -28,10 +29,17 @@ export function AuthProvider({ children }) {
             }
         });
 
+        socket.on('danger_mode_update', (data) => {
+            if (user?.area_code === data.area_code || data.area_code === '638461 - Thalavadi' || data.area_code === '636601 - Yercaud' || data.area_code === '641301 - Valparai') {
+                setHillStationDangerMode(data.is_danger_mode);
+            }
+        });
+
         return () => {
             socket.off('emergency_mode');
+            socket.off('danger_mode_update');
         };
-    }, []);
+    }, [user?.area_code]);
 
     const login = async (credentials) => {
         const res = await authService.login(credentials);
@@ -79,7 +87,9 @@ export function AuthProvider({ children }) {
         emergencyMode,
         setEmergencyMode,
         emergencyInfo,
-        setEmergencyInfo
+        setEmergencyInfo,
+        hillStationDangerMode,
+        setHillStationDangerMode
     };
 
     return (

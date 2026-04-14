@@ -43,14 +43,24 @@ exports.createResource = async (req, res, next) => {
             return res.status(400).json({ error: `Missing required field: ${missing}` });
         }
 
+        const User = require('../models/userModel');
+        const user = await User.findById(user_id);
+        
+        if (user && user.user_type === 'resident') {
+            const [rows] = await db.execute('SELECT setting_value FROM system_settings WHERE setting_key = "is_emergency_active"');
+            const isEmergency = rows.length > 0 ? rows[0].setting_value === 'true' : false;
+            
+            if (!isEmergency) {
+                return res.status(403).json({ error: 'Residents can only post resources during an active Emergency Mode.' });
+            }
+        }
+
         const result = await Resource.create(req.body);
 
         // Emit real-time update with user info (fire-and-forget, never crash)
         try {
             const io = req.app.get('io');
             if (io && req.body.location_lat && req.body.location_lng) {
-                const User = require('../models/userModel');
-                const user = await User.findById(user_id);
                 const lat = parseFloat((parseFloat(req.body.location_lat) + (Math.random() - 0.5) * 0.001).toFixed(4));
                 const lng = parseFloat((parseFloat(req.body.location_lng) + (Math.random() - 0.5) * 0.001).toFixed(4));
 
@@ -64,6 +74,8 @@ exports.createResource = async (req, res, next) => {
                     location_lng: lng,
                     user_name: user?.name || 'Community Member',
                     status: 'Available',
+                    quantity: req.body.quantity || null,
+                    is_available: req.body.is_available !== undefined ? req.body.is_available : true,
                     created_at: new Date().toISOString()
                 });
             }
@@ -81,10 +93,17 @@ exports.createResource = async (req, res, next) => {
 exports.updateResourceStatus = async (req, res, next) => {
     try {
         const { status } = req.body;
-        if (!['Available', 'Claimed', 'Closed'].includes(status)) {
-            return res.status(400).json({ error: 'Invalid status. Must be Available, Claimed, or Closed.' });
+        if (!['Available', 'Claimed', 'Closed', 'Unavailable', 'NOT_AVAILABLE'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status. Must be Available, Claimed, Closed, or Unavailable.' });
         }
         await Resource.updateStatus(req.params.id, status);
+        
+        // Let's also sync is_available
+        if (status === 'Closed' || status === 'Unavailable' || status === 'NOT_AVAILABLE') {
+            await db.execute('UPDATE resources SET is_available = FALSE WHERE id = ?', [req.params.id]);
+        } else if (status === 'Available') {
+            await db.execute('UPDATE resources SET is_available = TRUE WHERE id = ?', [req.params.id]);
+        }
         res.json({ message: 'Resource status updated' });
     } catch (err) {
         next(err);
@@ -113,6 +132,56 @@ exports.reportResource = async (req, res, next) => {
         }
 
         res.json({ message: 'Resource reported successfully' });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// PATCH /api/resources/:id/decrement
+exports.decrementResourceQuantity = async (req, res, next) => {
+    try {
+        const { amount } = req.body;
+        const decrementAmount = amount || 1;
+        
+        const [rows] = await db.execute('SELECT quantity, is_available, user_id, title FROM resources WHERE id = ?', [req.params.id]);
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'Resource not found' });
+        }
+        
+        let { quantity, is_available, user_id, title } = rows[0];
+        
+        // Prevent logic to fail if quantity is null (e.g., unlimited or unstructured)
+        if (quantity !== null && quantity !== undefined) {
+            let newQuantity = Math.max(0, quantity - decrementAmount);
+            let newStatus = is_available;
+            
+            // Auto Turn OFF logic
+            if (newQuantity === 0 && is_available) {
+                newStatus = false;
+                console.log(`Resource Exhausted: ID ${req.params.id}. Notifying poster ${user_id}.`);
+                
+                // Real-time notification to the poster
+                const io = req.app.get('io');
+                if (io) {
+                    io.emit('notify_exhausted', {
+                        user_id: user_id,
+                        message: `Your resource "${title}" has been exhausted and marked as Not Available.`
+                    });
+                }
+            }
+            
+            await db.execute('UPDATE resources SET quantity = ?, is_available = ?, status = ? WHERE id = ?', [
+                newQuantity, 
+                newStatus, 
+                newStatus ? 'Available' : 'Unavailable', 
+                req.params.id
+            ]);
+            
+            return res.json({ message: 'Quantity decremented', newQuantity, is_available: newStatus });
+        } else {
+            // For resources without explicit quantity, just return
+            return res.json({ message: 'No explicit quantity to decrement' });
+        }
     } catch (err) {
         next(err);
     }

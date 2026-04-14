@@ -27,10 +27,10 @@ export default function EmergencyDashboard() {
                         <span className="material-symbols-outlined text-4xl">flood</span>
                     </div>
                     <div className="flex-1 text-center md:text-left">
-                        <h2 className="text-xl sm:text-2xl md:text-3xl font-black mb-2">{emergencyInfo?.title || 'System Alert Active'}</h2>
-                        <p className="text-white/90 text-sm sm:text-lg">{emergencyInfo?.message || 'Please follow instructions provided by local authorities.'}</p>
+                        <h2 className="text-xl md:text-2xl lg:text-3xl font-black mb-2">{emergencyInfo?.title || 'System Alert Active'}</h2>
+                        <p className="text-white/90 text-sm md:text-base lg:text-lg">{emergencyInfo?.message || 'Please follow instructions provided by local authorities.'}</p>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex flex-col md:flex-row gap-3">
                         <button className="px-6 py-3 bg-white text-red-500 font-bold rounded-xl hover:bg-slate-100 transition-colors whitespace-nowrap">View Shelters</button>
                         <button className="px-6 py-3 bg-red-600 border-2 border-white/30 text-white font-bold rounded-xl hover:bg-red-700 transition-colors whitespace-nowrap">Broadcast Info</button>
                     </div>
@@ -38,7 +38,7 @@ export default function EmergencyDashboard() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 {[
                     { label: 'Active Requests', value: requests.length, icon: 'priority_high', iconColor: 'text-red-500', trend: 'Live system count', trendColor: 'text-red-500' },
                     { label: 'Available Volunteers', value: '45', icon: 'person_check', iconColor: 'text-blue-500', trend: 'Sufficient coverage', trendColor: 'text-green-600', trendIcon: 'check_circle' },
@@ -82,7 +82,7 @@ export default function EmergencyDashboard() {
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex justify-between items-start mb-1">
-                                            <h4 className="font-bold text-base sm:text-lg">{req.title_or_description || req.description?.substring(0, 50) || 'Emergency request'}</h4>
+                                            <h4 className="font-bold text-base md:text-lg">{req.title_or_description || req.description?.substring(0, 50) || 'Emergency request'}</h4>
                                             <span className="text-slate-400 text-xs font-medium">{new Date(req.created_at).toLocaleTimeString()}</span>
                                         </div>
                                         <p className="text-slate-600 text-sm mb-4">{req.description || 'Emergency assistance needed in your area.'}</p>

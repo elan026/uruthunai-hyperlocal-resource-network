@@ -1,0 +1,470 @@
+================================================================
+            URUTHUNAI  — FEATURE UPDATE DOCUMENTATION
+          Handwritten Notes → Structured Specification
+================================================================
+Version : 1.1
+Date    : April 14, 2026
+Status  : Completed Implementation
+================================================================
+
+
+----------------------------------------------------------------
+TABLE OF CONTENTS
+----------------------------------------------------------------
+  1. Activity Exchange & Admin Activity Tracking
+  2. Resident Login & Map Features
+  3. Map Color & Pin System
+  4. Hill Station Danger Mode
+  5. Search Feature
+  6. Request Flow (Normal Mode)
+  7. Request Flow (Emergency Mode)
+  8. Resource Posting (Normal Mode)
+  9. Resource Posting (Emergency Mode)
+  10. Directing Resources (Fuel Bank & Gas Station)
+  11. Admin Login & Verification System
+  12. Emergency Mode — Acknowledgement Flow
+  13. SLA Report & "Not Received" Handling
+----------------------------------------------------------------
+
+
+================================================================
+1. ACTIVITY EXCHANGE & ADMIN ACTIVITY TRACKING
+================================================================
+
+DESCRIPTION:
+  Every need/resource exchange on the platform must be tracked
+  and made visible to the Admin as a controlling authority.
+
+RULES:
+  - Once a resident posts a need, the activity (full lifecycle)
+    must be logged and accessible to the Admin.
+  - Admin must be able to view who posted, who acknowledged,
+    who fulfilled, and who failed at each step.
+  - This log must be filterable by:
+      > Area / PIN Code
+      > Date & Time
+      > Role (Resident / Volunteer / NGO / Organization)
+      > Status (Pending / Acknowledged / Completed / Not Received)
+
+ADMIN VIEW:
+  - Dedicated "Activity Log" tab in the Admin Dashboard.
+  - Each log entry shows:
+      > Request ID
+      > Posted by (Resident name + area)
+      > Need type & quantity
+      > Acknowledged by (Volunteer / Org name)
+      > Acknowledgement timestamp
+      > Fulfillment status
+      > SLA breach (Yes / No)
+
+
+================================================================
+2. RESIDENT LOGIN & MAP FEATURES
+================================================================
+
+AREA DETECTION ON LOGIN:
+  - On login, the system must detect or prompt the user's
+    PIN code and display the area name.
+  - Display format on home screen:
+      Example → "638001 – Erode City"
+  - The map must default to the user's detected area.
+
+SUPPORTED AREAS (Current Scope):
+  - Erode
+  - Salem
+  - Coimbatore
+  - Hill Station zones (specified separately — see Section 4)
+
+MAP SUMMARY BADGES:
+  - Show live count on the map UI:
+      > Needs Count  : [N]
+      > Offers Count : [N]
+  - These counts update in real-time via Socket.io.
+
+
+================================================================
+3. MAP COLOR & PIN SYSTEM
+================================================================
+
+EXISTING PIN COLORS (Already in System — Confirm Intact):
+  - Resident Need         →  RED
+  - Resident Offer        →  GREEN
+  - Volunteer Offer       →  ORANGE
+  - Organization Offer    →  YELLOW
+
+NEW PIN TYPES TO ADD:
+  - Fuel Bank             →  VIOLET
+  - Gas Station           →  BROWN
+
+PIN SHAPE ACCESSIBILITY RULE:
+  - Need / Crisis         →  Triangle shape
+  - Resource / Offer      →  Circle shape
+  - Request               →  Square shape
+  (Shapes ensure colorblind users can distinguish pins)
+
+LIVE STATUS ON NEW PINS:
+  - Fuel Bank and Gas Station pins must display:
+      > "Available" (active)
+      > "Not Available" (greyed out / strikethrough)
+  - Status updates in real-time.
+
+
+================================================================
+4. HILL STATION DANGER MODE
+================================================================
+
+TRIGGER:
+  - Admin flags a hill station area as "In Danger."
+
+AUTOMATIC ACTIONS ON TRIGGER:
+  - Alert all Volunteers in that hill station area.
+  - Alert all Organizations / NGOs in that hill station area.
+  - Display a TRIANGLE WARNING ICON (△) on the map
+    over the affected hill station zone.
+
+VISUAL ON MAP:
+  - The △ icon overlays the hill station area marker.
+  - Colour of △ icon: RED (critical danger).
+  - Persist until Admin manually clears the danger flag.
+
+
+================================================================
+5. SEARCH FEATURE
+================================================================
+
+DUAL SEARCH BAR:
+  - "Search for Needs"       (finds active need requests)
+  - "Search for Resources"   (finds available resource offers)
+
+SEARCHABLE CATEGORIES:
+  1. Water
+  2. Clothes
+  3. Food
+  4. Medical
+  5. Power
+  6. Shelter
+
+BEHAVIOUR:
+  - Search is scoped to the user's current area by default.
+  - Results appear as map pins + list view.
+  - Results are real-time (Socket.io powered).
+
+
+================================================================
+6. REQUEST FLOW — NORMAL MODE
+================================================================
+
+WHO CAN REQUEST:
+  - Residents (Rural, Hill Station, City)
+
+FORM FIELDS (Common for All Location Types):
+  1. What is needed?
+     (Category: Water / Clothes / Food / Medical / Power / Shelter)
+  2. How much is needed?
+     (Quantity or description)
+  3. Situation Level:
+     - Critical  → SLA: 24 Hours
+     - Essential → SLA: 2 Days (48 Hours Max)
+
+POST-SUBMISSION AUTO-ACTIONS:
+  - Automatically alert:
+      > Nearby Organizations
+      > Relief Camps
+      > NGOs
+      > Volunteers
+  - Drop a RED pin on the map at the request location.
+  - Add to Needs Count on the map badge.
+
+
+================================================================
+7. REQUEST FLOW — EMERGENCY MODE
+================================================================
+
+WHO CAN REQUEST:
+  - Residents — must first select their location type:
+      > Rural
+      > Hill Station
+      > City
+
+---------------------------------------
+IF RURAL:
+---------------------------------------
+  1. What is the emergency?
+  2. What is needed?
+  3. Which area?
+  4. How much is needed?
+  5. Situation: [Critical] (locked to Critical in Emergency Mode)
+  6. Is shelter needed? (Yes / No)
+
+---------------------------------------
+IF HILL STATION:
+---------------------------------------
+  1. What is the emergency?
+  2. What is needed?
+  3. Which area?
+  4. How much is needed?
+  5. Situation: [Critical]
+  6. Is there any path to reach you? (Yes / No / Describe)
+  7. Is shelter needed? (Yes / No)
+
+---------------------------------------
+IF CITY:
+---------------------------------------
+  1. What is the emergency?
+  2. What is needed?
+  3. Which area?
+  4. How much is needed?
+  5. Situation: [Critical]
+  6. Is there any path to reach you? (Yes / No / Describe)
+  7. Is shelter needed? (Yes / No)
+
+POST-SUBMISSION AUTO-ACTIONS (Emergency Mode):
+  - Immediately alert all Organizations, NGOs, Volunteers
+    in the affected area.
+  - Override feed for recipients — shows as top-priority alert.
+  - Drop RED pin with △ overlay on map (Emergency tag).
+
+
+================================================================
+8. RESOURCE POSTING — NORMAL MODE
+================================================================
+
+WHO CAN POST:
+  - Organizations
+  - Volunteers
+  - NGOs
+
+FORM FIELDS:
+  1. Turn ON Availability toggle  [✓]
+  2. Add Resource Type
+     (Water / Clothes / Food / Medical / Power / Shelter /
+      Fuel Bank / Gas Station / Other)
+  3. Add Resource Name
+     (e.g., "25L Water Cans", "Paracetamol Strips")
+  4. Mention Quantity
+     - Enter number  OR  mark "Have / Not Available"
+  5. Auto Turn OFF:
+     - When quantity reaches 0, automatically toggle
+       availability to OFF  [✗]
+     - Notify poster: "Your resource has been exhausted."
+
+MAP BEHAVIOUR:
+  - Active resource post → GREEN/ORANGE/YELLOW pin (by role)
+  - Exhausted resource   → Pin greyed out / removed
+
+
+================================================================
+9. RESOURCE POSTING — EMERGENCY MODE
+================================================================
+
+WHO CAN POST:
+  - Organizations
+  - Volunteers
+  - NGOs
+  - Residents (new addition in Emergency Mode only)
+
+ADDITIONAL STEP AT START:
+  - System automatically sends alert to all Organizations
+    to turn ON their availability.
+  - Alert message: "Emergency active in your area.
+    Please turn on resource availability immediately."
+
+FORM FIELDS (Same as Normal Mode):
+  1. Turn ON Availability  [✓]
+  2. Add Resource Type
+  3. Add Resource Name
+  4. Mention Quantity / Have or Not
+  5. Auto Turn OFF when quantity exhausted  [✗]
+
+DIFFERENCE FROM NORMAL MODE:
+  - Residents can also post resources (not just orgs/volunteers).
+  - Posts are flagged as "Emergency Resource" on the map.
+  - Priority ordering: Emergency resources appear at top
+    of all search results and map filters.
+
+
+================================================================
+10. DIRECTING RESOURCES — FUEL BANK & GAS STATION
+================================================================
+
+PURPOSE:
+  - Help residents and volunteers locate fuel and gas
+    during emergencies when transport is critical.
+
+MAP DISPLAY:
+  - Fuel Bank    → VIOLET pin
+  - Gas Station  → BROWN pin
+
+DATA FIELDS FOR EACH LOCATION:
+  1. Name of fuel bank / gas station
+  2. Address / GPS coordinates
+  3. Live Availability Status:
+       > Available     (shown in active colour)
+       > Not Available (greyed out)
+  4. Last updated timestamp
+
+UPDATE MECHANISM:
+  - Owner / Admin can update availability in real-time.
+  - Socket.io pushes live status change to all connected users.
+
+SEARCH INTEGRATION:
+  - "Fuel Bank" and "Gas Station" appear as
+    searchable categories in the resource search bar.
+
+
+================================================================
+11. ADMIN LOGIN & VERIFICATION SYSTEM
+================================================================
+
+ADMIN FEATURES:
+  1. Map Feature (same as resident map + admin overlays)
+  2. Verify the following user types:
+       - Residents
+       - Volunteers
+       - Organizations
+       - NGOs
+
+VERIFIED BADGE:
+  - Once verified, a SPECIFIED VERIFIED SYMBOL is displayed:
+       > On their profile
+       > On all their posts and resource listings
+       > On their map pin (small badge overlay)
+
+VERIFICATION METHODS:
+  METHOD 1 — Trust Score:
+    - Automatically computed based on:
+        > Number of successful aid interactions
+        > Community feedback / ratings
+        > History of fulfilled requests
+    - Threshold for verified status: defined by Admin
+
+  METHOD 2 — Verify by Call:
+    - Admin manually calls the entity.
+    - Admin marks as "Verified by Call" in the dashboard.
+    - This overrides or supplements the trust score.
+
+VERIFICATION STATES:
+  - Unverified   → No badge
+  - Pending      → Clock icon
+  - Verified     → Verified symbol (✓ badge)
+  - Rejected     → Marked rejected, cannot reapply for 30 days
+
+
+================================================================
+12. EMERGENCY MODE — ACKNOWLEDGEMENT FLOW
+================================================================
+
+TRIGGER:
+  - A resident posts a need (Normal or Emergency Mode).
+
+STEP-BY-STEP FLOW:
+
+  STEP 1 — Need Posted:
+    - Need appears on map (RED pin).
+    - All nearby Volunteers and Organizations are notified.
+
+  STEP 2 — Acknowledgement:
+    - Volunteer or Organization views the need.
+    - They tap "Acknowledge" to claim the request.
+    - Only ONE entity can acknowledge at a time (first-come).
+    - Acknowledgement is logged with timestamp.
+
+  STEP 3 — SLA Timer Starts:
+    - 1-hour countdown begins from acknowledgement time.
+    - Resident is notified: "[Name] has acknowledged your need."
+
+  STEP 4 — Fulfillment:
+    - Acknowledging party marks: "Need Fulfilled."
+    - Status updates to: COMPLETED.
+    - Resident confirms receipt (optional).
+
+  STEP 5 — Activity logged in Admin Dashboard.
+
+
+================================================================
+13. SLA REPORT & "NOT RECEIVED" HANDLING
+================================================================
+
+CONDITION:
+  - If the need is NOT fulfilled within 1 hour after
+    acknowledgement → system auto-triggers report.
+
+AUTO-ACTIONS ON SLA BREACH:
+  1. Status changes to: "NOT RECEIVED"
+  2. Resident is notified: "Your need was not fulfilled.
+     We are reassigning it."
+  3. Request is re-opened for other volunteers/orgs to claim.
+  4. Breach is logged in the Activity Log.
+
+ADMIN ACTIONS AVAILABLE:
+  - Admin can VIEW all "Not Received" cases.
+  - Admin can REMOVE (blacklist) the entity that
+    acknowledged but failed to fulfill:
+      > Volunteer removed from active volunteer list.
+      > Organization flagged in admin panel.
+      > Trust Score penalized automatically.
+  - Admin can MANUALLY REASSIGN the request to
+    a specific volunteer or organization.
+
+SLA REFERENCE TABLE:
+  ┌─────────────────┬──────────────────┬─────────────────────┐
+  │ Situation       │ SLA Duration     │ On Breach           │
+  ├─────────────────┼──────────────────┼─────────────────────┤
+  │ Critical        │ 1 Hour           │ Not Received +      │
+  │                 │                  │ Reassign            │
+  ├─────────────────┼──────────────────┼─────────────────────┤
+  │ Essential       │ 6 to 12 Hours    │ Not Received +      │
+  │                 │                  │ Reassign            │
+  ├─────────────────┼──────────────────┼─────────────────────┤
+  │ Emergency Mode  │ 1 Hour (fixed)   │ Not Received +      │
+  │ (All types)     │                  │ Admin Alert         │
+  └─────────────────┴──────────────────┴─────────────────────┘
+
+
+================================================================
+FEATURES ALREADY IN SYSTEM (No Change Needed)
+================================================================
+  [✓] OTP-based mobile login (JWT auth)
+  [✓] Basic map with RED/GREEN/ORANGE/YELLOW pin colors
+  [✓] Emergency Mode toggle (Admin only)
+  [✓] Request lifecycle: Created → Acknowledged →
+        In Progress → Completed → Not Received
+  [✓] Trust score system (basic)
+  [✓] Admin moderation queue
+  [✓] Role-based access: Resident, Volunteer, NGO, Admin
+  [✓] Socket.io real-time updates
+  [✓] SLA: Critical = 1hr, Essential = 6-12hrs
+  [✓] Alert feed with Info/Warning/Critical/Resolved tiers
+
+
+================================================================
+FEATURES TO ADD / UPDATE (Implementation Required)
+================================================================
+  [ ] Area-based login with PIN code display
+  [ ] Multi-area map scoping (Erode, Salem, Coimbatore)
+  [ ] Needs Count + Offers Count badges on map
+  [ ] Fuel Bank pin (Violet) with live availability
+  [ ] Gas Station pin (Brown) with live availability
+  [ ] Hill Station Danger Mode with △ icon
+  [ ] Auto-alert volunteers & NGOs on hill danger trigger
+  [ ] Dual search bar (Needs + Resources)
+  [ ] 6-category search filter
+  [ ] Adaptive request form (Rural / Hill / City fields)
+  [ ] Emergency Mode adaptive form by location type
+  [ ] Resource posting by Residents in Emergency Mode
+  [ ] Auto Turn OFF when resource quantity = 0
+  [ ] Verify by Call option in Admin dashboard
+  [ ] Verified symbol/badge on profiles and map pins
+  [ ] Activity Exchange Log for Admin
+  [ ] 1-hour SLA timer post-acknowledgement
+  [ ] Auto "Not Received" on SLA breach
+  [ ] Admin ability to remove/blacklist failed acknowledger
+  [ ] Admin manual reassignment of breached requests
+
+
+================================================================
+END OF DOCUMENT
+================================================================
+Uruthunai — Because in times of crisis,
+the person next door is your first line of defense.
+================================================================

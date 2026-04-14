@@ -3,7 +3,7 @@ const db = require('../config/db');
 const Resource = {
     findAll: async ({ minLat, maxLat, minLng, maxLng } = {}) => {
         let query = `
-            SELECT r.*, u.name as provider_name, u.role as provider_role, u.trust_score as provider_trust_score 
+            SELECT r.*, u.name as provider_name, u.role as provider_role, u.trust_score as provider_trust_score, u.verification_status 
             FROM resources r 
             JOIN users u ON r.user_id = u.id 
             WHERE r.visibility_status = 'visible'
@@ -23,7 +23,7 @@ const Resource = {
 
     findById: async (id) => {
         const [rows] = await db.execute(`
-            SELECT r.*, u.name as provider_name, u.role as provider_role, u.trust_score as provider_trust_score 
+            SELECT r.*, u.name as provider_name, u.role as provider_role, u.trust_score as provider_trust_score, u.verification_status 
             FROM resources r 
             JOIN users u ON r.user_id = u.id 
             WHERE r.id = ?
@@ -31,12 +31,12 @@ const Resource = {
         return rows[0] || null;
     },
 
-    create: async ({ user_id, category, title, description, availability_duration, is_emergency, location_lat, location_lng }) => {
+    create: async ({ user_id, category, title, description, availability_duration, is_emergency, location_lat, location_lng, quantity, is_available }) => {
         const [result] = await db.execute(
             `INSERT INTO resources 
-            (user_id, category, title, description, availability_duration, is_emergency, location_lat, location_lng) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [user_id, category, title, description || '', availability_duration || '', is_emergency || false, location_lat || null, location_lng || null]
+            (user_id, category, title, description, availability_duration, is_emergency, location_lat, location_lng, quantity, is_available) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [user_id, category, title, description || '', availability_duration || '', is_emergency || false, location_lat || null, location_lng || null, quantity || null, is_available !== undefined ? is_available : true]
         );
         return { id: result.insertId };
     },

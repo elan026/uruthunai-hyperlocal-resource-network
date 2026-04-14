@@ -10,6 +10,7 @@ export default function AdminDashboard() {
     const [stats, setStats] = useState(null);
     const [users, setUsers] = useState([]);
     const [activity, setActivity] = useState([]);
+    const [auditLog, setAuditLog] = useState([]);
     const [health, setHealth] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activePanel, setActivePanel] = useState('overview');
@@ -27,16 +28,18 @@ export default function AdminDashboard() {
         const load = async () => {
             setLoading(true);
             try {
-                const [statsRes, usersRes, actRes, healthRes] = await Promise.all([
+                const [statsRes, usersRes, actRes, healthRes, auditRes] = await Promise.all([
                     axios.get(`${API}/dashboard`, config),
                     axios.get(`${API}/users`, config),
                     axios.get(`${API}/activity`, config),
                     axios.get(`${API}/health`, config),
+                    axios.get(`${API}/audit-log`, config),
                 ]);
                 setStats(statsRes.data);
                 setUsers(usersRes.data);
                 setActivity(actRes.data);
                 setHealth(healthRes.data);
+                setAuditLog(auditRes.data);
             } catch (e) {
                 console.error('Admin fetch failed', e);
             } finally {
@@ -81,6 +84,18 @@ export default function AdminDashboard() {
             refresh();
             if (selectedUser === userId) loadUserDetail(userId);
         } catch (e) { console.error(e); }
+    };
+
+    const handleReassign = async (requestId) => {
+        const newVolunteerId = window.prompt("Enter the User ID of the new volunteer to reassign to:");
+        if (!newVolunteerId) return;
+        try {
+            await axios.patch(`${API}/requests/${requestId}/reassign`, { new_user_id: parseInt(newVolunteerId) }, config);
+            refresh();
+        } catch(e) {
+            console.error(e);
+            alert("Error reassigning request");
+        }
     };
 
     const filteredUsers = users.filter(u =>
@@ -330,7 +345,7 @@ export default function AdminDashboard() {
                                     </div>
                                     <div className="p-4 space-y-4 max-h-[calc(100vh-300px)] overflow-y-auto">
                                         {/* Summary */}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                                             <div className="bg-slate-50 p-3 rounded-lg"><span className="text-slate-400 block text-[10px] font-bold uppercase mb-1">Phone</span>{userDetail.phone_number}</div>
                                             <div className="bg-slate-50 p-3 rounded-lg"><span className="text-slate-400 block text-[10px] font-bold uppercase mb-1">Area</span>{userDetail.area_code || '—'}</div>
                                             <div className="bg-slate-50 p-3 rounded-lg"><span className="text-slate-400 block text-[10px] font-bold uppercase mb-1">Type</span>{userDetail.user_type}</div>
@@ -404,48 +419,75 @@ export default function AdminDashboard() {
                 {/* ═══════════ ACTIVITY LOG ═══════════ */}
                 {activePanel === 'activity' && (
                     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-                        <div className="px-4 py-3 border-b border-slate-100">
-                            <h3 className="text-sm font-bold text-slate-900">Full Activity Log</h3>
-                            <p className="text-[10px] text-slate-500">Last 50 events across resources, requests, and reports.</p>
+                        <div className="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-900">Advanced Admin Activity Log</h3>
+                                <p className="text-[10px] text-slate-500">Tracking SLAs, Swaps, and Full Request Lifecycle.</p>
+                            </div>
                         </div>
                         <div className="overflow-x-auto max-h-[calc(100vh-260px)] overflow-y-auto">
                             <table className="w-full text-xs">
-                                <thead className="sticky top-0 bg-slate-50 z-10">
+                                <thead className="sticky top-0 bg-slate-100 z-10 border-b border-slate-200">
                                     <tr className="text-left">
-                                        <th className="px-4 py-2 font-bold text-slate-500 uppercase tracking-wider w-20">Type</th>
-                                        <th className="px-4 py-2 font-bold text-slate-500 uppercase tracking-wider">Detail</th>
-                                        <th className="px-4 py-2 font-bold text-slate-500 uppercase tracking-wider">Category</th>
-                                        <th className="px-4 py-2 font-bold text-slate-500 uppercase tracking-wider">User</th>
-                                        <th className="px-4 py-2 font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                                        <th className="px-4 py-2 font-bold text-slate-500 uppercase tracking-wider">Time</th>
+                                        <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Time</th>
+                                        <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Req ID</th>
+                                        <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">User</th>
+                                        <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Action</th>
+                                        <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Category</th>
+                                        <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider text-right">Admin Tools</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {activity.map((a, i) => (
-                                        <tr key={i} className="border-t border-slate-50 hover:bg-slate-50/50">
-                                            <td className="px-4 py-2.5">
-                                                <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${a.event_type === 'resource' ? 'bg-emerald-100 text-emerald-700' :
-                                                    a.event_type === 'request' ? 'bg-amber-100 text-amber-700' :
-                                                        'bg-red-100 text-red-700'
-                                                    }`}>{a.event_type}</span>
+                                    {auditLog.map((log, i) => {
+                                        const isBreach = log.action === 'FAILED_SLA' || log.action === 'CANCELED_BY_SYSTEM';
+                                        return (
+                                        <tr key={i} className={`border-t border-slate-50 hover:bg-slate-50/50 ${isBreach ? 'bg-red-50/30' : ''}`}>
+                                            <td className="px-4 py-3 font-medium text-slate-500 whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
+                                            <td className="px-4 py-3 font-mono text-slate-400">#{log.request_id}</td>
+                                            <td className="px-4 py-3">
+                                                <button onClick={() => { loadUserDetail(log.user_id); setActivePanel('users'); }}
+                                                    className="text-primary font-bold hover:underline flex flex-col items-start">
+                                                    <span>{log.user_name}</span>
+                                                    <span className="text-[9px] uppercase text-slate-400">{log.role}</span>
+                                                </button>
                                             </td>
-                                            <td className="px-4 py-2.5 font-medium text-slate-800 max-w-[250px] truncate">{a.detail}</td>
-                                            <td className="px-4 py-2.5 text-slate-500">{a.category}</td>
-                                            <td className="px-4 py-2.5">
-                                                <button onClick={() => { loadUserDetail(a.user_id); setActivePanel('users'); }}
-                                                    className="text-primary font-bold hover:underline">{a.user_name}</button>
+                                            <td className="px-4 py-3">
+                                                <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${
+                                                    log.action.includes('CREATED') ? 'bg-blue-100 text-blue-700' :
+                                                    log.action.includes('ACCEPTED') ? 'bg-amber-100 text-amber-700' :
+                                                    log.action.includes('FULFILLED') || log.action.includes('COMPLETED') ? 'bg-emerald-100 text-emerald-700' :
+                                                    log.action.includes('REASSIGNED') ? 'bg-purple-100 text-purple-700' :
+                                                    isBreach ? 'bg-red-500 text-white shadow-sm' : 'bg-slate-100 text-slate-600'
+                                                }`}>
+                                                    {log.action.replace(/_/g, ' ')}
+                                                </span>
                                             </td>
-                                            <td className="px-4 py-2.5">
-                                                <span className={`text-[10px] font-bold ${['Available', 'Open'].includes(a.status) ? 'text-emerald-600' :
-                                                    a.status === 'Pending' ? 'text-amber-600' :
-                                                        ['Fulfilled', 'Claimed'].includes(a.status) ? 'text-blue-600' : 'text-slate-400'
-                                                    }`}>{a.status}</span>
+                                            <td className="px-4 py-3 text-slate-600">{log.request_category}</td>
+                                            <td className="px-4 py-3 text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button 
+                                                        onClick={() => handleReassign(log.request_id)} 
+                                                        className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded hover:bg-slate-200 transition-colors"
+                                                        title="Force reassign this request to another volunteer"
+                                                    >
+                                                        Reassign
+                                                    </button>
+                                                    {isBreach && (
+                                                        <button 
+                                                            onClick={() => {
+                                                                handleBan(log.user_id);
+                                                            }}
+                                                            className="text-[10px] font-bold bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200 transition-colors"
+                                                        >
+                                                            Ban Volunteer
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
-                                            <td className="px-4 py-2.5 text-slate-400 whitespace-nowrap">{formatTime(a.created_at)}</td>
                                         </tr>
-                                    ))}
-                                    {activity.length === 0 && (
-                                        <tr><td colSpan={6} className="text-center py-12 text-slate-400">No activity recorded.</td></tr>
+                                    )})}
+                                    {auditLog.length === 0 && (
+                                        <tr><td colSpan={6} className="text-center py-12 text-slate-400">No advanced audit logs found.</td></tr>
                                     )}
                                 </tbody>
                             </table>

@@ -39,7 +39,7 @@ export default function AdminLayout({ children }) {
                         </div>
                     </div>
                     <div className="flex items-center gap-2 md:gap-4">
-                        <span className="hidden sm:flex items-center gap-2 text-xs font-bold bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
+                        <span className="hidden md:flex items-center gap-2 text-xs font-bold bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
                             <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
                             System Online
                         </span>

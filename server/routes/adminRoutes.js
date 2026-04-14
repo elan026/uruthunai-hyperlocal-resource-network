@@ -18,8 +18,10 @@ router.patch('/users/:id/trust', adminController.updateUserTrust);
 router.post('/users/:id/ban', adminController.banUser);
 router.post('/users/:id/unban', adminController.unbanUser);
 
-// Activity
+// Activity & Requests
 router.get('/activity', adminController.getActivity);
+router.get('/audit-log', adminController.getRequestAuditLog);
+router.patch('/requests/:id/reassign', adminController.reassignRequest);
 
 // Reports & Moderation
 router.get('/reports', adminController.getReports);
@@ -29,10 +31,12 @@ router.post('/reports/moderate', adminController.moderateAction);
 // Verification
 router.get('/verifications', adminController.getVerifications);
 router.post('/verifications/process', adminController.verifyUser);
+router.post('/users/:id/verify-by-call', adminController.verifyUserByCall);
 
 // Emergency
 router.get('/emergency', adminController.getEmergencyState);
 router.post('/emergency', adminController.activateEmergency);
+router.post('/emergency/hill-station', adminController.setHillStationDangerMode);
 
 // System Health
 router.get('/health', adminController.getSystemHealth);
