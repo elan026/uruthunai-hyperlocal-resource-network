@@ -23,7 +23,7 @@ export default function Landing() {
                 transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
                 className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md"
             >
-                <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-10">
+                <div className="mx-auto flex max-w-7xl items-center justify-between px-4 md:px-8 py-4">
                     <div className="flex items-center gap-3">
                         <motion.div
                             whileHover={{ rotate: [0, -5, 5, 0], scale: 1.05 }}
@@ -46,7 +46,7 @@ export default function Landing() {
                         ))}
                     </nav>
                     <div className="flex items-center gap-3">
-                        <button onClick={openAuthModal} className="hidden text-sm font-bold text-slate-700 hover:text-primary sm:block px-4 py-2 transition-colors">Login</button>
+                        <button onClick={openAuthModal} className="hidden text-sm font-bold text-slate-700 hover:text-primary md:block px-4 py-2 transition-colors">Login</button>
                         <motion.button
                             onClick={openAuthModal}
                             whileHover={{ scale: 1.03, boxShadow: '0 10px 30px rgba(48, 140, 232, 0.2)' }}
@@ -61,8 +61,8 @@ export default function Landing() {
 
             <main className="flex-1">
                 {/* Emergency Alert Banner */}
-                <FadeUp delay={0.3} y={10} className="bg-blue-50 px-6 py-3 border-b border-blue-100">
-                    <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                <FadeUp delay={0.3} y={10} className="bg-blue-50 px-4 md:px-6 py-3 border-b border-blue-100">
+                    <div className="mx-auto max-w-7xl flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <span className="material-symbols-outlined text-red-600 animate-pulse icon-hover">warning</span>
                             <div>
@@ -83,7 +83,7 @@ export default function Landing() {
                 </FadeUp>
 
                 {/* Hero Section */}
-                <section className="relative overflow-hidden px-6 py-16 lg:px-10 lg:py-24">
+                <section className="relative overflow-hidden px-4 md:px-8 py-8 md:py-12 lg:py-20">
                     <div className="mx-auto max-w-7xl">
                         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
                             <div className="flex flex-col gap-8">
@@ -94,12 +94,12 @@ export default function Landing() {
                                         </span>
                                     </FadeUp>
                                     <FadeUp delay={0.2} y={40}>
-                                        <h1 className="text-4xl sm:text-5xl font-black leading-[1.1] tracking-tight text-slate-900 lg:text-7xl">
+                                        <h1 className="text-4xl md:text-5xl font-black leading-[1.1] tracking-tight text-slate-900 lg:text-7xl">
                                             Uru<span className="text-primary">thunai</span>
                                         </h1>
                                     </FadeUp>
                                     <FadeUp delay={0.35}>
-                                        <p className="text-lg font-medium text-slate-600 lg:text-xl">
+                                        <p className="text-base md:text-lg font-medium text-slate-600 lg:text-xl">
                                             From the scars of the 2004 Tsunami, the resilience shown during Cyclone Gaja, and the solidarity of the Chennai Floods—our strength lies in each other. Uruthunai empowers Tamil Nadu neighborhoods through rapid mutual aid and disaster preparedness.
                                         </p>
                                     </FadeUp>
@@ -110,14 +110,14 @@ export default function Landing() {
                                             onClick={openAuthModal}
                                             whileHover={{ scale: 1.03, boxShadow: '0 16px 40px rgba(48, 140, 232, 0.25)' }}
                                             whileTap={{ scale: 0.97 }}
-                                            className="flex min-w-[160px] items-center justify-center rounded-xl bg-primary px-8 py-4 text-base font-bold text-white shadow-lg shadow-primary/20 transition-colors"
+                                            className="flex min-w-[160px] items-center justify-center rounded-xl bg-primary px-6 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-white shadow-lg shadow-primary/20 transition-colors"
                                         >
                                             Join Community
                                         </motion.button>
                                         <motion.button
                                             whileHover={{ scale: 1.02, backgroundColor: 'rgb(248 250 252)' }}
                                             whileTap={{ scale: 0.97 }}
-                                            className="flex min-w-[160px] items-center justify-center rounded-xl border border-slate-200 bg-white px-8 py-4 text-base font-bold text-slate-900 transition-colors"
+                                            className="flex min-w-[160px] items-center justify-center rounded-xl border border-slate-200 bg-white px-6 md:px-8 py-3 md:py-4 text-sm md:text-base font-bold text-slate-900 transition-colors"
                                         >
                                             Learn More
                                         </motion.button>
@@ -216,11 +216,11 @@ export default function Landing() {
                 </section>
 
                 {/* Interactive Feature Demo */}
-                <section id="how-it-works" className="bg-white px-4 sm:px-6 py-16 sm:py-24 lg:px-10">
+                <section id="how-it-works" className="bg-white px-4 md:px-8 py-8 md:py-12 lg:py-20">
                     <div className="mx-auto max-w-7xl">
                         <FadeUp className="mb-16 flex flex-col items-center text-center">
                             <h2 className="text-sm font-bold uppercase tracking-widest text-primary">Solidarity in Action</h2>
-                            <h3 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Never Face It Alone</h3>
+                            <h3 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">Never Face It Alone</h3>
                             <p className="mt-4 max-w-2xl text-lg text-slate-600">
                                 When traditional lines of communication fail—as we experienced during Cyclone Vardah and the 2015 floods—hyperlocal networks save lives. Explore how the platform works.
                             </p>
@@ -237,7 +237,7 @@ export default function Landing() {
                                     <motion.button
                                         key={idx}
                                         onClick={() => setActiveTab(idx)}
-                                        className={`flex flex-col sm:flex-row gap-4 text-left items-start sm:items-center rounded-2xl p-4 sm:p-6 transition-all duration-300 ${activeTab === idx ? 'bg-primary/5 border-2 border-primary/20 shadow-lg shadow-primary/5' : 'bg-transparent border-2 border-transparent hover:bg-slate-50'}`}
+                                        className={`flex flex-col md:flex-row gap-4 text-left items-start md:items-center rounded-2xl p-4 md:p-6 transition-all duration-300 ${activeTab === idx ? 'bg-primary/5 border-2 border-primary/20 shadow-lg shadow-primary/5' : 'bg-transparent border-2 border-transparent hover:bg-slate-50'}`}
                                     >
                                         <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl transition-colors ${activeTab === idx ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500'}`}>
                                             <span className="material-symbols-outlined text-3xl">{tab.icon}</span>
@@ -253,7 +253,7 @@ export default function Landing() {
                             {/* Viewer */}
                             <div className="lg:col-span-7">
                                 <Reveal delay={0.2} direction="up">
-                                    <div className="relative aspect-square sm:aspect-video w-full overflow-hidden rounded-[2.5rem] bg-slate-100 border-8 border-slate-50 shadow-2xl">
+                                    <div className="relative aspect-square md:aspect-video w-full overflow-hidden rounded-[2.5rem] bg-slate-100 border-8 border-slate-50 shadow-2xl">
 
                                         {/* Dynamic Content Based on Tab selection */}
                                         <motion.div
@@ -313,7 +313,7 @@ export default function Landing() {
                                                             { name: 'Karthik S.', role: 'Medical Reg', needs: 'Need First Aid Kit', urg: 'High' },
                                                             { name: 'Priya R.', role: 'Resident', needs: 'Help moving furniture', urg: 'Medium' },
                                                         ].map((req, i) => (
-                                                            <div key={i} className="flex flex-col sm:flex-row gap-4 items-center justify-between rounded-2xl bg-white p-5 shadow-xl border border-slate-100 transform transition-transform hover:scale-105">
+                                                            <div key={i} className="flex flex-col md:flex-row gap-4 items-center justify-between rounded-2xl bg-white p-5 shadow-xl border border-slate-100 transform transition-transform hover:scale-105">
                                                                 <div className="flex items-center gap-4 w-full">
                                                                     <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">{req.name[0]}</div>
                                                                     <div>
@@ -324,7 +324,7 @@ export default function Landing() {
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <button className="w-full sm:w-auto mt-2 sm:mt-0 whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-xs font-bold text-white hover:bg-primary-dark transition-colors">Help Info</button>
+                                                                <button className="w-full md:w-auto mt-2 md:mt-0 whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-xs font-bold text-white hover:bg-primary-dark transition-colors">Help Info</button>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -339,12 +339,12 @@ export default function Landing() {
                 </section>
 
                 {/* CTA Section */}
-                <section className="px-6 py-20 lg:px-10">
+                <section className="px-4 md:px-8 py-8 md:py-12 lg:py-20">
                     <Reveal direction="scale">
-                        <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl bg-primary px-8 py-16 text-center text-white shadow-2xl shadow-primary/40 relative">
+                        <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl bg-primary px-6 md:px-10 py-10 md:py-16 text-center text-white shadow-2xl shadow-primary/40 relative">
                             <div className="relative z-10">
                                 <FadeUp y={20}>
-                                    <h2 className="text-2xl sm:text-5xl font-black">Our strength is our community.</h2>
+                                    <h2 className="text-2xl md:text-5xl lg:text-6xl font-black">Our strength is our community.</h2>
                                 </FadeUp>
                                 <FadeUp delay={0.2} y={20}>
                                     <p className="mx-auto mt-6 max-w-2xl text-lg text-white/80">
@@ -378,7 +378,7 @@ export default function Landing() {
             </main>
 
             {/* Footer */}
-            <FadeUp as="footer" className="border-t border-slate-200 bg-white px-6 py-12 lg:px-10">
+            <FadeUp as="footer" className="border-t border-slate-200 bg-white px-4 md:px-8 py-8 md:py-12">
                 <div className="mx-auto max-w-7xl">
                     <div className="flex flex-col items-center justify-between gap-8 md:flex-row">
                         <div className="flex items-center gap-3">

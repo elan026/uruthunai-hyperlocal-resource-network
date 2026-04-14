@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import { listingService } from '../services/api';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
@@ -18,12 +19,19 @@ L.Icon.Default.mergeOptions({
 });
 
 // Create custom icons based on categories
-const createIcon = (colorHex, isNew = false) => {
+const createIcon = (colorHex, isNew = false, isDangerMode = false, isExhausted = false) => {
     const size = isNew ? 30 : 24;
-    const pulseRing = isNew ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${size + 16}px;height:${size + 16}px;border-radius:50%;background:${colorHex}33;animation:pulse-ring 1.5s ease-out infinite"></div>` : '';
+    const pulseRing = isNew && !isExhausted ? `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:${size + 16}px;height:${size + 16}px;border-radius:50%;background:${colorHex}33;animation:pulse-ring 1.5s ease-out infinite"></div>` : '';
+    
+    const innerShape = isDangerMode 
+        ? `<svg width="${size+8}" height="${size+8}" viewBox="0 0 24 24" fill="${colorHex}" stroke="white" stroke-width="2" style="filter: drop-shadow(0px 0px 4px ${colorHex}80);${isNew ? 'animation:marker-bounce 0.6s ease-out' : ''}"><path d="M12 2L22 20H2L12 2Z" /></svg>`
+        : `<div style="background-color: ${colorHex}; width: ${size}px; height: ${size}px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 12px ${colorHex}80;${isNew ? 'animation:marker-bounce 0.6s ease-out' : ''}"></div>`;
+        
+    const exhaustedStyle = isExhausted ? 'filter: grayscale(1) opacity(0.6);' : '';
+
     return new L.DivIcon({
         className: 'custom-div-icon',
-        html: `<div style="position:relative">${pulseRing}<div style="background-color: ${colorHex}; width: ${size}px; height: ${size}px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 12px ${colorHex}80;${isNew ? 'animation:marker-bounce 0.6s ease-out' : ''}"></div></div>`,
+        html: `<div style="position:relative;display:flex;justify-content:center;align-items:center;${exhaustedStyle}">${pulseRing}${innerShape}</div>`,
         iconSize: [size, size],
         iconAnchor: [size / 2, size / 2]
     });
@@ -45,6 +53,9 @@ const categoryConfig = [
     { key: 'Transport', label: 'Transport', color: 'bg-purple-500', hex: '#a855f7', icon: 'local_shipping', textColor: 'text-purple-500' },
     { key: 'Rescue / Transport', label: 'Rescue', color: 'bg-purple-500', hex: '#a855f7', icon: 'local_shipping', textColor: 'text-purple-500' },
     { key: 'Rescue Tools', label: 'Rescue', color: 'bg-purple-500', hex: '#a855f7', icon: 'local_shipping', textColor: 'text-purple-500' },
+    { key: 'Fuel Bank', label: 'Fuel Bank', color: 'bg-violet-500', hex: '#8b5cf6', icon: 'local_gas_station', textColor: 'text-violet-500' },
+    { key: 'Gas / Fuel', label: 'Fuel Bank', color: 'bg-violet-500', hex: '#8b5cf6', icon: 'local_gas_station', textColor: 'text-violet-500' },
+    { key: 'Gas Station', label: 'Gas Station', color: 'bg-amber-800', hex: '#92400e', icon: 'propane_tank', textColor: 'text-amber-800' },
     { key: 'Volunteers', label: 'Volunteers', color: 'bg-orange-500', hex: '#f97316', icon: 'group', textColor: 'text-orange-500' },
     { key: 'Clothing & Bedding', label: 'Clothing', color: 'bg-orange-500', hex: '#f97316', icon: 'checkroom', textColor: 'text-orange-500' },
     { key: 'Other', label: 'Other', color: 'bg-slate-500', hex: '#64748b', icon: 'category', textColor: 'text-slate-500' },
@@ -57,6 +68,8 @@ const filterCategories = [
     { key: 'Food & Water', label: 'Food & Water', color: 'bg-green-500', hex: '#22c55e' },
     { key: 'Power', label: 'Power', color: 'bg-yellow-500', hex: '#eab308' },
     { key: 'Transport', label: 'Transport', color: 'bg-purple-500', hex: '#a855f7' },
+    { key: 'Fuel Bank', label: 'Fuel Bank', color: 'bg-violet-500', hex: '#8b5cf6' },
+    { key: 'Gas Station', label: 'Gas Station', color: 'bg-amber-800', hex: '#92400e' },
     { key: 'Other', label: 'Other', color: 'bg-orange-500', hex: '#f97316' },
 ];
 
@@ -78,11 +91,14 @@ function normalizeCategory(cat) {
     if (lower.includes('shelter')) return 'Shelter';
     if (lower.includes('food') || lower.includes('water') || lower.includes('ration')) return 'Food & Water';
     if (lower.includes('electric') || lower.includes('power') || lower.includes('generator') || lower.includes('charging')) return 'Power';
+    if (lower.includes('fuel') || lower.includes('petrol') || lower.includes('diesel')) return 'Fuel Bank';
+    if (lower.includes('gas') || lower.includes('cylinder') || lower.includes('propane')) return 'Gas Station';
     if (lower.includes('transport') || lower.includes('rescue')) return 'Transport';
     return 'Other';
 }
 
 export default function ResourceMap() {
+    const { hillStationDangerMode } = useAuth();
     const navigate = useNavigate();
     const [listings, setListings] = useState([]);
     const [filters, setFilters] = useState(filterCategories.map(c => c.key));
@@ -249,6 +265,7 @@ export default function ResourceMap() {
                             {filteredListings.map(listing => {
                                 let markerColor = getCategoryStyle(listing.category).hex;
                                 const isNew = newListingIds.has(`${listing.type}-${listing.id}`);
+                                const isExhausted = (listing.type === 'offer' && (listing.status === 'Unavailable' || listing.is_available === 0 || listing.quantity === 0));
 
                                 if (isEmergencyMode) {
                                     if (normalizeCategory(listing.category) === 'Medical') markerColor = '#ef4444';
@@ -257,25 +274,35 @@ export default function ResourceMap() {
                                     else markerColor = '#22c55e';
                                 }
 
+                                if (hillStationDangerMode) {
+                                    markerColor = '#ea580c'; // Override with danger orange
+                                }
+
                                 return (
                                     <Marker
                                         key={`${listing.type}-${listing.id}`}
                                         position={[listing.location_lat, listing.location_lng]}
-                                        icon={createIcon(markerColor, isNew)}
+                                        icon={createIcon(markerColor, isNew, hillStationDangerMode, isExhausted)}
                                     >
                                         <Popup>
-                                            <div className="min-w-[200px] p-1">
+                                            <div className={`min-w-[200px] p-1 ${isExhausted ? 'opacity-70 grayscale' : ''}`}>
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold text-white shadow-sm" style={{ backgroundColor: markerColor }}>
                                                         {listing.type === 'offer' ? 'Offer' : 'Need'}
                                                     </span>
                                                     <span className="text-xs font-semibold text-slate-500">{listing.category}</span>
-                                                    {isNew && <span className="px-1.5 py-0.5 text-[9px] font-black bg-green-500 text-white rounded-full animate-pulse">LIVE</span>}
+                                                    {isNew && !isExhausted && <span className="px-1.5 py-0.5 text-[9px] font-black bg-green-500 text-white rounded-full animate-pulse">LIVE</span>}
+                                                    {isExhausted && <span className="px-1.5 py-0.5 text-[9px] font-black bg-slate-500 text-white rounded-full">UNAVAILABLE</span>}
                                                 </div>
-                                                <h3 className="font-bold text-sm mb-1 line-clamp-2">{listing.title_or_description}</h3>
+                                                <h3 className={`font-bold text-sm mb-1 line-clamp-2 ${isExhausted ? 'line-through text-slate-400' : ''}`}>{listing.title_or_description}</h3>
                                                 <div className="text-[10px] text-slate-500 mb-3 flex justify-between items-center">
                                                     <span>{listing.distance || 'Nearby'}</span>
-                                                    <span>{listing.user_name || 'Community Member'}</span>
+                                                    <span className="flex items-center gap-1">
+                                                        {listing.user_name || 'Community Member'}
+                                                        {(listing.verification_status === 'Approved' || listing.verification_status === 'Verified') && (
+                                                            <span className="material-symbols-outlined text-emerald-500 text-[14px]" title="Verified by call/score">verified</span>
+                                                        )}
+                                                    </span>
                                                 </div>
                                                 
                                                 {/* QUICK ACTIONS ON THE MAP */}
@@ -367,13 +394,19 @@ export default function ResourceMap() {
             </div>
 
             {/* Floating Left Panel */}
-            <div className="relative z-[400] w-[calc(100%-2rem)] sm:w-[340px] m-4 flex flex-col gap-4 pointer-events-none h-[calc(100vh-8rem)]">
+            <div className="relative z-[400] w-[calc(100%-2rem)] md:w-[340px] m-4 flex flex-col gap-4 pointer-events-none h-[calc(100vh-8rem)]">
 
                 {/* Header & Emergency Mode */}
-                <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-white/40 pointer-events-auto shrink-0 flex flex-col gap-3">
+                <div className={`bg-white/95 backdrop-blur-md rounded-2xl shadow-xl p-4 border pointer-events-auto shrink-0 flex flex-col gap-3 ${hillStationDangerMode ? 'border-orange-500/50 shadow-orange-500/20' : 'border-white/40'}`}>
+                    {hillStationDangerMode && (
+                        <div className="bg-orange-500 text-white text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg text-center flex items-center justify-center gap-1 mb-1">
+                            <span className="material-symbols-outlined text-[14px]">landscape</span>
+                            Hill Station Danger Mode ACTIVE
+                        </div>
+                    )}
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                            <h2 className={`text-lg font-black flex items-center gap-2 ${hillStationDangerMode ? 'text-orange-600' : 'text-slate-900'}`}>
                                 <span className="material-symbols-outlined text-primary">explore</span>
                                 Map Radar
                             </h2>
@@ -461,31 +494,37 @@ export default function ResourceMap() {
                                 const style = getCategoryStyle(listing.category);
                                 const isOffer = listing.type === 'offer';
                                 const isNew = newListingIds.has(`${listing.type}-${listing.id}`);
+                                const isExhausted = (listing.type === 'offer' && (listing.status === 'Unavailable' || listing.is_available === 0 || listing.quantity === 0));
                                 return (
                                     <div
                                         key={`${listing.type}-${listing.id}`}
-                                        className={`bg-white border text-left rounded-xl p-3 hover:border-primary/30 transition-all cursor-pointer shadow-sm hover:shadow-md group flex flex-col gap-2 relative overflow-hidden ${isNew ? 'border-green-400 ring-1 ring-green-300' : 'border-slate-100'}`}
+                                        className={`bg-white border text-left rounded-xl p-3 hover:border-primary/30 transition-all cursor-pointer shadow-sm hover:shadow-md group flex flex-col gap-2 relative overflow-hidden ${isNew ? 'border-green-400 ring-1 ring-green-300' : 'border-slate-100'} ${isExhausted ? 'opacity-60 grayscale' : ''}`}
                                         onClick={() => {
                                             if (mapRef) {
                                                 mapRef.flyTo([listing.location_lat, listing.location_lng], 16, { animate: true });
                                             }
                                         }}
                                     >
-                                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${style.color}`}></div>
-                                        {isNew && (
+                                        <div className={`absolute left-0 top-0 bottom-0 w-1 ${isExhausted ? 'bg-slate-400' : style.color}`}></div>
+                                        {isNew && !isExhausted && (
                                             <div className="absolute top-2 right-2">
                                                 <span className="px-1.5 py-0.5 text-[8px] font-black bg-green-500 text-white rounded-full animate-pulse">LIVE</span>
                                             </div>
                                         )}
+                                        {isExhausted && (
+                                            <div className="absolute top-2 right-2">
+                                                <span className="px-1.5 py-0.5 text-[8px] font-black bg-slate-500 text-slate-100 rounded-full">UNAVAILABLE</span>
+                                            </div>
+                                        )}
                                         <div className="flex items-start justify-between pl-2">
                                             <div className="flex items-center gap-2">
-                                                <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md ${isOffer ? 'bg-primary/10 text-primary' : 'bg-orange-100 text-orange-600'}`}>
+                                                <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md ${isExhausted ? 'bg-slate-200 text-slate-500' : (isOffer ? 'bg-primary/10 text-primary' : 'bg-orange-100 text-orange-600')}`}>
                                                     {isOffer ? 'OFFER' : 'NEED'}
                                                 </span>
                                                 <span className="text-[10px] font-bold text-slate-400">{listing.distance || 'Nearby'}</span>
                                             </div>
                                         </div>
-                                        <h4 className="font-bold text-sm text-slate-800 leading-tight pl-2 group-hover:text-primary transition-colors line-clamp-2">
+                                        <h4 className={`font-bold text-sm leading-tight pl-2 transition-colors line-clamp-2 ${isExhausted ? 'line-through text-slate-400 group-hover:text-slate-500' : 'text-slate-800 group-hover:text-primary'}`}>
                                             {listing.title_or_description}
                                         </h4>
                                         {listing.user_name && (

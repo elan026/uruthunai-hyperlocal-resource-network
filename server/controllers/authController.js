@@ -27,7 +27,7 @@ exports.sendOtp = async (req, res, next) => {
 // POST /api/auth/verify-otp (handles Login or Registration)
 exports.verifyOtp = async (req, res, next) => {
     try {
-        const { phone_number, otp, name, area_code, role, user_type, skills } = req.body;
+        const { phone_number, otp, name, area_code, pincode, area_name, role, user_type, skills } = req.body;
         if (!phone_number || !otp) {
             return res.status(400).json({ error: 'Phone number and OTP are required' });
         }
@@ -48,6 +48,8 @@ exports.verifyOtp = async (req, res, next) => {
                 phone_number,
                 name,
                 area_code,
+                pincode,
+                area_name,
                 role: role || 'user',
                 user_type: user_type || 'resident',
                 skills
@@ -99,14 +101,14 @@ exports.getProfile = async (req, res, next) => {
 exports.updateProfile = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { name, area_code, user_type, skills } = req.body;
+        const { name, area_code, pincode, area_name, user_type, skills } = req.body;
 
         const user = await User.findById(id);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        await User.update(id, { name, area_code, user_type, skills });
+        await User.update(id, { name, area_code, pincode, area_name, user_type, skills });
 
         const updatedUser = await User.findById(id);
         res.json({ message: 'Profile updated successfully', user: updatedUser });

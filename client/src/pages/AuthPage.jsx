@@ -77,9 +77,12 @@ export default function AuthPage() {
         setLoading(true);
         setError('');
         try {
+            const selectedOpt = getLocationsDropdownOptions().find(o => o.value === areaCode) || getLocationsDropdownOptions()[0];
             await updateProfile(tempUserId, {
                 name: name,
-                area_code: areaCode || '638001 - Erode City'
+                area_code: areaCode || '638001 - Erode City',
+                pincode: selectedOpt.pincode,
+                area_name: selectedOpt.areaName
             });
             navigate('/home');
         } catch (err) {

@@ -24,6 +24,9 @@ router.post('/', resourceController.createResource);
 // PATCH /api/resources/:id/status — Update resource status
 router.patch('/:id/status', protect, resourceController.updateResourceStatus);
 
+// PATCH /api/resources/:id/decrement — Decrement resource quantity
+router.patch('/:id/decrement', protect, resourceController.decrementResourceQuantity);
+
 // POST /api/resources/:id/report — Report misleading info
 router.post('/:id/report', protect, reportLimiter, resourceController.reportResource);
 

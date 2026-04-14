@@ -1,34 +1,75 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { getLocationsDropdownOptions } from '../data/erodeLocations';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar({ user, emergencyMode, onLogout, onMenuClick }) {
     const navigate = useNavigate();
+    const { updateProfile, hillStationDangerMode } = useAuth();
+    const [isUpdatingArea, setIsUpdatingArea] = useState(false);
 
     const handleLogout = () => {
         if (onLogout) onLogout();
         navigate('/');
     };
 
+    const handleAreaChange = async (e) => {
+        if (!user) return;
+        setIsUpdatingArea(true);
+        try {
+            const areaCode = e.target.value;
+            const selectedOpt = getLocationsDropdownOptions().find(o => o.value === areaCode) || getLocationsDropdownOptions()[0];
+            await updateProfile(user.id, {
+                area_code: areaCode,
+                pincode: selectedOpt.pincode,
+                area_name: selectedOpt.areaName
+            });
+            window.location.reload(); // Reload to reflect changes across app
+        } catch (err) {
+            console.error('Failed to change area', err);
+        } finally {
+            setIsUpdatingArea(false);
+        }
+    };
+
     return (
-        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-10">
+        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10">
             {/* Left: Menu + Location + Emergency Toggle */}
-            <div className="flex items-center gap-2 sm:gap-6">
+            <div className="flex items-center gap-2 md:gap-6 lg:gap-8">
                 <button
                     onClick={onMenuClick}
                     className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors flex items-center justify-center cursor-pointer"
                 >
                     <span className="material-symbols-outlined">menu</span>
                 </button>
-                <motion.div
-                    whileHover={{ scale: 1.02, backgroundColor: '#f1f5f9' }}
-                    className="hidden sm:flex items-center gap-2.5 px-3 py-1.5 rounded-lg cursor-pointer transition-colors"
-                >
+                <div className="hidden md:flex items-center gap-2.5 px-3 py-1.5 rounded-lg transition-colors bg-slate-50 border border-slate-200">
                     <span className="material-symbols-outlined text-primary">location_on</span>
-                    <span className="font-bold text-slate-900 truncate max-w-[120px] md:max-w-none">{user?.area_code || '638001 - Erode City'}</span>
-                </motion.div>
-                <div className="hidden sm:block h-6 w-px bg-slate-200"></div>
-                <div className="flex items-center gap-2 sm:gap-3">
-                    <span className="text-sm font-bold text-slate-500">System Status</span>
+                    {isUpdatingArea ? (
+                        <span className="text-sm font-bold text-slate-500">Updating...</span>
+                    ) : (
+                        <select 
+                            value={user?.area_code || '638001 - Erode City'}
+                            onChange={handleAreaChange}
+                            className="bg-transparent border-none outline-none font-bold text-slate-900 text-sm cursor-pointer"
+                        >
+                            {getLocationsDropdownOptions().map((opt, i) => (
+                                <option key={i} value={opt.value}>
+                                    {opt.type === 'HILL' ? '⛰️ ' : ''}{opt.areaName}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+                </div>
+                <div className="hidden md:block h-6 w-px bg-slate-200"></div>
+                <div className="flex items-center gap-2 md:gap-3">
+                    {hillStationDangerMode && (
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-600 text-white animate-pulse shadow-rose-500/30 shadow-lg" title="Hill Station Danger Mode Active">
+                            <span className="text-sm">⛰️</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest hidden md:inline">Hill Alert</span>
+                        </div>
+                    )}
+                    <span className="text-sm font-bold text-slate-500 hidden lg:block">System Status</span>
                     <motion.div
                         whileHover={{ scale: 1.05 }}
                         className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase shadow-sm ${emergencyMode
@@ -52,15 +93,25 @@ export default function Navbar({ user, emergencyMode, onLogout, onMenuClick }) {
             </div>
 
             {/* Right: Search + Notifications + Profile */}
-            <div className="flex items-center gap-2 sm:gap-5">
-                {/* Search */}
-                <div className="relative group hidden md:block">
-                    <input
-                        className="bg-slate-100 border border-transparent rounded-xl py-2.5 pl-11 pr-4 text-sm w-48 lg:w-64 focus:bg-white focus:border-slate-300 focus:ring-4 focus:ring-primary/10 transition-all font-medium"
-                        placeholder="Search resources..."
-                        type="text"
-                    />
-                    <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within:text-primary transition-colors">search</span>
+            <div className="flex items-center gap-2 md:gap-4 lg:gap-5">
+                {/* Dual Search */}
+                <div className="flex items-center gap-2 hidden lg:flex">
+                    <div className="relative group">
+                        <input
+                            className="bg-orange-50 border border-orange-100 rounded-xl py-2 pl-9 pr-3 text-xs w-40 focus:bg-white focus:border-orange-300 focus:ring-2 focus:ring-orange-100 transition-all font-medium text-slate-700 placeholder:text-orange-900/40"
+                            placeholder="Search Needs..."
+                            type="text"
+                        />
+                        <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-orange-400 text-[18px]">search_hands_free</span>
+                    </div>
+                    <div className="relative group">
+                        <input
+                            className="bg-blue-50 border border-blue-100 rounded-xl py-2 pl-9 pr-3 text-xs w-40 focus:bg-white focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all font-medium text-slate-700 placeholder:text-blue-900/40"
+                            placeholder="Search Resources..."
+                            type="text"
+                        />
+                        <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-blue-400 text-[18px]">inventory_2</span>
+                    </div>
                 </div>
 
                 {/* Notifications */}
@@ -78,13 +129,13 @@ export default function Navbar({ user, emergencyMode, onLogout, onMenuClick }) {
                     onClick={handleLogout}
                     whileHover={{ scale: 1.05, backgroundColor: '#fff1f2', color: '#e11d48' }}
                     whileTap={{ scale: 0.95 }}
-                    className="hidden sm:block p-2.5 text-slate-400 rounded-xl transition-colors"
+                    className="hidden md:block p-2.5 text-slate-400 rounded-xl transition-colors"
                     title="Logout"
                 >
                     <span className="material-symbols-outlined">logout</span>
                 </motion.button>
 
-                <div className="h-6 w-px bg-slate-200 hidden sm:block"></div>
+                <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
 
                 {/* Profile */}
                 <Link to="/profile">
@@ -95,7 +146,7 @@ export default function Navbar({ user, emergencyMode, onLogout, onMenuClick }) {
                         <div className="size-9 rounded-full bg-gradient-to-tr from-primary to-blue-400 flex items-center justify-center text-white text-sm font-black shadow-inner">
                             {user?.name?.charAt(0) || 'U'}
                         </div>
-                        <div className="text-left hidden sm:block">
+                        <div className="text-left hidden md:block">
                             <p className="text-sm font-bold text-slate-900 leading-tight">{user?.name || 'User'}</p>
                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{user?.user_type ? user.user_type.replace('_', ' ') : 'Resident'}</p>
                         </div>

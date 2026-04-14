@@ -288,7 +288,7 @@ export default function Profile() {
                                             { label: 'Resources Shared', value: profileData.resources_posted || '0', icon: 'volunteer_activism', color: 'text-primary bg-primary/10' },
                                             { label: 'Requests Fulfilled', value: profileData.requests_fulfilled || '0', icon: 'task_alt', color: 'text-emerald-500 bg-emerald-50' },
                                             { label: 'Trust Score', value: `${profileData.trust_score || 50}%`, icon: 'verified_user', color: 'text-amber-500 bg-amber-50' },
-                                            { label: 'Status', value: profileData.verification_status === 'verified' ? 'Verified' : 'Pending', icon: 'shield', color: 'text-purple-500 bg-purple-50' },
+                                            { label: 'Status', value: (profileData.verification_status === 'Approved' || profileData.verification_status === 'Verified') ? 'Verified' : 'Pending', icon: 'shield', color: 'text-purple-500 bg-purple-50' },
                                         ].map((stat, i) => (
                                             <div key={i} className="text-center p-4 rounded-xl border border-slate-100 bg-slate-50/50">
                                                 <div className={`h-10 w-10 rounded-xl ${stat.color} mx-auto flex items-center justify-center mb-3`}>
@@ -369,20 +369,20 @@ export default function Profile() {
                                         <h2 className="font-bold text-slate-900">Verification</h2>
                                     </div>
                                     <div className="p-6">
-                                        <div className={`flex items-center gap-4 p-4 rounded-xl border ${profileData.verification_status === 'verified'
+                                        <div className={`flex items-center gap-4 p-4 rounded-xl border ${(profileData.verification_status === 'Approved' || profileData.verification_status === 'Verified')
                                             ? 'bg-emerald-50 border-emerald-200'
                                             : 'bg-amber-50 border-amber-200'
                                             }`}>
-                                            <span className={`material-symbols-outlined text-2xl filled ${profileData.verification_status === 'verified' ? 'text-emerald-500' : 'text-amber-500'
+                                            <span className={`material-symbols-outlined text-2xl filled ${(profileData.verification_status === 'Approved' || profileData.verification_status === 'Verified') ? 'text-emerald-500' : 'text-amber-500'
                                                 }`}>
-                                                {profileData.verification_status === 'verified' ? 'verified' : 'pending'}
+                                                {(profileData.verification_status === 'Approved' || profileData.verification_status === 'Verified') ? 'verified' : 'pending'}
                                             </span>
                                             <div>
-                                                <p className={`text-sm font-bold ${profileData.verification_status === 'verified' ? 'text-emerald-800' : 'text-amber-800'}`}>
-                                                    {profileData.verification_status === 'verified' ? 'Identity Verified' : 'Verification Pending'}
+                                                <p className={`text-sm font-bold ${(profileData.verification_status === 'Approved' || profileData.verification_status === 'Verified') ? 'text-emerald-800' : 'text-amber-800'}`}>
+                                                    {(profileData.verification_status === 'Approved' || profileData.verification_status === 'Verified') ? 'Identity Verified' : 'Verification Pending'}
                                                 </p>
-                                                <p className={`text-xs mt-0.5 ${profileData.verification_status === 'verified' ? 'text-emerald-600' : 'text-amber-600'}`}>
-                                                    {profileData.verification_status === 'verified'
+                                                <p className={`text-xs mt-0.5 ${(profileData.verification_status === 'Approved' || profileData.verification_status === 'Verified') ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                    {(profileData.verification_status === 'Approved' || profileData.verification_status === 'Verified')
                                                         ? 'Your identity has been confirmed by the community admins.'
                                                         : 'Your verification is pending admin approval. You can still use the platform.'}
                                                 </p>
@@ -448,7 +448,7 @@ export default function Profile() {
                                         <h2 className="font-bold">Danger Zone</h2>
                                     </div>
                                     <div className="p-6 space-y-4">
-                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-red-50/50 rounded-xl border border-red-100">
+                                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 bg-red-50/50 rounded-xl border border-red-100">
                                             <div>
                                                 <h4 className="font-bold text-slate-900 text-sm">Delete Account</h4>
                                                 <p className="text-xs text-slate-500 mt-0.5 max-w-md leading-relaxed">Permanently delete your account and all associated data. This action cannot be undone.</p>

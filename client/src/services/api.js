@@ -21,7 +21,8 @@ export const resourceService = {
     getAll: () => api.get('/resources'),
     getById: (id) => api.get(`/resources/${id}`),
     create: (data) => api.post('/resources', data),
-    updateStatus: (id, status) => api.patch(`/resources/${id}/status`, { status })
+    updateStatus: (id, status) => api.patch(`/resources/${id}/status`, { status }),
+    decrement: (id, amount) => api.patch(`/resources/${id}/decrement`, { amount })
 };
 
 // ─── Requests ────────────────────────────────
@@ -52,7 +53,8 @@ export const systemService = {
 export const adminService = {
     setEmergencyState: (active, token) => api.post('/admin/emergency', { active }, {
         headers: { Authorization: `Bearer ${token}` }
-    })
+    }),
+    setHillStationDangerMode: (areaCode, isDanger) => api.post('/admin/emergency/hill-station', { areaCode, isDanger })
 };
 
 export default api;

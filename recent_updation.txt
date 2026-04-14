@@ -1,0 +1,60 @@
+1) Activity Exchange / Check Activity:
+
+    Check Activity of an exchange
+    Once the need is given, the activity should be viewed by admin (controlling authority)
+
+2) Resident Login:
+
+    Map shows areas: Erode, Salem, Coimbatore → focuses on Hill stations specified
+    Shows Needs count & Offers count
+
+    Map color system: 
+        Resident Need → Red
+        Resident Offer → Green
+        Volunteer Offer → Orange
+        Organizations Offer → Yellow
+        Hill station danger → Alert danger mode to volunteers & organizations/NGOs, show triangle icon on hill station map
+    Show which area while login (e.g., "638001 - Erode city")
+    Search for needs & resources: Water, Clothes, Food, Medical, Power, Shelter
+
+    Request Flow:
+
+        Normal Mode → Resident (Rural, Hill, City):
+
+            What need? How much needed? Situation (Critical/Essential) → 24hrs / 2 days max
+            Alert to organizations, camps, NGOs, volunteers
+
+
+        Emergency Mode → Resident selects: Rural / Hill Station / City
+
+            If Rural: What is emergency? What needed? What area? How much? Situation (Critical), Is shelter needed?
+            If Hill Station: Same fields + "Is there any path to reach you?"
+            If City: Same fields + path to reach + shelter needed?
+
+
+
+    Posting (Resources):
+
+        Normal Mode → Organizations, Volunteers, NGOs:
+
+            Turn ON availability, Add resource type, Add resource name, Mention quantity/have or not, If quantity over → Turn OFF
+
+
+        Emergency Mode → Organizations, Volunteers, NGOs, Residents:
+
+            Alert to organizations → Turn ON, Add resource type, Add resource name, Mention quantity, If quantity over → Turn OFF
+
+
+
+    Directing Resource + Admin Login:
+
+        Directing Resource (currently): Need = Fuel bank, Gas station → Show on map (Fuel Bank = Violet, Gas Station = Brown) → Live updates available or not
+
+3) Admin Login:
+
+    Map Feature
+    Verify residents, volunteers, organizations, NGOs
+    Organizations/Volunteers/NGOs shown with verified specified symbol
+    Verification = Trust score + Verify by call
+Emergency Mode: When a person requests a need → viewed by organization and volunteers → they send Acknowledgement
+Set a Report: If need not received within 1 hour after acknowledgement → report as "Not Received" → Admin can remove the acknowledged person

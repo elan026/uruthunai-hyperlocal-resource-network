@@ -21,6 +21,16 @@ export default function AdminVerification() {
         if (adminToken) fetchVerifications();
     }, [adminToken]);
 
+    const handleVerifyByCall = async (reqId, userId, newType) => {
+        try {
+            await axios.post(`http://localhost:5000/api/admin/users/${userId}/verify-by-call`, {}, { headers: { Authorization: `Bearer ${adminToken}` } });
+            // Since it's approved, technically the request is completed, so we can also remove it from this queue or approve it.
+            handleVerification(reqId, userId, newType, 'Approved');
+        } catch (error) {
+            console.error('Verify by Call failed', error);
+        }
+    };
+
     const handleVerification = async (reqId, userId, newType, status) => {
         try {
             await axios.post('http://localhost:5000/api/admin/verifications/process', {
@@ -34,7 +44,7 @@ export default function AdminVerification() {
     };
 
     return (
-        <div className="p-4 sm:p-8 pb-32 max-w-5xl mx-auto">
+        <div className="p-4 md:p-8 pb-32 max-w-5xl mx-auto">
             <div className="mb-8">
                 <h1 className="text-3xl font-black text-slate-900 tracking-tight">Identity & Role Verification</h1>
                 <p className="text-slate-500 mt-1">Review user roles, volunteers, and organizational requests to maintain system trust.</p>
@@ -48,14 +58,14 @@ export default function AdminVerification() {
                     </h3>
                     <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-1 rounded-full">{verifications.length} Pending</span>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
                     {verifications.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-slate-400 py-12">
                             <span className="material-symbols-outlined text-4xl mb-2">verified</span>
                             <p className="font-bold">All users verified!</p>
                         </div>
                     ) : verifications.map(req => (
-                        <div key={req.id} className="border border-slate-200 rounded-xl p-4 sm:p-5 bg-white shadow-sm flex flex-col sm:flex-row justify-between items-center gap-6">
+                        <div key={req.id} className="border border-slate-200 rounded-xl p-4 md:p-5 bg-white shadow-sm flex flex-col md:flex-row justify-between items-center gap-6">
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-1">
                                     <h4 className="font-black text-base text-slate-900">{req.user_name}</h4>
@@ -66,7 +76,14 @@ export default function AdminVerification() {
                                     Requested Role: {req.requested_role}
                                 </span>
                             </div>
-                            <div className="flex flex-col gap-2 w-full sm:w-48 shrink-0">
+                            <div className="flex flex-col gap-2 w-full md:w-48 shrink-0">
+                                <button
+                                    onClick={() => handleVerifyByCall(req.id, req.user_id, req.requested_role)}
+                                    className="w-full px-4 py-2 rounded-lg text-sm font-bold bg-emerald-600 text-white hover:bg-emerald-500 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <span className="material-symbols-outlined text-sm">call</span>
+                                    Verify by Call
+                                </button>
                                 <button
                                     onClick={() => handleVerification(req.id, req.user_id, req.requested_role, 'Approved')}
                                     className="w-full px-4 py-2 rounded-lg text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 transition-colors"

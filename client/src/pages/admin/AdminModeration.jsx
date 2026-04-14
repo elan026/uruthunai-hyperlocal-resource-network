@@ -34,7 +34,7 @@ export default function AdminModeration() {
     };
 
     return (
-        <div className="p-4 sm:p-8 pb-32 max-w-5xl mx-auto">
+        <div className="p-4 md:p-8 pb-32 max-w-5xl mx-auto">
             <div className="mb-8">
                 <h1 className="text-3xl font-black text-slate-900 tracking-tight">Incident & Moderation System</h1>
                 <p className="text-slate-500 mt-1">Review flagged community reports and manage user suspensions.</p>
@@ -48,7 +48,7 @@ export default function AdminModeration() {
                     </h3>
                     <span className="text-xs font-bold bg-rose-100 text-rose-700 px-2 py-1 rounded-full">{reports.length} Cases</span>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
                     {reports.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-center py-20 border-2 border-dashed border-slate-200 rounded-2xl bg-white mt-4">
                             <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mb-6 shadow-inner border border-emerald-100">

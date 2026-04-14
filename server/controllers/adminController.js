@@ -91,6 +91,15 @@ exports.getActivity = async (req, res, next) => {
     }
 };
 
+exports.getRequestAuditLog = async (req, res, next) => {
+    try {
+        const auditLog = await AdminModel.getActivityAuditLog();
+        res.json(auditLog);
+    } catch (err) {
+        next(err);
+    }
+};
+
 // ─── Reports ────────────────────────────────
 exports.getReports = async (req, res, next) => {
     try {
@@ -132,9 +141,18 @@ exports.getVerifications = async (req, res, next) => {
 
 exports.verifyUser = async (req, res, next) => {
     try {
-        const { reqId, userId, newType, status } = req.body;
-        await AdminModel.updateVerificationStatus(reqId, status, userId, newType);
+        const { reqId, userId, newType, status, method } = req.body;
+        await AdminModel.updateVerificationStatus(reqId, status, userId, newType, method || 'TRUST_SCORE');
         res.json({ message: 'User verification updated' });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.verifyUserByCall = async (req, res, next) => {
+    try {
+        await AdminModel.updateVerificationStatus(null, 'Approved', req.params.id, null, 'CALL');
+        res.json({ message: 'User verified manually by call' });
     } catch (err) {
         next(err);
     }
@@ -187,11 +205,53 @@ exports.activateEmergency = async (req, res, next) => {
     }
 };
 
+exports.setHillStationDangerMode = async (req, res, next) => {
+    try {
+        const { area_code, is_danger_mode } = req.body;
+        
+        await db.execute(
+            'INSERT INTO Area_Settings (area_code, is_danger_mode, is_hill_station) VALUES (?, ?, TRUE) ON DUPLICATE KEY UPDATE is_danger_mode = ?',
+            [area_code, is_danger_mode ? 1 : 0, is_danger_mode ? 1 : 0]
+        );
+
+        res.json({ message: `Hill Station Danger Mode ${is_danger_mode ? 'Activated' : 'Disabled'} for ${area_code}` });
+    } catch (err) {
+        next(err);
+    }
+};
+
 // ─── System Health ──────────────────────────
 exports.getSystemHealth = async (req, res, next) => {
     try {
         const health = await AdminModel.getSystemHealth();
         res.json(health);
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.reassignRequest = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { new_user_id } = req.body;
+        
+        // Find existing request
+        const [rows] = await db.execute('SELECT * FROM requests WHERE id = ?', [id]);
+        if (rows.length === 0) return res.status(404).json({ error: 'Request not found' });
+        
+        // Reassign
+        await db.execute('UPDATE requests SET assigned_to_user_id = ?, status = "ACCEPTED" WHERE id = ?', [new_user_id || null, id]);
+        
+        // Log action
+        await db.execute('INSERT INTO request_activities (request_id, user_id, action) VALUES (?, ?, "REASSIGNED_BY_ADMIN")', [id, req.user ? req.user.id : 1]);
+        
+        // Emit if needed
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('request_reassigned', { id, new_user_id });
+        }
+        
+        res.json({ message: 'Request reassigned successfully' });
     } catch (err) {
         next(err);
     }

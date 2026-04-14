@@ -41,6 +41,8 @@ export default function ResourceDetail() {
                 description: `Requesting: ${resource.title}`,
                 urgency_level: resource.is_emergency ? 'Critical' : 'Essential'
             });
+            // Automatically decrement resource quantity upon valid request mapping to the Auto-Turn-OFF feature
+            await resourceService.decrement(resource.id, 1);
             setRequested(true);
         } catch (err) {
             console.error("Failed to send request", err);
@@ -131,12 +133,15 @@ export default function ResourceDetail() {
                                 >
                                     {iconName}
                                 </motion.span>
-                                <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-md p-3.5 rounded-xl flex items-center justify-between border border-white/50 shadow-sm">
-                                    <span className="text-xs font-black uppercase tracking-widest text-slate-600">{resource.category}</span>
-                                    <div className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
+                                {((resource.verification_status === 'Approved' || resource.verification_status === 'Verified') || (resource.provider_role === 'admin' || resource.provider_role === 'ngo')) && (
+                                    <div className="absolute top-4 right-4 bg-emerald-500/10 text-emerald-600 backdrop-blur-md px-3 py-1.5 rounded-lg flex items-center gap-1.5 border border-emerald-500/20 shadow-sm z-10">
                                         <span className="material-symbols-outlined text-[16px] filled">verified</span>
                                         <span className="text-[10px] font-black tracking-widest uppercase">VERIFIED</span>
                                     </div>
+                                )}
+                                <div className="absolute bottom-4 left-4 right-4 bg-white/90 backdrop-blur-md p-3.5 rounded-xl flex items-center justify-between border border-white/50 shadow-sm">
+                                    <span className="text-xs font-black uppercase tracking-widest text-slate-600">{resource.category}</span>
+                                    {/* Additional metadata could go here */}
                                 </div>
                             </motion.div>
                         </div>
@@ -144,7 +149,7 @@ export default function ResourceDetail() {
                         {/* Details */}
                         <div className="flex-1 flex flex-col pt-2">
                             <div className="flex justify-between items-start mb-4">
-                                <h1 className="text-2xl sm:text-3xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">{resource.title}</h1>
+                                <h1 className="text-2xl md:text-3xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.1]">{resource.title}</h1>
                                 <motion.button
                                     whileHover={{ scale: 1.1, backgroundColor: '#f1f5f9' }}
                                     whileTap={{ scale: 0.9 }}
@@ -166,7 +171,7 @@ export default function ResourceDetail() {
                             </div>
 
                             {/* Info Cards */}
-                            <StaggerContainer staggerDelay={0.15} className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                            <StaggerContainer staggerDelay={0.15} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                                 <StaggerItem variant="scale">
                                     <div className="p-5 rounded-2xl border border-primary/20 bg-primary/5 flex items-center gap-4 hover:bg-primary/10 transition-colors">
                                         <div className="w-14 h-14 rounded-xl bg-white shadow-sm flex items-center justify-center text-primary">
@@ -206,7 +211,7 @@ export default function ResourceDetail() {
 
                             {/* Action Buttons */}
                             <Reveal delay={0.5} y={20}>
-                                <div className="flex flex-col sm:flex-row gap-4 mt-auto">
+                                <div className="flex flex-col md:flex-row gap-4 mt-auto">
                                     {requested ? (
                                         <motion.div
                                             initial={{ scale: 0.95, opacity: 0 }}
@@ -258,7 +263,7 @@ export default function ResourceDetail() {
                             <span className="material-symbols-outlined text-primary">pin_drop</span>
                             Collection Point
                         </h3>
-                        <div className="rounded-2xl sm:rounded-3xl overflow-hidden h-48 sm:h-64 relative border border-slate-200 bg-slate-200 flex items-center justify-center shadow-inner group">
+                        <div className="rounded-2xl md:rounded-3xl overflow-hidden h-48 md:h-64 relative border border-slate-200 bg-slate-200 flex items-center justify-center shadow-inner group">
                             <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 opacity-60 transition-opacity duration-700 group-hover:opacity-100"></div>
                             <div className="text-center relative z-10">
                                 <span className="material-symbols-outlined text-5xl text-slate-400 mb-3 drop-shadow-sm">map</span>

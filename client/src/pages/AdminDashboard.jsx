@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { resourceService, requestService, alertService } from '../services/api';
+import { resourceService, requestService, alertService, adminService } from '../services/api';
 
 export default function AdminDashboard() {
-    const { user, emergencyMode, setEmergencyMode } = useAuth();
+    const { user, emergencyMode, setEmergencyMode, hillStationDangerMode, setHillStationDangerMode } = useAuth();
     const [metrics, setMetrics] = useState({
         totalResources: 0,
         totalRequests: 0,
@@ -41,20 +41,38 @@ export default function AdminDashboard() {
                         <h2 className="text-3xl font-black tracking-tight">Admin Control Panel</h2>
                         <p className="text-slate-500 mt-1">Disaster Management Overview — Area: {user?.area_code || 'CHN-ADY-01'}</p>
                     </div>
-                    <div className="flex gap-3 mt-4 md:mt-0">
+                    <div className="flex flex-col md:flex-row gap-3 mt-4 md:mt-0">
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const area = user?.area_code || '638461 - Thalavadi';
+                                    await adminService.setHillStationDangerMode(area, !hillStationDangerMode);
+                                    setHillStationDangerMode(!hillStationDangerMode);
+                                } catch (e) {
+                                    alert('Failed to set danger mode');
+                                }
+                            }}
+                            className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${hillStationDangerMode
+                                    ? 'bg-orange-500 text-white shadow-xl shadow-orange-500/20'
+                                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                }`}
+                        >
+                            <span className="material-symbols-outlined text-lg">{hillStationDangerMode ? 'warning_amber' : 'landscape'}</span>
+                            <span className="hidden md:inline">{hillStationDangerMode ? 'Hill Danger: ON' : 'Hill Danger: OFF'}</span>
+                        </button>
                         <button
                             onClick={() => setEmergencyMode(!emergencyMode)}
-                            className={`px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-3 transition-all ${emergencyMode
+                            className={`px-4 py-2 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${emergencyMode
                                     ? 'bg-red-500 text-white shadow-xl shadow-red-500/20'
                                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                                 }`}
                         >
                             <span className="material-symbols-outlined text-lg">{emergencyMode ? 'emergency' : 'toggle_off'}</span>
-                            {emergencyMode ? 'Emergency Mode Active' : 'Emergency Mode Off'}
+                            <span className="hidden md:inline">{emergencyMode ? 'Emergency: ON' : 'Emergency: OFF'}</span>
                         </button>
-                        <button className="px-6 py-3 rounded-xl font-bold text-sm bg-primary text-white shadow-lg shadow-primary/20 flex items-center gap-2">
+                        <button className="px-4 py-2 rounded-xl font-bold text-sm bg-primary text-white shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
                             <span className="material-symbols-outlined text-lg">add_alert</span>
-                            Create Alert
+                            <span className="hidden md:inline">Create Alert</span>
                         </button>
                     </div>
                 </div>
