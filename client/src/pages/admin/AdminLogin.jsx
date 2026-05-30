@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
+import { API_URL } from '../../services/api';
 // Import or add an adminApi hook
 import axios from 'axios';
+
+const BASE_URL = API_URL || 'http://localhost:5000';
 
 export default function AdminLogin() {
     const navigate = useNavigate();
@@ -18,7 +21,7 @@ export default function AdminLogin() {
         setLoading(true);
         setError('');
         try {
-            const res = await axios.post('http://localhost:5000/api/admin/login', credentials);
+            const res = await axios.post(`${BASE_URL}/api/admin/login`, credentials);
 
             // set token into the AuthContext 
             setAdminToken(res.data.token);

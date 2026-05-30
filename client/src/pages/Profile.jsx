@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { getLocationsDropdownOptions } from '../data/erodeLocations';
-import { authService } from '../services/api';
+import { authService, API_URL } from '../services/api';
 import axios from 'axios';
 
 const TABS = [
@@ -109,7 +109,7 @@ export default function Profile() {
             const payload = new FormData();
             payload.append('avatar', file);
             const res = await axios.post(
-                `http://localhost:5000/api/auth/profile/${user.id}/avatar`,
+                `${API_URL || 'http://localhost:5000'}/api/auth/profile/${user.id}/avatar`,
                 payload, { headers: { 'Content-Type': 'multipart/form-data' } }
             );
             setProfileData(prev => ({ ...prev, profile_pic: res.data.profile_pic }));
@@ -120,7 +120,7 @@ export default function Profile() {
         }
     };
 
-    const getAvatarUrl = () => profileData?.profile_pic ? `http://localhost:5000${profileData.profile_pic}` : null;
+    const getAvatarUrl = () => profileData?.profile_pic ? `${API_URL || 'http://localhost:5000'}${profileData.profile_pic}` : null;
 
     if (!profileData) return (
         <div className="p-6 md:p-10 flex justify-center items-center min-h-[50vh]">

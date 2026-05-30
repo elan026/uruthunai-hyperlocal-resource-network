@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
+import { API_URL } from '../../services/api';
+
+const BASE_URL = API_URL || 'http://localhost:5000';
 
 export default function AdminVerification() {
     const { adminToken } = useAuth();
@@ -9,7 +12,7 @@ export default function AdminVerification() {
     useEffect(() => {
         const fetchVerifications = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/admin/verifications', {
+                const res = await axios.get(`${BASE_URL}/api/admin/verifications`, {
                     headers: { Authorization: `Bearer ${adminToken}` }
                 });
                 setVerifications(res.data);
@@ -23,7 +26,7 @@ export default function AdminVerification() {
 
     const handleVerifyByCall = async (reqId, userId, newType) => {
         try {
-            await axios.post(`http://localhost:5000/api/admin/users/${userId}/verify-by-call`, {}, { headers: { Authorization: `Bearer ${adminToken}` } });
+            await axios.post(`${BASE_URL}/api/admin/users/${userId}/verify-by-call`, {}, { headers: { Authorization: `Bearer ${adminToken}` } });
             // Since it's approved, technically the request is completed, so we can also remove it from this queue or approve it.
             handleVerification(reqId, userId, newType, 'Approved');
         } catch (error) {
@@ -33,7 +36,7 @@ export default function AdminVerification() {
 
     const handleVerification = async (reqId, userId, newType, status) => {
         try {
-            await axios.post('http://localhost:5000/api/admin/verifications/process', {
+            await axios.post(`${BASE_URL}/api/admin/verifications/process`, {
                 reqId, userId, newType, status
             }, { headers: { Authorization: `Bearer ${adminToken}` } });
 

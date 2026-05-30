@@ -31,11 +31,28 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   process.env.CLIENT_URL
-].filter(Boolean);
+].filter(Boolean).map(url => url.replace(/\/$/, ""));
 
 // Core Middleware
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+
+    const cleanOrigin = origin.replace(/\/$/, "");
+    const isAllowed = allowedOrigins.includes(cleanOrigin) ||
+                      /^http:\/\/localhost(:\d+)?$/.test(cleanOrigin) ||
+                      /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(cleanOrigin) ||
+                      cleanOrigin === 'https://uruthunaiplatform.vercel.app' ||
+                      cleanOrigin.endsWith('.vercel.app');
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS] Blocked request from origin: ${origin}`);
+      callback(null, false);
+    }
+  },
   credentials: true // Allow cookies to be sent
 }));
 app.use(express.json());
