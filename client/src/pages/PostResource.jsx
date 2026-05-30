@@ -113,7 +113,7 @@ export default function PostResource() {
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
                     {/* Form Section */}
                     <form onSubmit={handleSubmit} className="xl:col-span-2 space-y-6">
-                        <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
+                        <div className="bg-white rounded-xl p-5 sm:p-8 shadow-sm border border-slate-200">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="col-span-1">
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Resource Category</label>
@@ -189,7 +189,7 @@ export default function PostResource() {
                         </div>
 
                         {/* Location Section */}
-                        <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
+                        <div className="bg-white rounded-xl p-5 sm:p-8 shadow-sm border border-slate-200">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="text-lg font-bold">Auto-detected Location</h3>
                                 <div className="flex items-center gap-2 text-primary">

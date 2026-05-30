@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
+import { io } from 'socket.io-client';
 
 const API = 'http://localhost:5000/api/admin';
 
@@ -18,6 +19,13 @@ export default function AdminDashboard() {
     const [userDetail, setUserDetail] = useState(null);
     const [userFilter, setUserFilter] = useState('');
     const [refreshKey, setRefreshKey] = useState(0);
+
+    // AI Reassign & SLA Warning States
+    const [reassignRequestId, setReassignRequestId] = useState(null);
+    const [recommendedVolunteers, setRecommendedVolunteers] = useState([]);
+    const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+    const [manualVolunteerId, setManualVolunteerId] = useState('');
+    const [filterRiskOnly, setFilterRiskOnly] = useState(false);
 
     const config = { headers: { Authorization: `Bearer ${adminToken}` } };
 
@@ -50,6 +58,30 @@ export default function AdminDashboard() {
         const interval = setInterval(load, 30000); // Auto-refresh every 30s
         return () => clearInterval(interval);
     }, [adminToken, refreshKey]);
+
+    // Socket.io integration for SLA warnings and status changes
+    useEffect(() => {
+        const socket = io('http://localhost:5000');
+        
+        socket.on('request_sla_warning', (data) => {
+            console.log('Received SLA warning socket event:', data);
+            refresh();
+        });
+
+        socket.on('request_status_update', (data) => {
+            console.log('Received request status update socket event:', data);
+            refresh();
+        });
+
+        socket.on('request_reassigned', (data) => {
+            console.log('Received request reassigned socket event:', data);
+            refresh();
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [refresh]);
 
     const loadUserDetail = async (userId) => {
         try {
@@ -86,16 +118,35 @@ export default function AdminDashboard() {
         } catch (e) { console.error(e); }
     };
 
-    const handleReassign = async (requestId) => {
-        const newVolunteerId = window.prompt("Enter the User ID of the new volunteer to reassign to:");
-        if (!newVolunteerId) return;
+    const openReassignModal = async (requestId) => {
+        setReassignRequestId(requestId);
+        setLoadingRecommendations(true);
+        setRecommendedVolunteers([]);
+        setManualVolunteerId('');
         try {
-            await axios.patch(`${API}/requests/${requestId}/reassign`, { new_user_id: parseInt(newVolunteerId) }, config);
+            const res = await axios.get(`${API}/requests/${requestId}/recommend-volunteers`, config);
+            setRecommendedVolunteers(res.data);
+        } catch (e) {
+            console.error('Failed to load volunteer recommendations', e);
+        } finally {
+            setLoadingRecommendations(false);
+        }
+    };
+
+    const executeReassign = async (volunteerId) => {
+        if (!volunteerId) return;
+        try {
+            await axios.patch(`${API}/requests/${reassignRequestId}/reassign`, { new_user_id: parseInt(volunteerId, 10) }, config);
+            setReassignRequestId(null);
             refresh();
         } catch(e) {
             console.error(e);
             alert("Error reassigning request");
         }
+    };
+
+    const handleReassign = (requestId) => {
+        openReassignModal(requestId);
     };
 
     const filteredUsers = users.filter(u =>
@@ -140,8 +191,8 @@ export default function AdminDashboard() {
     ];
 
     return (
-        <div className="p-6 pb-32">
-            <div className="max-w-[1400px] mx-auto">
+        <div className="p-4 md:p-6 pb-32">
+            <div className="max-w-[1600px] mx-auto">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div>
@@ -417,83 +468,137 @@ export default function AdminDashboard() {
                 )}
 
                 {/* ═══════════ ACTIVITY LOG ═══════════ */}
-                {activePanel === 'activity' && (
-                    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-                        <div className="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                            <div>
-                                <h3 className="text-sm font-bold text-slate-900">Advanced Admin Activity Log</h3>
-                                <p className="text-[10px] text-slate-500">Tracking SLAs, Swaps, and Full Request Lifecycle.</p>
+                {activePanel === 'activity' && (() => {
+                    const highRiskLogs = auditLog.filter(log => log.sla_warning === 'HIGH_RISK_OF_BREACH');
+                    const uniqueHighRiskRequests = Array.from(new Set(highRiskLogs.map(log => log.request_id)))
+                        .map(reqId => highRiskLogs.find(log => log.request_id === reqId));
+
+                    const displayedLogs = filterRiskOnly 
+                        ? auditLog.filter(log => log.sla_warning === 'HIGH_RISK_OF_BREACH')
+                        : auditLog;
+
+                    return (
+                        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden animate-fade-in">
+                            <div className="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                                <div>
+                                    <h3 className="text-sm font-bold text-slate-900">Advanced Admin Activity Log</h3>
+                                    <p className="text-[10px] text-slate-500">Tracking SLAs, Swaps, and Full Request Lifecycle.</p>
+                                </div>
+                            </div>
+                            
+                            {/* SLA Breach Warning Alert Banner */}
+                            {uniqueHighRiskRequests.length > 0 && (
+                                <div className="m-4 p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                                    <div className="flex items-start gap-3">
+                                        <div className="h-9 w-9 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm animate-pulse">
+                                            <span className="material-symbols-outlined">warning</span>
+                                        </div>
+                                        <div>
+                                            <h4 className="text-xs font-bold text-slate-800">Predictive SLA Breach Warning</h4>
+                                            <p className="text-[10px] text-slate-600 mt-0.5">
+                                                {uniqueHighRiskRequests.length} active request(s) are at high risk of breaching their SLA (30m elapsed and volunteer is far away or has low trust).
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => setFilterRiskOnly(!filterRiskOnly)} 
+                                        className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all whitespace-nowrap shadow-sm ${
+                                            filterRiskOnly 
+                                                ? 'bg-amber-600 text-white hover:bg-amber-700' 
+                                                : 'bg-white border border-amber-200 text-amber-700 hover:bg-amber-50'
+                                        }`}
+                                    >
+                                        {filterRiskOnly ? 'Show All Activities' : 'Prioritize & Filter High Risk'}
+                                    </button>
+                                </div>
+                            )}
+
+                            <div className="overflow-x-auto max-h-[calc(100vh-260px)] overflow-y-auto">
+                                <table className="w-full text-xs">
+                                    <thead className="sticky top-0 bg-slate-100 z-10 border-b border-slate-200">
+                                        <tr className="text-left">
+                                            <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Time</th>
+                                            <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Req ID</th>
+                                            <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">User</th>
+                                            <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Action</th>
+                                            <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Category</th>
+                                            <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider text-right">Admin Tools</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {displayedLogs.map((log, i) => {
+                                            const isBreach = log.action === 'FAILED_SLA' || log.action === 'CANCELED_BY_SYSTEM';
+                                            const isHighRisk = log.sla_warning === 'HIGH_RISK_OF_BREACH';
+                                            return (
+                                            <tr key={i} className={`border-t border-slate-50 hover:bg-slate-50/50 transition-colors ${
+                                                isBreach ? 'bg-red-50/30' : 
+                                                isHighRisk ? 'bg-amber-50/20 border-l-2 border-l-amber-500' : ''
+                                            }`}>
+                                                <td className="px-4 py-3 font-medium text-slate-500 whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
+                                                <td className="px-4 py-3 font-mono text-slate-400">#{log.request_id}</td>
+                                                <td className="px-4 py-3">
+                                                    <button onClick={() => { loadUserDetail(log.user_id); setActivePanel('users'); }}
+                                                        className="text-primary font-bold hover:underline flex flex-col items-start">
+                                                        <span>{log.user_name}</span>
+                                                        <span className="text-[9px] uppercase text-slate-400">{log.role}</span>
+                                                    </button>
+                                                </td>
+                                                <td className="px-4 py-3">
+                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                        <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${
+                                                            log.action.includes('CREATED') ? 'bg-blue-100 text-blue-700' :
+                                                            log.action.includes('ACCEPTED') ? 'bg-amber-100 text-amber-700' :
+                                                            log.action.includes('FULFILLED') || log.action.includes('COMPLETED') ? 'bg-emerald-100 text-emerald-700' :
+                                                            log.action.includes('REASSIGNED') ? 'bg-purple-100 text-purple-700' :
+                                                            isBreach ? 'bg-red-500 text-white shadow-sm' : 'bg-slate-100 text-slate-600'
+                                                        }`}>
+                                                            {log.action.replace(/_/g, ' ')}
+                                                        </span>
+                                                        {isHighRisk && (
+                                                            <span className="px-2 py-0.5 bg-amber-500 text-white rounded text-[9px] font-bold animate-pulse flex items-center gap-0.5 shadow-sm">
+                                                                <span className="material-symbols-outlined text-[10px] fill-current">warning</span>
+                                                                HIGH RISK
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-3 text-slate-600">{log.request_category}</td>
+                                                <td className="px-4 py-3 text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button 
+                                                            onClick={() => handleReassign(log.request_id)} 
+                                                            className={`text-[10px] font-bold px-2 py-1 rounded transition-all hover:scale-105 active:scale-95 ${
+                                                                isHighRisk 
+                                                                    ? 'bg-amber-500 hover:bg-amber-600 text-white font-extrabold shadow-sm animate-pulse' 
+                                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                            }`}
+                                                            title="Force reassign this request to another volunteer"
+                                                        >
+                                                            Reassign
+                                                        </button>
+                                                        {isBreach && (
+                                                            <button 
+                                                                onClick={() => {
+                                                                    handleBan(log.user_id);
+                                                                }}
+                                                                className="text-[10px] font-bold bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200 transition-colors"
+                                                            >
+                                                                Ban Volunteer
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )})}
+                                        {displayedLogs.length === 0 && (
+                                            <tr><td colSpan={6} className="text-center py-12 text-slate-400">No advanced audit logs found.</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                        <div className="overflow-x-auto max-h-[calc(100vh-260px)] overflow-y-auto">
-                            <table className="w-full text-xs">
-                                <thead className="sticky top-0 bg-slate-100 z-10 border-b border-slate-200">
-                                    <tr className="text-left">
-                                        <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Time</th>
-                                        <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Req ID</th>
-                                        <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">User</th>
-                                        <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Action</th>
-                                        <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider">Category</th>
-                                        <th className="px-4 py-3 font-bold text-slate-500 uppercase tracking-wider text-right">Admin Tools</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {auditLog.map((log, i) => {
-                                        const isBreach = log.action === 'FAILED_SLA' || log.action === 'CANCELED_BY_SYSTEM';
-                                        return (
-                                        <tr key={i} className={`border-t border-slate-50 hover:bg-slate-50/50 ${isBreach ? 'bg-red-50/30' : ''}`}>
-                                            <td className="px-4 py-3 font-medium text-slate-500 whitespace-nowrap">{new Date(log.created_at).toLocaleString()}</td>
-                                            <td className="px-4 py-3 font-mono text-slate-400">#{log.request_id}</td>
-                                            <td className="px-4 py-3">
-                                                <button onClick={() => { loadUserDetail(log.user_id); setActivePanel('users'); }}
-                                                    className="text-primary font-bold hover:underline flex flex-col items-start">
-                                                    <span>{log.user_name}</span>
-                                                    <span className="text-[9px] uppercase text-slate-400">{log.role}</span>
-                                                </button>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <span className={`px-2 py-1 rounded text-[9px] font-black uppercase tracking-widest ${
-                                                    log.action.includes('CREATED') ? 'bg-blue-100 text-blue-700' :
-                                                    log.action.includes('ACCEPTED') ? 'bg-amber-100 text-amber-700' :
-                                                    log.action.includes('FULFILLED') || log.action.includes('COMPLETED') ? 'bg-emerald-100 text-emerald-700' :
-                                                    log.action.includes('REASSIGNED') ? 'bg-purple-100 text-purple-700' :
-                                                    isBreach ? 'bg-red-500 text-white shadow-sm' : 'bg-slate-100 text-slate-600'
-                                                }`}>
-                                                    {log.action.replace(/_/g, ' ')}
-                                                </span>
-                                            </td>
-                                            <td className="px-4 py-3 text-slate-600">{log.request_category}</td>
-                                            <td className="px-4 py-3 text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <button 
-                                                        onClick={() => handleReassign(log.request_id)} 
-                                                        className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded hover:bg-slate-200 transition-colors"
-                                                        title="Force reassign this request to another volunteer"
-                                                    >
-                                                        Reassign
-                                                    </button>
-                                                    {isBreach && (
-                                                        <button 
-                                                            onClick={() => {
-                                                                handleBan(log.user_id);
-                                                            }}
-                                                            className="text-[10px] font-bold bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200 transition-colors"
-                                                        >
-                                                            Ban Volunteer
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )})}
-                                    {auditLog.length === 0 && (
-                                        <tr><td colSpan={6} className="text-center py-12 text-slate-400">No advanced audit logs found.</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                )}
+                    );
+                })()}
 
                 {/* ═══════════ SYSTEM ═══════════ */}
                 {activePanel === 'system' && health && (
@@ -553,6 +658,114 @@ export default function AdminDashboard() {
                     </div>
                 )}
             </div>
+
+            {/* Reassign Volunteer Overlay Modal */}
+            {reassignRequestId !== null && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh] transform scale-100 transition-all duration-300">
+                        {/* Header */}
+                        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                                    <span className="material-symbols-outlined text-primary text-lg">psychology</span>
+                                    Intelligent Matchmaking Reassignment
+                                </h3>
+                                <p className="text-[10px] text-slate-500 mt-0.5">Finding optimal volunteers for Request #{reassignRequestId}</p>
+                            </div>
+                            <button onClick={() => setReassignRequestId(null)} className="text-slate-400 hover:text-slate-600">
+                                <span className="material-symbols-outlined text-sm">close</span>
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-5 overflow-y-auto space-y-5 flex-1">
+                            {loadingRecommendations ? (
+                                <div className="py-12 flex flex-col items-center justify-center text-center">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+                                    <p className="text-xs text-slate-500 font-bold">Consulting matching database...</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {recommendedVolunteers.length > 0 ? (
+                                        <div className="space-y-2.5">
+                                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Recommended Volunteers</h4>
+                                            {recommendedVolunteers.map((vol) => (
+                                                <div key={vol.id} className="p-3 border border-slate-100 bg-slate-50/50 hover:bg-slate-50 rounded-xl flex items-center justify-between gap-3 transition-colors">
+                                                    <div className="min-w-0 flex-1 space-y-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-bold text-slate-800 text-xs truncate">{vol.name}</span>
+                                                            <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
+                                                                vol.match_score >= 80 ? 'bg-emerald-100 text-emerald-700' :
+                                                                vol.match_score >= 50 ? 'bg-amber-100 text-amber-700' :
+                                                                'bg-slate-200 text-slate-700'
+                                                            }`}>
+                                                                {vol.match_score}% Match
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-3 text-[10px] text-slate-500">
+                                                            <span className="flex items-center gap-0.5">
+                                                                <span className="material-symbols-outlined text-[10px]">distance</span>
+                                                                {vol.distance !== null ? `${vol.distance} km` : 'Unknown'}
+                                                            </span>
+                                                            <span className="flex items-center gap-0.5">
+                                                                <span className="material-symbols-outlined text-[10px] text-emerald-500">verified</span>
+                                                                Trust: {vol.trust_score}
+                                                            </span>
+                                                            <span className="text-[9px] bg-slate-200/60 px-1 rounded uppercase font-medium">{vol.user_type}</span>
+                                                        </div>
+                                                        {vol.skills && vol.skills.length > 0 && (
+                                                            <div className="flex flex-wrap gap-1 mt-1">
+                                                                {vol.skills.map((skill, idx) => (
+                                                                    <span key={idx} className="bg-primary/5 text-primary text-[9px] px-1.5 py-0.5 rounded-full border border-primary/10">
+                                                                        {skill}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => executeReassign(vol.id)}
+                                                        className="px-3 py-1.5 bg-primary text-white text-[10px] font-bold rounded-lg hover:bg-primary/95 transition-all shadow-sm shrink-0"
+                                                    >
+                                                        Assign
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-xs text-slate-400 py-4 text-center">No matching volunteers found in the zone.</p>
+                                    )}
+
+                                    {/* Manual Reassignment Divider */}
+                                    <div className="relative flex py-2 items-center">
+                                        <div className="flex-grow border-t border-slate-100"></div>
+                                        <span className="flex-shrink mx-4 text-[10px] text-slate-400 font-bold uppercase tracking-wider">Or Reassign Manually</span>
+                                        <div className="flex-grow border-t border-slate-100"></div>
+                                    </div>
+
+                                    {/* Manual ID Input */}
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            placeholder="Enter Volunteer User ID"
+                                            value={manualVolunteerId}
+                                            onChange={(e) => setManualVolunteerId(e.target.value)}
+                                            className="flex-1 text-xs border border-slate-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                                        />
+                                        <button
+                                            onClick={() => executeReassign(manualVolunteerId)}
+                                            disabled={!manualVolunteerId}
+                                            className="px-3 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 disabled:bg-slate-100 disabled:text-slate-400 transition-colors"
+                                        >
+                                            Reassign ID
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

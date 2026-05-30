@@ -33,6 +33,7 @@ export const resourceService = {
 export const requestService = {
     getAll: () => api.get('/requests'),
     create: (data) => api.post('/requests', data),
+    parseNlp: (text) => api.post('/requests/parse-nlp', { text }),
     // Fixed: path was /status, should be /state; body uses newState not status
     updateState: (id, newState, token) => api.patch(`/requests/${id}/state`, 
         { newState }, 

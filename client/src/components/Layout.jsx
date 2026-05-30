@@ -29,7 +29,7 @@ export default function Layout({ children, user, emergencyMode, onLogout }) {
                     </div>
                 )}
                 <Navbar user={user} emergencyMode={emergencyMode} onLogout={onLogout} onMenuClick={() => setSidebarOpen(true)} isMapPage={isMapPage} />
-                <main className={`flex-1 overflow-y-auto ${!isAdmin ? 'pb-24 md:pb-0' : ''}`}>
+                <main className={`flex-1 ${isMapPage ? 'overflow-hidden flex flex-col' : 'overflow-y-auto'} ${!isAdmin ? 'pb-24 md:pb-0' : ''}`}>
                     {children}
                 </main>
             </div>

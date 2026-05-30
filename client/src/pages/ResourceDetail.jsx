@@ -100,7 +100,7 @@ export default function ResourceDetail() {
     const iconName = categoryIcons[resource.category] || 'electric_bolt';
 
     return (
-        <div className="p-6 lg:p-10 max-w-6xl mx-auto">
+        <div className="p-4 md:p-6 lg:p-10 max-w-6xl mx-auto">
             {/* Breadcrumb */}
             <FadeUp delay={0.1}>
                 <nav className="flex items-center gap-3 text-sm font-semibold text-slate-500 mb-8 bg-white/50 backdrop-blur w-fit px-4 py-2 rounded-full border border-slate-200">
@@ -117,7 +117,7 @@ export default function ResourceDetail() {
                 <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mx-20 -my-20"></div>
 
-                    <div className="p-8 lg:p-10 flex flex-col lg:flex-row gap-10 relative z-10">
+                    <div className="p-5 sm:p-8 lg:p-10 flex flex-col lg:flex-row gap-10 relative z-10">
                         {/* Image / Icon Area */}
                         <div className="w-full lg:w-1/3">
                             <motion.div
@@ -257,7 +257,7 @@ export default function ResourceDetail() {
                     </div>
 
                     {/* Location Map Section */}
-                    <div className="border-t border-slate-200 p-8 lg:p-10 bg-slate-50 relative overflow-hidden">
+                    <div className="border-t border-slate-200 p-5 sm:p-8 lg:p-10 bg-slate-50 relative overflow-hidden">
                         <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-gradient-to-b from-primary to-blue-400"></div>
                         <h3 className="text-xl font-black text-slate-900 mb-6 flex items-center gap-2">
                             <span className="material-symbols-outlined text-primary">pin_drop</span>

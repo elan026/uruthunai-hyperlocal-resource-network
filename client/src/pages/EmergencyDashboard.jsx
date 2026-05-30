@@ -42,7 +42,7 @@ export default function EmergencyDashboard() {
     if (loading) return <div className="p-10 text-center font-bold">Initializing Emergency Command Center...</div>;
 
     return (
-        <div className="p-4 md:p-8">
+        <div className="p-4 md:p-6 lg:p-8">
             {/* Emergency Banner */}
             <div className="mb-8 overflow-hidden rounded-2xl bg-red-500 text-white shadow-xl shadow-red-500/20">
                 <div className="flex flex-col md:flex-row items-center gap-6 p-6 md:p-8">
@@ -90,7 +90,7 @@ export default function EmergencyDashboard() {
                     </div>
 
                     {/* Request Cards Scroll Container */}
-                    <div className="max-h-[600px] overflow-y-auto pr-2 space-y-4 -mr-2">
+                    <div className="max-h-[450px] md:max-h-[600px] overflow-y-auto pr-2 space-y-4 -mr-2">
                         {requests.length > 0 ? requests.map((req, i) => (
                             <div key={req.id || i} className={`bg-white rounded-2xl p-5 shadow relative overflow-hidden ${i === 0 ? 'border-2 border-red-500 shadow-lg' : 'border-2 border-red-500/40'}`}>
                                 {i === 0 && <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-lg tracking-widest uppercase">Critical</div>}
