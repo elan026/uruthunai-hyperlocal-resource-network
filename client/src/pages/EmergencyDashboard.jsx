@@ -60,22 +60,29 @@ export default function EmergencyDashboard() {
                 </div>
             </div>
 
+
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                {statsConfig.map((stat, i) => (
-                    <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200">
-                        <div className="flex justify-between items-start mb-2">
-                            <p className="text-sm font-semibold text-slate-500">{stat.label}</p>
-                            <span className={`material-symbols-outlined ${stat.iconColor}`}>{stat.icon}</span>
-                        </div>
-                        <h3 className={`text-3xl font-black ${stat.value === 'OFF' ? 'text-slate-400' : ''}`}>{stat.value}</h3>
-                        <div className={`mt-2 flex items-center ${stat.trendColor} text-xs font-bold`}>
-                            <span className="material-symbols-outlined text-sm">{stat.trendIcon || 'trending_up'}</span>
-                            <span className="ml-1">{stat.trend}</span>
-                        </div>
-                    </div>
-                ))}
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    {statsConfig.map((stat, i) => (
+        <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200">
+            <div className="flex justify-between items-start mb-2">
+                <p className="text-sm font-semibold text-slate-500">{stat.label}</p>
+                <span className={`material-symbols-outlined ${stat.iconColor}`}>
+                    {stat.icon}
+                </span>
             </div>
+            <h3 className={`text-3xl font-black ${stat.value === 'OFF' ? 'text-slate-400' : ''}`}>
+                {stat.value}
+            </h3>
+            <div className={`mt-2 flex items-center ${stat.trendColor} text-xs font-bold`}>
+                <span className="material-symbols-outlined text-sm">
+                    {stat.trendIcon || 'trending_up'}
+                </span>
+                <span className="ml-1">{stat.trend}</span>
+            </div>
+        </div>
+    ))}
+</div>
 
             {/* Main Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

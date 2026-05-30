@@ -27,7 +27,7 @@ export default function Navbar({ user, emergencyMode, onLogout, onMenuClick, isM
             });
             window.location.reload(); // Reload to reflect changes across app
         } catch (err) {
-            // Silenced: failure is apparent since area dropdown reverts
+            console.error('Failed to change area', err);
         } finally {
             setIsUpdatingArea(false);
         }
