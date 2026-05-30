@@ -35,7 +35,7 @@ export default function Navbar({ user, emergencyMode, onLogout, onMenuClick, isM
     };
 
     return (
-        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-10">
+        <header className="h-20 bg-white/80 backdrop-blur-md border-b border-slate-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-[500]">
             {/* Left: Menu + Location + Emergency Toggle */}
             <div className="flex items-center gap-2 md:gap-6 lg:gap-8">
                 <button
@@ -163,7 +163,7 @@ export default function Navbar({ user, emergencyMode, onLogout, onMenuClick, isM
                                 className="fixed inset-0 z-20 cursor-default" 
                                 onClick={() => setShowProfileMenu(false)}
                             />
-                            <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-30 animate-in fade-in slide-in-from-top-2 duration-150">
+                            <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-30 animate-in fade-in slide-in-from-top-2 duration-150">
                                 <div className="px-4 py-2 border-b border-slate-100 md:hidden">
                                     <p className="text-sm font-bold text-slate-900 leading-tight truncate">{user?.name || 'User'}</p>
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{user?.user_type ? user.user_type.replace('_', ' ') : 'Resident'}</p>
