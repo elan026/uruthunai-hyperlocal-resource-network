@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
+import { API_URL } from '../../services/api';
+
+const BASE_URL = API_URL || 'http://localhost:5000';
 
 export default function AdminEmergency() {
     const { adminToken } = useAuth();
@@ -12,7 +15,7 @@ export default function AdminEmergency() {
     useEffect(() => {
         const fetchEmergencyStatus = async () => {
             try {
-                const res = await axios.get('http://localhost:5000/api/admin/emergency', {
+                const res = await axios.get(`${BASE_URL}/api/admin/emergency`, {
                     headers: { Authorization: `Bearer ${adminToken}` }
                 });
                 setEmergencyMode(res.data.isEmergency);
@@ -30,7 +33,7 @@ export default function AdminEmergency() {
         setIsLoading(true);
         try {
             const newState = isBroadcast ? true : !emergencyMode;
-            await axios.post('http://localhost:5000/api/admin/emergency', {
+            await axios.post(`${BASE_URL}/api/admin/emergency`, {
                 active: newState,
                 title: isBroadcast ? title : undefined,
                 message: isBroadcast ? message : undefined

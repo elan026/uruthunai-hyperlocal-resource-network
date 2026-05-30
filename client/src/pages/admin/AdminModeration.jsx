@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
+import { API_URL } from '../../services/api';
+
+const BASE_URL = API_URL || 'http://localhost:5000';
 
 export default function AdminModeration() {
     const { adminToken } = useAuth();
@@ -8,7 +11,7 @@ export default function AdminModeration() {
 
     const fetchReports = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/admin/reports', {
+            const res = await axios.get(`${BASE_URL}/api/admin/reports`, {
                 headers: { Authorization: `Bearer ${adminToken}` }
             });
             setReports(res.data);
@@ -23,7 +26,7 @@ export default function AdminModeration() {
 
     const handleModerate = async (reportId, action, reportedUserId) => {
         try {
-            await axios.post('http://localhost:5000/api/admin/reports/moderate', {
+            await axios.post(`${BASE_URL}/api/admin/reports/moderate`, {
                 reportId, action, reportedUserId
             }, { headers: { Authorization: `Bearer ${adminToken}` } });
 

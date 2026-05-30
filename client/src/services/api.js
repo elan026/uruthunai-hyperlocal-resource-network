@@ -14,6 +14,8 @@ export const apiClient = axios.create({
 
 const api = apiClient;
 
+export const SOCKET_URL = API_URL || 'http://localhost:5000';
+
 // ─── Auth ────────────────────────────────────
 export const authService = {
     googleLogin: (idToken) => api.post('/auth/google-login', { idToken }),

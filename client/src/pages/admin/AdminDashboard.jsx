@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
-import { io } from 'socket.io-client';
+import { API_URL, SOCKET_URL } from '../../services/api';
 
-const API = 'http://localhost:5000/api/admin';
+const API = `${API_URL || 'http://localhost:5000'}/api/admin`;
 
 export default function AdminDashboard() {
     const { adminToken } = useAuth();
@@ -61,7 +61,7 @@ export default function AdminDashboard() {
 
     // Socket.io integration for SLA warnings and status changes
     useEffect(() => {
-        const socket = io('http://localhost:5000');
+        const socket = io(SOCKET_URL);
         
         socket.on('request_sla_warning', (data) => {
             console.log('Received SLA warning socket event:', data);

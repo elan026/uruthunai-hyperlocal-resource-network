@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { listingService, requestService } from '../services/api';
+import { listingService, requestService, SOCKET_URL } from '../services/api';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Circle } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { io } from 'socket.io-client';
@@ -253,7 +253,7 @@ export default function ResourceMap() {
         }
 
         // Socket.io for Real-time Map Updates
-        const socket = io('http://localhost:5000');
+        const socket = io(SOCKET_URL);
 
         socket.on('connect', () => {
             setSocketStatus('connected');

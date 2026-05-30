@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { authService, systemService } from '../services/api';
+import { authService, systemService, SOCKET_URL } from '../services/api';
 import { io } from 'socket.io-client';
 
 const AuthContext = createContext(null);
-const socket = io('http://localhost:5000');
+const socket = io(SOCKET_URL);
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
