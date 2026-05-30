@@ -1,11 +1,15 @@
 import axios from 'axios';
 
-const API_BASE = 'http://localhost:5000/api';
+const rawApiUrl = import.meta.env.VITE_API_URL?.trim() || '';
+export const API_URL = rawApiUrl.replace(/\/+$/, '');
+export const API_PATH = API_URL ? (API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`) : '/api';
 
-const api = axios.create({
-    baseURL: API_BASE,
-    headers: { 'Content-Type': 'application/json' },
-    withCredentials: true // Send HttpOnly JWT cookie with every request
+// Axios client with shared base URL and auth header injection.
+export const apiClient = axios.create({
+    baseURL: API_PATH,
+    headers: {
+        'Content-Type': 'application/json'
+    }
 });
 
 // ─── Auth ────────────────────────────────────
