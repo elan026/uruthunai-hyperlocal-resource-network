@@ -3,10 +3,12 @@ import { MapContainer, TileLayer, Circle } from 'react-leaflet';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { requestService } from '../services/api';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function RequestResource() {
     const { user } = useAuth();
     const navigate = useNavigate();
+    
     const [formData, setFormData] = useState({
         type: '',
         description: '',
@@ -17,8 +19,15 @@ export default function RequestResource() {
         is_shelter_needed: false,
         is_path_reachable: true
     });
+    
     const [location, setLocation] = useState(null);
     const [isLocating, setIsLocating] = useState(true);
+    
+    // AI NLP Parsing States
+    const [nlpText, setNlpText] = useState('');
+    const [aiLoading, setAiLoading] = useState(false);
+    const [aiSuccess, setAiSuccess] = useState(false);
+    const [aiError, setAiError] = useState('');
 
     useEffect(() => {
         if (navigator.geolocation) {
@@ -28,8 +37,8 @@ export default function RequestResource() {
                     setIsLocating(false);
                 },
                 (err) => {
-                    // Silenced: geolocation denial is expected — fallback to Erode default
-                    setLocation({ lat: 11.3410, lng: 77.7172 }); // Erode Default
+                    // Fallback to Erode Default
+                    setLocation({ lat: 11.3410, lng: 77.7172 });
                     setIsLocating(false);
                 }
             );
@@ -54,6 +63,43 @@ export default function RequestResource() {
         { level: 'Support', icon: 'info', color: 'blue', desc: 'Non-emergency basic assistance' },
     ];
 
+    const handleParseNLP = async () => {
+        if (!nlpText.trim()) {
+            setAiError('Please enter some text description first.');
+            return;
+        }
+        
+        setAiLoading(true);
+        setAiError('');
+        setAiSuccess(false);
+        
+        try {
+            const res = await requestService.parseNlp(nlpText);
+            if (res.data.success && res.data.data) {
+                const parsed = res.data.data;
+                setFormData({
+                    type: parsed.category || '',
+                    urgency: parsed.urgency_level || 'Essential',
+                    description: parsed.clean_description || nlpText,
+                    emergency_type: parsed.emergency_type || 'GENERAL',
+                    location_type: parsed.location_type || 'CITY',
+                    quantity_needed: parsed.quantity_needed || 1,
+                    is_shelter_needed: parsed.is_shelter_needed || false,
+                    is_path_reachable: parsed.is_path_reachable !== undefined ? parsed.is_path_reachable : true
+                });
+                setAiSuccess(true);
+                setTimeout(() => setAiSuccess(false), 4000);
+            } else {
+                setAiError('Failed to analyze the request. Please fill the form manually.');
+            }
+        } catch (err) {
+            console.error('NLP parsing failed:', err);
+            setAiError(err.response?.data?.error || 'AI parsing service unavailable. Try filling the form manually.');
+        } finally {
+            setAiLoading(false);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -75,17 +121,88 @@ export default function RequestResource() {
             navigate('/home');
 
         } catch (err) {
-            // Silenced: submission failure is apparent from missing redirect
+            console.error('Submission failed:', err);
         }
     };
 
     return (
-        <div className="p-4 md:p-6 lg:p-10 max-w-7xl mx-auto w-full grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
+        <div className="p-4 md:p-6 lg:p-10 max-w-7xl mx-auto w-full grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8 font-sans">
             {/* Left Side: Form */}
             <div className="xl:col-span-2 space-y-8">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight text-slate-900">Request Assistance</h1>
                     <p className="text-slate-500 mt-2">Fill in the details to broadcast an emergency resource request to your nearby community members.</p>
+                </div>
+
+                {/* AI Assistant Container */}
+                <div className="bg-gradient-to-r from-blue-50/70 to-indigo-50/70 backdrop-blur-md rounded-2xl p-6 border border-blue-100 shadow-[0_4px_20px_rgba(99,102,241,0.05)] relative overflow-hidden">
+                    <div className="absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl pointer-events-none"></div>
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="material-symbols-outlined text-primary font-bold animate-pulse">temp_preferences_custom</span>
+                        <h2 className="text-base font-black text-slate-800">Express AI Auto-Fill</h2>
+                        <span className="text-[9px] font-black tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-full uppercase">Tamil & English</span>
+                    </div>
+                    <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+                        Describe your emergency simply (e.g. <i>"Valparai landslide blocked our path, need drinking water for 3 people"</i>) and let the AI fill the form fields for you.
+                    </p>
+                    
+                    <div className="space-y-4">
+                        <textarea
+                            value={nlpText}
+                            onChange={(e) => setNlpText(e.target.value)}
+                            placeholder="Describe your situation here..."
+                            rows="2"
+                            className="w-full p-4 text-sm bg-white/80 border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none rounded-xl transition-all resize-none shadow-sm text-slate-800"
+                        />
+                        
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={handleParseNLP}
+                                disabled={aiLoading || !nlpText.trim()}
+                                type="button"
+                                className="px-5 py-3 bg-primary hover:bg-primary/95 text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-md shadow-primary/15 disabled:opacity-50 transition-all cursor-pointer"
+                            >
+                                {aiLoading ? (
+                                    <>
+                                        <div className="h-4.5 w-4.5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                        Analyzing Emergency...
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="material-symbols-outlined text-[16px]">psychology</span>
+                                        Parse Emergency Details
+                                    </>
+                                )}
+                            </motion.button>
+                            
+                            <AnimatePresence>
+                                {aiSuccess && (
+                                    <motion.span 
+                                        initial={{ opacity: 0, x: -10 }} 
+                                        animate={{ opacity: 1, x: 0 }} 
+                                        exit={{ opacity: 0 }}
+                                        className="text-xs font-bold text-emerald-600 flex items-center gap-1.5"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">verified</span>
+                                        Form filled successfully!
+                                    </motion.span>
+                                )}
+                                {aiError && (
+                                    <motion.span 
+                                        initial={{ opacity: 0, x: -10 }} 
+                                        animate={{ opacity: 1, x: 0 }} 
+                                        exit={{ opacity: 0 }}
+                                        className="text-xs font-bold text-red-500 flex items-center gap-1.5"
+                                    >
+                                        <span className="material-symbols-outlined text-[18px]">error</span>
+                                        {aiError}
+                                    </motion.span>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </div>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6 bg-white p-5 md:p-8 rounded-xl shadow-sm border border-slate-200">
@@ -130,6 +247,7 @@ export default function RequestResource() {
                                 value={formData.type}
                                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                                 className="w-full h-14 pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary appearance-none text-slate-900"
+                                required
                             >
                                 <option disabled value="">Select Resource Type</option>
                                 {resourceTypes.map(r => <option key={r.value} value={r.label}>{r.label}</option>)}
@@ -177,16 +295,16 @@ export default function RequestResource() {
 
                     {/* Conditional Fields */}
                     {formData.location_type === 'HILL' && (
-                        <div className="p-4 bg-orange-50 border border-orange-100 rounded-lg flex items-center justify-between">
+                        <label className="p-4 bg-orange-50 border border-orange-100 rounded-lg flex items-center justify-between cursor-pointer select-none">
                             <div>
                                 <h4 className="font-bold text-slate-800 text-sm">Is the path reachable?</h4>
                                 <p className="text-xs text-slate-500">Are roads clear for vehicles to reach you?</p>
                             </div>
-                            <label className="relative inline-flex items-center cursor-pointer">
+                            <div className="relative flex items-center">
                                 <input type="checkbox" className="sr-only peer" checked={formData.is_path_reachable} onChange={(e) => setFormData({ ...formData, is_path_reachable: e.target.checked })} />
                                 <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
-                            </label>
-                        </div>
+                            </div>
+                        </label>
                     )}
 
                     {formData.emergency_type === 'FLOOD' && (
@@ -201,14 +319,14 @@ export default function RequestResource() {
                                     className="w-full p-3 bg-white border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-400"
                                 />
                             </div>
-                            <div className="flex flex-col justify-center gap-1">
-                                <h4 className="font-bold text-slate-800 text-sm mt-3">Need Immediate Shelter?</h4>
-                                <label className="relative inline-flex items-center cursor-pointer">
+                            <label className="flex flex-col justify-center gap-1 cursor-pointer select-none">
+                                <h4 className="font-bold text-slate-800 text-sm">Need Immediate Shelter?</h4>
+                                <div className="flex items-center mt-1">
                                     <input type="checkbox" className="sr-only peer" checked={formData.is_shelter_needed} onChange={(e) => setFormData({ ...formData, is_shelter_needed: e.target.checked })} />
                                     <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
                                     <span className="ml-3 text-sm font-medium text-slate-700">{formData.is_shelter_needed ? 'Yes' : 'No'}</span>
-                                </label>
-                            </div>
+                                </div>
+                            </label>
                         </div>
                     )}
 

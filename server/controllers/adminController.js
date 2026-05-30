@@ -240,7 +240,7 @@ exports.reassignRequest = async (req, res, next) => {
         if (rows.length === 0) return res.status(404).json({ error: 'Request not found' });
         
         // Reassign
-        await db.execute('UPDATE requests SET assigned_to_user_id = ?, status = "ACCEPTED" WHERE id = ?', [new_user_id || null, id]);
+        await db.execute('UPDATE requests SET assigned_to_user_id = ?, status = "ACCEPTED", acknowledged_at = CURRENT_TIMESTAMP, sla_warning = NULL WHERE id = ?', [new_user_id || null, id]);
         
         // Log action
         await db.execute('INSERT INTO request_activities (request_id, user_id, action) VALUES (?, ?, "REASSIGNED_BY_ADMIN")', [id, req.user ? req.user.id : 1]);
@@ -252,6 +252,16 @@ exports.reassignRequest = async (req, res, next) => {
         }
         
         res.json({ message: 'Request reassigned successfully' });
+    } catch (err) {
+        next(err);
+    }
+};
+
+exports.recommendVolunteersForRequest = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const recommendations = await AdminModel.recommendVolunteers(id);
+        res.json(recommendations);
     } catch (err) {
         next(err);
     }

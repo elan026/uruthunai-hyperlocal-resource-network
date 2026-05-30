@@ -53,7 +53,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<AuthPage />} />
-      <Route path="/home" element={<ProtectedLayout><PageTransition><ResourceMap /></PageTransition></ProtectedLayout>} />
+      <Route path="/home" element={<ProtectedLayout><PageTransition className="h-full w-full flex flex-col flex-1 relative"><ResourceMap /></PageTransition></ProtectedLayout>} />
       <Route path="/dashboard" element={<ProtectedLayout><PageTransition><EmergencyGuard><Dashboard /></EmergencyGuard></PageTransition></ProtectedLayout>} />
       <Route path="/map" element={<Navigate to="/home" />} />
       <Route path="/post-resource" element={<ProtectedLayout><PageTransition><PostResource /></PageTransition></ProtectedLayout>} />

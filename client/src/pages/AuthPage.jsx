@@ -48,12 +48,13 @@ export default function AuthPage() {
                         callback: handleGoogleResponse
                     });
 
+                    const btnWidth = Math.min(320, window.innerWidth - 48);
                     window.google.accounts.id.renderButton(
                         document.getElementById('google-signin-button'),
                         { 
                             theme: 'outline', 
                             size: 'large', 
-                            width: 360,
+                            width: btnWidth,
                             text: 'continue_with',
                             shape: 'pill'
                         }
@@ -145,7 +146,7 @@ export default function AuthPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="relative bg-white rounded-3xl p-8 lg:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100"
+                        className="relative bg-white rounded-3xl p-6 sm:p-8 lg:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100"
                     >
                         <div className="mb-8">
                             <h2 className="text-3xl font-black text-slate-900 mb-2">

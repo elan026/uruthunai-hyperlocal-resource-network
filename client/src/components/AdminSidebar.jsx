@@ -61,7 +61,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
                             {isActive && (
                                 <motion.div
                                     layoutId="admin-active-bg"
-                                    className="absolute inset-0 bg-slate-800 border-l-4 border-white"
+                                    className="absolute inset-0 bg-slate-800 border-l-2 border-white"
                                     initial={false}
                                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                                 />

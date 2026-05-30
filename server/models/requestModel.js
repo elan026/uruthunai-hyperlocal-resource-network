@@ -42,10 +42,11 @@ const Request = {
     },
 
     updateState: async (id, status, assigned_to_user_id = null) => {
+        const clearSla = (status !== 'ACCEPTED' && status !== 'ACKNOWLEDGED') ? ', sla_warning = NULL' : '';
         if (assigned_to_user_id) {
-            await db.execute('UPDATE requests SET status = ?, assigned_to_user_id = ? WHERE id = ?', [status, assigned_to_user_id, id]);
+            await db.execute(`UPDATE requests SET status = ?, assigned_to_user_id = ?${clearSla} WHERE id = ?`, [status, assigned_to_user_id, id]);
         } else {
-            await db.execute('UPDATE requests SET status = ? WHERE id = ?', [status, id]);
+            await db.execute(`UPDATE requests SET status = ?${clearSla} WHERE id = ?`, [status, id]);
         }
     },
     

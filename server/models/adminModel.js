@@ -116,7 +116,7 @@ class AdminModel {
     static async getActivityAuditLog() {
         const [rows] = await db.execute(`
             SELECT a.id, a.request_id, a.user_id, a.action, a.created_at,
-                   u.name as user_name, u.role, r.category as request_category, r.area_name
+                   u.name as user_name, u.role, r.category as request_category, r.area_name, r.sla_warning
             FROM request_activities a
             JOIN users u ON a.user_id = u.id
             JOIN requests r ON a.request_id = r.id
@@ -227,6 +227,136 @@ class AdminModel {
             uptime: process.uptime(),
             memoryUsage: process.memoryUsage(),
         };
+    }
+
+    // ─── Volunteer Matchmaking Recommender ──────
+    static async recommendVolunteers(requestId) {
+        // 1. Fetch request details
+        const [reqRows] = await db.execute('SELECT category, location_lat, location_lng FROM requests WHERE id = ?', [requestId]);
+        if (reqRows.length === 0) return [];
+        const request = reqRows[0];
+        
+        // 2. Fetch all potential volunteers
+        const [volunteers] = await db.execute(`
+            SELECT id, name, area_code, pincode, area_name, user_type, trust_score, skills, verification_status
+            FROM users
+            WHERE user_type IN ('volunteer', 'community_activist', 'organization', 'ngo')
+              AND verification_status != 'banned'
+        `);
+        
+        const LOCATION_COORDINATES = {
+            '638001': { lat: 11.3410, lng: 77.7172 }, // Erode City
+            '638104': { lat: 11.2721, lng: 77.7942 }, // Modakkurichi
+            '638401': { lat: 11.5034, lng: 77.2444 }, // Sathyamangalam
+            '638461': { lat: 11.7825, lng: 77.2917 }, // Thalavadi
+            '636001': { lat: 11.6643, lng: 78.1460 }, // Salem City
+            '636601': { lat: 11.7753, lng: 78.2093 }, // Yercaud
+            '641001': { lat: 11.0168, lng: 76.9558 }, // Coimbatore City
+            '641301': { lat: 10.3242, lng: 76.9744 }, // Valparai
+        };
+        
+        const haversine = (lat1, lon1, lat2, lon2) => {
+            const R = 6371; // km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 +
+                      cos(lat1 * Math.PI / 180) * cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon / 2) ** 2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        };
+        
+        const cos = Math.cos;
+        
+        const scoredVolunteers = volunteers.map(vol => {
+            let score = 0;
+            let distance = null;
+            
+            // Extract pincode (either directly or from area_code)
+            let pin = vol.pincode;
+            if (!pin && vol.area_code) {
+                const match = vol.area_code.match(/^(\d{6})/);
+                if (match) pin = match[1];
+            }
+            
+            // Compute Distance Score (Max 40 points)
+            if (pin && LOCATION_COORDINATES[pin] && request.location_lat && request.location_lng) {
+                const volCoords = LOCATION_COORDINATES[pin];
+                distance = haversine(
+                    parseFloat(request.location_lat), 
+                    parseFloat(request.location_lng), 
+                    volCoords.lat, 
+                    volCoords.lng
+                );
+                
+                if (distance <= 2) score += 40;
+                else if (distance <= 5) score += 30;
+                else if (distance <= 10) score += 20;
+                else if (distance <= 20) score += 10;
+            } else {
+                score += 15; // default fallback score if no location mapping
+            }
+            
+            // Compute Trust Score (Max 30 points)
+            const trust = vol.trust_score || 50;
+            score += Math.round(trust * 0.3);
+            
+            // Compute Skills Score (Max 30 points)
+            let skillsList = [];
+            if (vol.skills) {
+                try {
+                    const parsed = JSON.parse(vol.skills);
+                    skillsList = Array.isArray(parsed) ? parsed : [vol.skills];
+                } catch (e) {
+                    skillsList = vol.skills.split(',').map(s => s.trim().toLowerCase());
+                }
+            }
+            
+            const categoryLower = (request.category || '').toLowerCase();
+            let skillsMatch = false;
+            
+            const categoryKeywords = {
+                'medical': ['medical', 'doctor', 'first aid', 'cpr', 'nurse', 'insulin', 'health', 'ambulance', 'hospital', 'medic'],
+                'food': ['food', 'water', 'ration', 'cooking', 'supply', 'rice', 'meal', 'meals'],
+                'water': ['water', 'drink', 'drinking', 'ration', 'supply'],
+                'rescue': ['rescue', 'boat', 'swim', 'swimmer', 'driver', 'transport', 'vehicle', 'lift', 'climb'],
+                'power': ['power', 'charge', 'electric', 'generator', 'battery', 'electricity', 'light'],
+                'shelter': ['shelter', 'accommodation', 'home', 'housing', 'stay', 'room']
+            };
+            
+            let matchedKeywords = [];
+            for (const [key, keywords] of Object.entries(categoryKeywords)) {
+                if (categoryLower.includes(key)) {
+                    matchedKeywords = matchedKeywords.concat(keywords);
+                }
+            }
+            
+            if (matchedKeywords.length > 0) {
+                skillsMatch = skillsList.some(skill => 
+                    matchedKeywords.some(kw => typeof skill === 'string' && skill.toLowerCase().includes(kw))
+                );
+            }
+            
+            if (skillsMatch) {
+                score += 30;
+            } else if (skillsList.length > 0) {
+                score += 15; // some skills but no direct category match
+            }
+            
+            return {
+                id: vol.id,
+                name: vol.name,
+                user_type: vol.user_type,
+                trust_score: vol.trust_score,
+                skills: skillsList,
+                distance: distance !== null ? parseFloat(distance.toFixed(1)) : null,
+                match_score: Math.min(100, score)
+            };
+        });
+        
+        // Sort by match score descending
+        return scoredVolunteers
+            .sort((a, b) => b.match_score - a.match_score)
+            .slice(0, 5);
     }
 }
 

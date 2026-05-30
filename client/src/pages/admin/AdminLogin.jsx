@@ -43,7 +43,7 @@ export default function AdminLogin() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
-                className="w-full max-w-md bg-white p-10 rounded-3xl shadow-2xl relative z-10"
+                className="w-full max-w-md bg-white p-6 md:p-10 rounded-3xl shadow-2xl relative z-10 mx-4"
             >
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-900 text-white mb-6 shadow-xl mx-auto">
                     <span className="material-symbols-outlined text-3xl">admin_panel_settings</span>

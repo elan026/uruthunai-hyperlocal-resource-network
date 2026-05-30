@@ -43,7 +43,7 @@ export default function Volunteers() {
     const avatarColors = ['bg-blue-200 text-blue-700', 'bg-rose-200 text-rose-700', 'bg-emerald-200 text-emerald-700', 'bg-purple-200 text-purple-700', 'bg-amber-200 text-amber-700', 'bg-cyan-200 text-cyan-700'];
 
     return (
-        <div className="p-6 lg:p-10">
+        <div className="p-4 md:p-6 lg:p-10">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">

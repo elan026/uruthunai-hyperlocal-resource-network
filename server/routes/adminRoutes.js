@@ -22,6 +22,7 @@ router.post('/users/:id/unban', adminController.unbanUser);
 router.get('/activity', adminController.getActivity);
 router.get('/audit-log', adminController.getRequestAuditLog);
 router.patch('/requests/:id/reassign', adminController.reassignRequest);
+router.get('/requests/:id/recommend-volunteers', adminController.recommendVolunteersForRequest);
 
 // Reports & Moderation
 router.get('/reports', adminController.getReports);

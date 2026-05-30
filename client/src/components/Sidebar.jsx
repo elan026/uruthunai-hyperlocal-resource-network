@@ -1,5 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { getLocationsDropdownOptions } from '../data/erodeLocations';
 
 const menuItems = [
     { path: '/home', label: 'Home Map', icon: 'map' },
@@ -15,6 +18,28 @@ const adminItem = { path: '/admin', label: 'Admin Control', icon: 'shield_with_h
 
 export default function Sidebar({ isAdmin, isOpen, onClose, emergencyMode, overlayMode = false }) {
     const location = useLocation();
+    const { user, updateProfile } = useAuth();
+    const [isUpdatingArea, setIsUpdatingArea] = useState(false);
+
+    const handleAreaChange = async (e) => {
+        if (!user) return;
+        setIsUpdatingArea(true);
+        try {
+            const areaCode = e.target.value;
+            const selectedOpt = getLocationsDropdownOptions().find(o => o.value === areaCode) || getLocationsDropdownOptions()[0];
+            await updateProfile(user.id, {
+                area_code: areaCode,
+                pincode: selectedOpt.pincode,
+                area_name: selectedOpt.areaName
+            });
+            window.location.reload(); // Reload to reflect changes across app
+        } catch (err) {
+            // Silenced
+        } finally {
+            setIsUpdatingArea(false);
+        }
+    };
+
     let items = isAdmin ? [...menuItems, adminItem] : menuItems;
 
     if (emergencyMode && !isAdmin) {
@@ -50,6 +75,28 @@ export default function Sidebar({ isAdmin, isOpen, onClose, emergencyMode, overl
                 </button>
             </div>
 
+            {/* Mobile Location Selector */}
+            <div className="px-6 pb-4 md:hidden">
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-colors bg-slate-50 border border-slate-200">
+                    <span className="material-symbols-outlined text-primary text-[20px]">location_on</span>
+                    {isUpdatingArea ? (
+                        <span className="text-xs font-bold text-slate-500">Updating...</span>
+                    ) : (
+                        <select 
+                            value={user?.area_code || '638001 - Erode City'}
+                            onChange={handleAreaChange}
+                            className="bg-transparent border-none outline-none font-bold text-slate-900 text-xs cursor-pointer flex-1 w-full"
+                        >
+                            {getLocationsDropdownOptions().map((opt, i) => (
+                                <option key={i} value={opt.value}>
+                                    {opt.type === 'HILL' ? '⛰️ ' : ''}{opt.areaName}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+                </div>
+            </div>
+
             {/* Navigation */}
             <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
                 {items.map((item) => {
@@ -79,7 +126,7 @@ export default function Sidebar({ isAdmin, isOpen, onClose, emergencyMode, overl
                             {isActive && (
                                 <motion.div
                                     layoutId="active-nav-bg"
-                                    className="absolute inset-0 bg-primary/10 border-l-4 border-primary"
+                                    className="absolute inset-0 bg-primary/10 border-l-2 border-primary"
                                     initial={false}
                                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                                 />
@@ -106,7 +153,7 @@ export default function Sidebar({ isAdmin, isOpen, onClose, emergencyMode, overl
                     {location.pathname === '/profile' && (
                         <motion.div
                             layoutId="active-nav-bg"
-                            className="absolute inset-0 bg-primary/10 border-l-4 border-primary"
+                            className="absolute inset-0 bg-primary/10 border-l-2 border-primary"
                             initial={false}
                             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                         />
