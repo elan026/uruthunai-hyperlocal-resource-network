@@ -8,6 +8,7 @@ export default function Navbar({ user, emergencyMode, onLogout, onMenuClick, isM
     const navigate = useNavigate();
     const { updateProfile, hillStationDangerMode } = useAuth();
     const [isUpdatingArea, setIsUpdatingArea] = useState(false);
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
 
     const handleLogout = () => {
         if (onLogout) onLogout();
@@ -138,10 +139,12 @@ export default function Navbar({ user, emergencyMode, onLogout, onMenuClick, isM
                 <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
 
                 {/* Profile */}
-                <Link to="/profile">
-                    <motion.div
-                        whileHover={{ scale: 1.02, backgroundColor: '#f8fafc' }}
-                        className="flex items-center gap-3 p-1.5 pr-4 rounded-full border border-slate-200 transition-colors cursor-pointer bg-white shadow-sm"
+                <div className="relative">
+                    <motion.button
+                        onClick={() => setShowProfileMenu(!showProfileMenu)}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="flex items-center gap-3 p-1.5 pr-4 rounded-full border border-slate-200 transition-colors cursor-pointer bg-white shadow-sm outline-none text-left"
                     >
                         <div className="size-9 rounded-full bg-gradient-to-tr from-primary to-blue-400 flex items-center justify-center text-white text-sm font-black shadow-inner">
                             {user?.name?.charAt(0) || 'U'}
@@ -150,8 +153,43 @@ export default function Navbar({ user, emergencyMode, onLogout, onMenuClick, isM
                             <p className="text-sm font-bold text-slate-900 leading-tight">{user?.name || 'User'}</p>
                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{user?.user_type ? user.user_type.replace('_', ' ') : 'Resident'}</p>
                         </div>
-                    </motion.div>
-                </Link>
+                        <span className="material-symbols-outlined text-slate-400 text-sm hidden md:inline">keyboard_arrow_down</span>
+                    </motion.button>
+
+                    {showProfileMenu && (
+                        <>
+                            {/* Backdrop overlay to close */}
+                            <div 
+                                className="fixed inset-0 z-20 cursor-default" 
+                                onClick={() => setShowProfileMenu(false)}
+                            />
+                            <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-2xl shadow-xl py-2 z-30 animate-in fade-in slide-in-from-top-2 duration-150">
+                                <div className="px-4 py-2 border-b border-slate-100 md:hidden">
+                                    <p className="text-sm font-bold text-slate-900 leading-tight truncate">{user?.name || 'User'}</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{user?.user_type ? user.user_type.replace('_', ' ') : 'Resident'}</p>
+                                </div>
+                                <Link 
+                                    to="/profile" 
+                                    onClick={() => setShowProfileMenu(false)}
+                                    className="flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                                >
+                                    <span className="material-symbols-outlined text-slate-400 text-[20px]">person</span>
+                                    View Profile
+                                </Link>
+                                <button
+                                    onClick={() => {
+                                        setShowProfileMenu(false);
+                                        handleLogout();
+                                    }}
+                                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-bold text-rose-600 hover:bg-rose-50/50 transition-colors text-left cursor-pointer border-t border-slate-100"
+                                >
+                                    <span className="material-symbols-outlined text-rose-500 text-[20px]">logout</span>
+                                    Logout
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
             </div>
         </header>
     );
