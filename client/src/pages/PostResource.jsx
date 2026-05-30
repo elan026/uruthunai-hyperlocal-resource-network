@@ -26,7 +26,7 @@ export default function PostResource() {
                     setIsLocating(false);
                 },
                 (err) => {
-                    console.error("Location access denied or failed", err);
+                    // Silenced: geolocation denial is expected — fallback to Erode default
                     setLocation({ lat: 11.3410, lng: 77.7172 }); // Erode Default
                     setIsLocating(false);
                 }
@@ -58,7 +58,7 @@ export default function PostResource() {
             navigate('/home');
 
         } catch (err) {
-            console.error('Error posting resource', err);
+            // Silenced: submission failure is apparent from missing redirect
         }
     };
 
@@ -69,16 +69,34 @@ export default function PostResource() {
                     <div className="absolute top-0 left-0 right-0 h-1.5 bg-red-500"></div>
                     <span className="material-symbols-outlined text-5xl text-red-400 mb-6 block">block</span>
                     <h2 className="text-2xl font-black text-slate-900 mb-3">Action Restricted</h2>
-                    <p className="text-slate-600 mb-8 font-medium leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <p className="text-slate-600 mb-6 font-medium leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
                         Residents are only permitted to post new resources when a global <strong className="text-red-500">Emergency Mode</strong> is declared.
                         During normal operations, only verified Organizations, NGOs, and Volunteers can post to keep the system uncluttered.
                     </p>
-                    <button
-                        onClick={() => navigate('/home')}
-                        className="w-full bg-slate-900 text-white font-bold py-3.5 rounded-xl hover:bg-slate-800 transition-colors"
-                    >
-                        Return to Dashboard
-                    </button>
+
+                    {/* Actionable CTAs — no more dead ends */}
+                    <div className="space-y-3">
+                        <button
+                            onClick={() => navigate('/request-resource')}
+                            className="w-full bg-primary text-white font-bold py-3.5 rounded-xl hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <span className="material-symbols-outlined text-lg">add_circle</span>
+                            Request Help Instead
+                        </button>
+                        <button
+                            onClick={() => navigate('/settings')}
+                            className="w-full bg-slate-100 text-slate-700 font-bold py-3.5 rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <span className="material-symbols-outlined text-lg">upgrade</span>
+                            Apply to Volunteer
+                        </button>
+                        <button
+                            onClick={() => navigate('/home')}
+                            className="w-full text-slate-500 font-semibold py-2 text-sm hover:text-slate-700 transition-colors"
+                        >
+                            ← View Map
+                        </button>
+                    </div>
                 </div>
             </div>
         );

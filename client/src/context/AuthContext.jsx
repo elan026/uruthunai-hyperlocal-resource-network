@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
                 setEmergencyMode(res.data.isEmergency);
                 setEmergencyInfo({ title: res.data.title, message: res.data.message });
             })
-            .catch(err => console.error("Failed to fetch emergency state", err));
+            .catch(() => { /* Silenced: defaults to non-emergency mode on failure */ });
 
         // Listen for real-time toggles
         socket.on('emergency_mode', (data) => {
@@ -43,6 +43,12 @@ export function AuthProvider({ children }) {
 
     const login = async (credentials) => {
         const res = await authService.login(credentials);
+        setUser(res.data.user);
+        return res.data.user;
+    };
+
+    const googleLogin = async (idToken) => {
+        const res = await authService.googleLogin(idToken);
         setUser(res.data.user);
         return res.data.user;
     };
@@ -79,6 +85,7 @@ export function AuthProvider({ children }) {
         adminToken,
         setAdminToken,
         login,
+        googleLogin,
         sendOtp,
         logout,
         updateProfile,

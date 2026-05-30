@@ -95,3 +95,10 @@ const MapComponent = () => {
 };
 
 export default MapComponent;
+
+
+
+
+
+
+where the volunteer would check teh task tracking and task completion flow , how the would the system knows the volunteeer completes the tasks, that is done once the resource is reached the resident right , then why cant i access that things i this system 

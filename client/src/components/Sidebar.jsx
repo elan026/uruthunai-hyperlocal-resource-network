@@ -13,7 +13,7 @@ const menuItems = [
 
 const adminItem = { path: '/admin', label: 'Admin Control', icon: 'shield_with_heart' };
 
-export default function Sidebar({ isAdmin, isOpen, onClose, emergencyMode }) {
+export default function Sidebar({ isAdmin, isOpen, onClose, emergencyMode, overlayMode = false }) {
     const location = useLocation();
     let items = isAdmin ? [...menuItems, adminItem] : menuItems;
 
@@ -27,7 +27,7 @@ export default function Sidebar({ isAdmin, isOpen, onClose, emergencyMode }) {
     }
 
     return (
-        <aside className={`w-72 bg-white border-r border-slate-200 flex flex-col fixed h-screen z-30 shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <aside className={`w-72 bg-white border-r border-slate-200 flex flex-col fixed h-screen ${overlayMode ? 'z-[800]' : 'z-30'} shadow-[4px_0_24px_rgba(0,0,0,0.02)] transition-transform duration-300 ${overlayMode ? '' : 'md:translate-x-0'} ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
             <div className="p-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <motion.div
@@ -44,7 +44,7 @@ export default function Sidebar({ isAdmin, isOpen, onClose, emergencyMode }) {
                 </div>
                 <button
                     onClick={onClose}
-                    className="md:hidden text-slate-500 hover:text-slate-900 p-2"
+                    className={`${overlayMode ? '' : 'md:hidden'} text-slate-500 hover:text-slate-900 p-2`}
                 >
                     <span className="material-symbols-outlined">close</span>
                 </button>

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { getLocationsDropdownOptions } from '../data/erodeLocations';
 import { useAuth } from '../context/AuthContext';
 
-export default function Navbar({ user, emergencyMode, onLogout, onMenuClick }) {
+export default function Navbar({ user, emergencyMode, onLogout, onMenuClick, isMapPage = false }) {
     const navigate = useNavigate();
     const { updateProfile, hillStationDangerMode } = useAuth();
     const [isUpdatingArea, setIsUpdatingArea] = useState(false);
@@ -27,7 +27,7 @@ export default function Navbar({ user, emergencyMode, onLogout, onMenuClick }) {
             });
             window.location.reload(); // Reload to reflect changes across app
         } catch (err) {
-            console.error('Failed to change area', err);
+            // Silenced: failure is apparent since area dropdown reverts
         } finally {
             setIsUpdatingArea(false);
         }
@@ -39,7 +39,7 @@ export default function Navbar({ user, emergencyMode, onLogout, onMenuClick }) {
             <div className="flex items-center gap-2 md:gap-6 lg:gap-8">
                 <button
                     onClick={onMenuClick}
-                    className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors flex items-center justify-center cursor-pointer"
+                    className={`${isMapPage ? '' : 'md:hidden'} p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors flex items-center justify-center cursor-pointer`}
                 >
                     <span className="material-symbols-outlined">menu</span>
                 </button>

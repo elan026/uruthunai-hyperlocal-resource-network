@@ -6,71 +6,66 @@ import { getLocationsDropdownOptions } from '../data/erodeLocations';
 
 export default function AuthPage() {
     const navigate = useNavigate();
-    const { login, sendOtp, updateProfile } = useAuth();
+    const { googleLogin, updateProfile } = useAuth();
 
-    const [authStep, setAuthStep] = useState(1); // 1 = Phone, 2 = OTP, 3 = Profile Setup
+    const [authStep, setAuthStep] = useState(1); // 1 = Google Sign-In, 2 = Profile Setup
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
     // Form State
-    const [phone, setPhone] = useState('');
-    const [otp, setOtp] = useState('');
     const [name, setName] = useState('');
     const [areaCode, setAreaCode] = useState('');
     const [tempUserId, setTempUserId] = useState(null);
 
-    // Timer for OTP
-    const [timer, setTimer] = useState(30);
-
-    useEffect(() => {
-        let interval;
-        if (authStep === 2 && timer > 0) {
-            interval = setInterval(() => setTimer(t => t - 1), 1000);
-        }
-        return () => clearInterval(interval);
-    }, [authStep, timer]);
-
-    const handleSendOtp = async (e) => {
-        if (e) e.preventDefault();
+    const handleGoogleResponse = async (response) => {
         setLoading(true);
         setError('');
         try {
-            await sendOtp(phone);
-            setAuthStep(2);
-            setTimer(30);
-            setOtp('');
-        } catch (err) {
-            setError(err.response?.data?.error || 'Failed to send OTP');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleVerifyOtp = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
-        try {
-            const payload = {
-                phone_number: phone,
-                otp: otp,
-            };
-
-            const user = await login(payload);
+            const user = await googleLogin(response.credential);
             
-            // If user is new (e.g. name is Anonymous or missing), go to step 3
-            if (!user.name || user.name === 'Anonymous') {
+            // If user has no area code (new Google user), go to step 2 to complete profile
+            if (!user.area_code) {
                 setTempUserId(user.id);
-                setAuthStep(3);
+                setName(user.name || '');
+                setAuthStep(2);
             } else {
                 navigate('/home');
             }
         } catch (err) {
-            setError(err.response?.data?.error || 'Invalid OTP');
+            console.error('[Google Login Callback Error]:', err);
+            setError(err.response?.data?.error || 'Google Authentication failed');
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (authStep === 1) {
+            const initGoogleBtn = () => {
+                if (typeof window.google !== 'undefined') {
+                    window.google.accounts.id.initialize({
+                        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || 'your-google-client-id.apps.googleusercontent.com',
+                        callback: handleGoogleResponse
+                    });
+
+                    window.google.accounts.id.renderButton(
+                        document.getElementById('google-signin-button'),
+                        { 
+                            theme: 'outline', 
+                            size: 'large', 
+                            width: 360,
+                            text: 'continue_with',
+                            shape: 'pill'
+                        }
+                    );
+                } else {
+                    setTimeout(initGoogleBtn, 100);
+                }
+            };
+            initGoogleBtn();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [authStep]);
 
     const handleSetupProfile = async (e) => {
         e.preventDefault();
@@ -90,7 +85,7 @@ export default function AuthPage() {
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     return (
         <div className="min-h-screen w-full flex bg-slate-50 font-sans text-slate-900">
@@ -150,18 +145,16 @@ export default function AuthPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-3xl p-8 lg:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100"
+                        className="relative bg-white rounded-3xl p-8 lg:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100"
                     >
                         <div className="mb-8">
                             <h2 className="text-3xl font-black text-slate-900 mb-2">
                                 {authStep === 1 && 'Welcome to Namma Thunai'}
-                                {authStep === 2 && 'Verify your number'}
-                                {authStep === 3 && 'Complete your profile'}
+                                {authStep === 2 && 'Complete your profile'}
                             </h2>
                             <p className="text-sm text-slate-500 font-medium">
-                                {authStep === 1 && 'Enter your phone number to connect with your community.'}
-                                {authStep === 2 && `We sent a 6-digit code to ${phone}.`}
-                                {authStep === 3 && 'Help neighbors recognize and locate you.'}
+                                {authStep === 1 && 'Sign in with your Google account to connect with your community.'}
+                                {authStep === 2 && 'Help neighbors recognize and locate you.'}
                             </p>
                         </div>
 
@@ -174,110 +167,33 @@ export default function AuthPage() {
 
                         <AnimatePresence mode="wait">
                             {authStep === 1 && (
-                                <motion.form
+                                <motion.div
                                     key="step1"
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 20 }}
-                                    onSubmit={handleSendOtp}
-                                    className="space-y-5"
+                                    className="gap-y-6 flex flex-col items-center"
                                 >
-                                    <div>
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">+91</span>
-                                            <input
-                                                type="tel"
-                                                value={phone}
-                                                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                                                placeholder="98765 43210"
-                                                maxLength={10}
-                                                className="w-full rounded-xl border-2 border-slate-100 bg-slate-50 pl-14 pr-4 py-3.5 text-lg font-bold tracking-wide text-slate-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
-                                                required
-                                            />
-                                        </div>
+                                    <div className="w-full flex justify-center py-6">
+                                        <div id="google-signin-button" className="w-full flex justify-center min-h-[44px]"></div>
                                     </div>
 
-                                    <motion.button
-                                        whileHover={{ scale: 1.01 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        type="submit"
-                                        disabled={loading || phone.length < 10}
-                                        className="w-full rounded-xl bg-primary py-4 mt-2 text-sm font-bold text-white shadow-lg shadow-primary/25 disabled:opacity-50 disabled:shadow-none transition-all flex justify-center items-center gap-2"
-                                    >
-                                        {loading ? (
-                                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                                        ) : (
-                                            <>
-                                                Get OTP
-                                                <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-                                            </>
-                                        )}
-                                    </motion.button>
+                                    {loading && (
+                                        <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                                            Authenticating with Google...
+                                        </div>
+                                    )}
 
-                                    <div className="text-center pt-2">
+                                    <div className="text-center pt-2 w-full">
                                         <p className="text-xs text-slate-400 font-medium">By continuing, you agree to our Terms & Conditions.</p>
                                     </div>
-                                </motion.form>
+                                </motion.div>
                             )}
 
                             {authStep === 2 && (
                                 <motion.form
                                     key="step2"
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: 20 }}
-                                    onSubmit={handleVerifyOtp}
-                                    className="space-y-6"
-                                >
-                                    <div>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <label className="block text-xs font-black uppercase tracking-widest text-slate-500">6-Digit Code</label>
-                                            <button type="button" onClick={() => setAuthStep(1)} className="text-xs font-bold text-primary hover:text-primary-dark transition-colors">Wrong number?</button>
-                                        </div>
-                                        <input
-                                            type="text"
-                                            value={otp}
-                                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                                            placeholder="••••••"
-                                            maxLength={6}
-                                            className="w-full rounded-xl border-2 border-slate-100 bg-slate-50 px-4 py-4 text-3xl tracking-[0.5em] text-center font-black text-slate-900 focus:border-primary focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 transition-all"
-                                            required
-                                        />
-                                    </div>
-
-                                    <motion.button
-                                        whileHover={{ scale: 1.01 }}
-                                        whileTap={{ scale: 0.98 }}
-                                        type="submit"
-                                        disabled={loading || otp.length < 6}
-                                        className="w-full rounded-xl bg-primary py-4 text-sm font-bold text-white shadow-lg shadow-primary/25 disabled:opacity-50 disabled:shadow-none transition-all flex justify-center items-center gap-2"
-                                    >
-                                        {loading ? (
-                                            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                                        ) : (
-                                            <>
-                                                Verify
-                                                <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                                            </>
-                                        )}
-                                    </motion.button>
-
-                                    <div className="text-center pt-2">
-                                        <button
-                                            type="button"
-                                            onClick={handleSendOtp}
-                                            disabled={loading || timer > 0}
-                                            className="text-xs font-bold text-slate-500 hover:text-primary transition-colors disabled:opacity-50"
-                                        >
-                                            Resend code {timer > 0 ? `in 0:${timer.toString().padStart(2, '0')}s` : ''}
-                                        </button>
-                                    </div>
-                                </motion.form>
-                            )}
-
-                            {authStep === 3 && (
-                                <motion.form
-                                    key="step3"
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 20 }}

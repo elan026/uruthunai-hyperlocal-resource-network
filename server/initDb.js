@@ -19,8 +19,10 @@ const initDb = async () => {
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                phone_number VARCHAR(20) UNIQUE NOT NULL,
+                phone_number VARCHAR(20) UNIQUE NULL,
                 password VARCHAR(255) NULL,
+                google_id VARCHAR(255) UNIQUE NULL,
+                email VARCHAR(255) UNIQUE NULL,
                 name VARCHAR(100),
                 area_code VARCHAR(100),
                 role ENUM('admin', 'user') DEFAULT 'user',

@@ -16,6 +16,9 @@ const Listing = {
                     r.status,
                     r.created_at,
                     u.name AS user_name,
+                    NULL AS priority,
+                    NULL AS assigned_to_name,
+                    NULL AS assigned_to_user_id,
                     (6371 * acos(
                         cos(radians(?)) * cos(radians(r.location_lat)) * 
                         cos(radians(r.location_lng) - radians(?)) + 
@@ -39,6 +42,9 @@ const Listing = {
                     req.status,
                     req.created_at,
                     u.name AS user_name,
+                    req.priority,
+                    au.name AS assigned_to_name,
+                    req.assigned_to_user_id,
                     (6371 * acos(
                         cos(radians(?)) * cos(radians(req.location_lat)) * 
                         cos(radians(req.location_lng) - radians(?)) + 
@@ -46,6 +52,7 @@ const Listing = {
                     )) AS distance
                 FROM requests req
                 JOIN users u ON req.user_id = u.id
+                LEFT JOIN users au ON req.assigned_to_user_id = au.id
                 WHERE req.location_lat IS NOT NULL AND req.location_lng IS NOT NULL
             ) AS combined_listings
             WHERE distance <= ?

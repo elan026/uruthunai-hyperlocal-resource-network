@@ -1,22 +1,45 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { requestService } from '../services/api';
+import { requestService, systemService } from '../services/api';
 
 export default function EmergencyDashboard() {
-    const { emergencyMode, emergencyInfo } = useAuth();
+    const { user } = useAuth();
+    const [emergencyMode, setEmergencyMode] = useState(false);
+    const [emergencyInfo, setEmergencyInfo] = useState(null);
     const [requests, setRequests] = useState([]);
+    const [systemStats, setSystemStats] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchRequests = async () => {
+        const fetchEmergencyData = async () => {
             try {
-                const res = await requestService.getAll();
-                setRequests(res.data.filter(r => r.urgency_level === 'Critical' || r.urgency_level === 'Essential'));
+                const [statusRes, requestsRes, statsRes] = await Promise.all([
+                    systemService.getEmergencyState(),
+                    requestService.getAll(),
+                    systemService.getStats()
+                ]);
+                
+                setEmergencyMode(statusRes.data.active);
+                setEmergencyInfo(statusRes.data.info);
+                setRequests(requestsRes.data.filter(r => r.urgency_level === 'Critical' || r.urgency_level === 'Essential' || r.is_emergency));
+                setSystemStats(statsRes.data);
             } catch (err) {
-                console.error('Error fetching emergency requests', err);
+                console.error('Emergency fetch error:', err);
+            } finally {
+                setLoading(false);
             }
         };
-        fetchRequests();
+        fetchEmergencyData();
     }, []);
+
+    const statsConfig = [
+        { label: 'Active Requests', value: requests.length, icon: 'priority_high', iconColor: 'text-red-500', trend: 'Live system count', trendColor: 'text-red-500' },
+        { label: 'Available Volunteers', value: systemStats?.volunteerCount || '0', icon: 'person_check', iconColor: 'text-blue-500', trend: 'Sufficient coverage', trendColor: 'text-green-600', trendIcon: 'check_circle' },
+        { label: 'Shelter Capacity', value: '82%', icon: 'home_work', iconColor: 'text-orange-500', trend: 'Near full capacity', trendColor: 'text-orange-500', trendIcon: 'warning' },
+        { label: 'Power Status', value: emergencyMode ? 'OFF' : 'ON', icon: 'bolt', iconColor: 'text-yellow-500', trend: emergencyMode ? 'Grid down in 600020' : 'Grid stable', trendColor: 'text-slate-400', trendIcon: emergencyMode ? 'error' : 'check_circle' },
+    ];
+
+    if (loading) return <div className="p-10 text-center font-bold">Initializing Emergency Command Center...</div>;
 
     return (
         <div className="p-4 md:p-8">
@@ -39,12 +62,7 @@ export default function EmergencyDashboard() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                {[
-                    { label: 'Active Requests', value: requests.length, icon: 'priority_high', iconColor: 'text-red-500', trend: 'Live system count', trendColor: 'text-red-500' },
-                    { label: 'Available Volunteers', value: '45', icon: 'person_check', iconColor: 'text-blue-500', trend: 'Sufficient coverage', trendColor: 'text-green-600', trendIcon: 'check_circle' },
-                    { label: 'Shelter Capacity', value: '82%', icon: 'home_work', iconColor: 'text-orange-500', trend: 'Near full capacity', trendColor: 'text-orange-500', trendIcon: 'warning' },
-                    { label: 'Power Status', value: emergencyMode ? 'OFF' : 'ON', icon: 'bolt', iconColor: 'text-yellow-500', trend: emergencyMode ? 'Grid down in 600020' : 'Grid stable', trendColor: 'text-slate-400', trendIcon: emergencyMode ? 'error' : 'check_circle' },
-                ].map((stat, i) => (
+                {statsConfig.map((stat, i) => (
                     <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200">
                         <div className="flex justify-between items-start mb-2">
                             <p className="text-sm font-semibold text-slate-500">{stat.label}</p>

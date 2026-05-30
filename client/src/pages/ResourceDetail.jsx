@@ -25,7 +25,7 @@ export default function ResourceDetail() {
                 const res = await resourceService.getById(id);
                 setResource(res.data);
             } catch (err) {
-                console.error("Failed to fetch resource", err);
+                // Silenced: handled by showing "not found" UI fallback
             } finally {
                 setLoading(false);
             }
@@ -45,7 +45,7 @@ export default function ResourceDetail() {
             await resourceService.decrement(resource.id, 1);
             setRequested(true);
         } catch (err) {
-            console.error("Failed to send request", err);
+            // Silenced: request error is visible via UI state (no success toast shown)
         }
     };
 

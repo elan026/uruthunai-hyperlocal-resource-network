@@ -4,16 +4,20 @@ const API_BASE = 'http://localhost:5000/api';
 
 const api = axios.create({
     baseURL: API_BASE,
-    headers: { 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json' },
+    withCredentials: true // Send HttpOnly JWT cookie with every request
 });
 
 // ─── Auth ────────────────────────────────────
 export const authService = {
+    googleLogin: (idToken) => api.post('/auth/google-login', { idToken }),
     login: (data) => api.post('/auth/verify-otp', data),
     sendOtp: (data) => api.post('/auth/send-otp', data),
     getProfile: (id) => api.get(`/auth/profile/${id}`),
     updateProfile: (id, data) => api.put(`/auth/profile/${id}`, data),
-    deleteProfile: (id) => api.delete(`/auth/profile/${id}`)
+    deleteProfile: (id) => api.delete(`/auth/profile/${id}`),
+    requestRoleChange: (id, requested_role) => api.post(`/auth/profile/${id}/role-request`, { requested_role }),
+    getVolunteers: () => api.get('/auth/volunteers')
 };
 
 // ─── Resources ───────────────────────────────
@@ -29,7 +33,11 @@ export const resourceService = {
 export const requestService = {
     getAll: () => api.get('/requests'),
     create: (data) => api.post('/requests', data),
-    updateStatus: (id, status) => api.patch(`/requests/${id}/status`, { status })
+    // Fixed: path was /status, should be /state; body uses newState not status
+    updateState: (id, newState, token) => api.patch(`/requests/${id}/state`, 
+        { newState }, 
+        token ? { headers: { Authorization: `Bearer ${token}` } } : {}
+    )
 };
 
 // ─── Alerts ──────────────────────────────────
@@ -46,7 +54,8 @@ export const listingService = {
 
 // ─── System ──────────────────────────────────
 export const systemService = {
-    getEmergencyState: () => api.get('/system/emergency')
+    getEmergencyState: () => api.get('/system/emergency'),
+    getStats: () => api.get('/system/stats')
 };
 
 // ─── Admin ───────────────────────────────────

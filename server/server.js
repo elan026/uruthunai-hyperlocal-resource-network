@@ -59,30 +59,44 @@ app.patch('/api/alerts/:id/deactivate', alertController.deactivateAlert);
 // Global Error Handler
 app.use(errorHandler);
 
-// SLA Task Background Job (runs every 10 mins)
+// SLA Task Background Job (runs every 5 mins)
+// Checks for requests stuck in ACCEPTED or ACKNOWLEDGED state past the 1-hour SLA window
 const db = require('./config/db');
 setInterval(async () => {
     try {
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+        // Check both ACCEPTED and ACKNOWLEDGED states — the clock starts at accept
         const [rows] = await db.execute(
-            'SELECT id, assigned_to_user_id FROM requests WHERE status = "ACKNOWLEDGED" AND acknowledged_at < ?',
+            'SELECT id, assigned_to_user_id FROM requests WHERE status IN ("ACCEPTED", "ACKNOWLEDGED") AND acknowledged_at IS NOT NULL AND acknowledged_at < ?',
             [oneHourAgo]
         );
         for (const row of rows) {
-            await db.execute('UPDATE requests SET status = "NOT_RECEIVED" WHERE id = ?', [row.id]);
+            // Transition to NOT_RECEIVED (SLA breach)
             await db.execute(
-                'INSERT INTO request_activities (request_id, user_id, action) VALUES (?, ?, "FAILED_SLA")',
-                [row.id, row.assigned_to_user_id]
+                'UPDATE requests SET status = "NOT_RECEIVED", sla_breached_at = CURRENT_TIMESTAMP WHERE id = ?', 
+                [row.id]
             );
+            // Audit log
+            if (row.assigned_to_user_id) {
+                await db.execute(
+                    'INSERT INTO request_activities (request_id, user_id, action) VALUES (?, ?, "FAILED_SLA")',
+                    [row.id, row.assigned_to_user_id]
+                );
+                // Trust score penalty (-10) for SLA breach
+                await db.execute(
+                    'UPDATE users SET trust_score = GREATEST(0, trust_score - 10) WHERE id = ?',
+                    [row.assigned_to_user_id]
+                );
+            }
             io.emit('request_status_update', { id: row.id, status: 'NOT_RECEIVED' });
         }
         if (rows.length > 0) {
-            console.log(`[SLA Task] Marked ${rows.length} requests as FAILED_SLA.`);
+            console.log(`[SLA Task] Marked ${rows.length} requests as FAILED_SLA with trust penalty.`);
         }
     } catch (e) {
         console.error('[SLA Task] Error running task:', e);
     }
-}, 10 * 60 * 1000); // 10 mins
+}, 5 * 60 * 1000); // 5 mins
 
 
 // Socket config for Area-Based Rooms
