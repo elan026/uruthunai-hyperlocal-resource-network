@@ -1,19 +1,18 @@
 const mysql = require('mysql2/promise');
-require('dotenv').config();
-
-const { DB_HOST, DB_USER, DB_PASS, DB_NAME } = process.env;
+const dbConfig = require('./config/dbConfig');
 
 const initDb = async () => {
     try {
         const pool = mysql.createPool({
-            host: DB_HOST || 'localhost',
-            user: DB_USER || 'root',
-            password: DB_PASS || 'root',
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
         });
 
-        console.log(`Creating database ${DB_NAME || 'uruthunai'} if not exists...`);
-        await pool.query(`CREATE DATABASE IF NOT EXISTS \`${DB_NAME || 'uruthunai'}\`;`);
-        await pool.query(`USE \`${DB_NAME || 'uruthunai'}\`;`);
+        console.log(`Creating database ${dbConfig.database || 'uruthunai'} if not exists...`);
+        await pool.query(`CREATE DATABASE IF NOT EXISTS \`${dbConfig.database || 'uruthunai'}\`;`);
+        await pool.query(`USE \`${dbConfig.database || 'uruthunai'}\`;`);
 
         // Create Users Table
         await pool.query(`
