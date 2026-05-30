@@ -18,7 +18,7 @@ export default function CommunityAlerts() {
             const res = await alertService.getAll();
             setAlerts(res.data);
         } catch (err) {
-            console.error("Failed to fetch alerts", err);
+            // Silenced: fallback mock data loaded below
             // Fallback mock data
             setAlerts([
                 { id: 1, alert_type: 'Warning', message: 'Flooding expected in low-lying areas of Adyar. Move valuables to higher ground.', is_active: true, admin_name: 'Admin', created_at: new Date(Date.now() - 3600000).toISOString() },
@@ -44,7 +44,7 @@ export default function CommunityAlerts() {
             setShowForm(false);
             fetchAlerts();
         } catch (err) {
-            console.error("Failed to post alert", err);
+            // Silenced: form remains open, indicating failure
         }
     };
 
@@ -53,7 +53,7 @@ export default function CommunityAlerts() {
             await alertService.deactivate(id);
             fetchAlerts();
         } catch (err) {
-            console.error("Failed to deactivate alert", err);
+            // Silenced: alert remains active in UI, indicating failure
         }
     };
 

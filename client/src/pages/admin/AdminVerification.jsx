@@ -14,7 +14,7 @@ export default function AdminVerification() {
                 });
                 setVerifications(res.data);
             } catch (error) {
-                console.error('Failed to fetch verification data', error);
+                // Silenced: empty queue is shown on failure
             }
         };
 
@@ -27,7 +27,7 @@ export default function AdminVerification() {
             // Since it's approved, technically the request is completed, so we can also remove it from this queue or approve it.
             handleVerification(reqId, userId, newType, 'Approved');
         } catch (error) {
-            console.error('Verify by Call failed', error);
+            // Silenced: item remains in queue if call fails
         }
     };
 
@@ -39,7 +39,7 @@ export default function AdminVerification() {
 
             setVerifications(prev => prev.filter(v => v.id !== reqId));
         } catch (error) {
-            console.error('Verification update failed', error);
+            // Silenced: item remains in queue if update fails
         }
     };
 

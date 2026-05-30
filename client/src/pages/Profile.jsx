@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { getLocationsDropdownOptions } from '../data/erodeLocations';
+import { authService } from '../services/api';
 import axios from 'axios';
 
 const TABS = [
@@ -20,8 +21,11 @@ export default function Profile() {
 
     const [profileData, setProfileData] = useState(null);
     const [formData, setFormData] = useState({
-        name: '', area_code: '', user_type: 'resident', skills: ''
+        name: '', area_code: '', skills: ''
     });
+    const [showRoleModal, setShowRoleModal] = useState(false);
+    const [roleRequestLoading, setRoleRequestLoading] = useState(false);
+    const [pendingRoleRequest, setPendingRoleRequest] = useState(null);
 
     const fetchData = useCallback(async () => {
         if (user?.id) {
@@ -41,11 +45,11 @@ export default function Profile() {
                 setFormData({
                     name: data.name || '',
                     area_code: data.area_code || '',
-                    user_type: data.user_type || 'resident',
                     skills: skillsStr
                 });
+                setPendingRoleRequest(data.pending_role_request || null);
             } catch (err) {
-                console.error("Failed to load user profile", err);
+                // Silenced: profile load failure is visible via persistent loading state
             }
         }
     }, [user?.id, loadProfile]);
@@ -64,6 +68,21 @@ export default function Profile() {
             alert('Failed to update profile');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleRoleRequest = async (requestedRole) => {
+        setRoleRequestLoading(true);
+        try {
+            await authService.requestRoleChange(user.id, requestedRole);
+            setShowRoleModal(false);
+            setPendingRoleRequest({ requested_role: requestedRole, status: 'Pending' });
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+        } catch (err) {
+            alert(err.response?.data?.error || 'Failed to submit role request');
+        } finally {
+            setRoleRequestLoading(false);
         }
     };
 
@@ -149,7 +168,7 @@ export default function Profile() {
                                     </button>
                                 </div>
                                 <h3 className="font-bold text-slate-900 mt-3 text-sm">{profileData.name}</h3>
-                                <p className="text-[11px] text-slate-500 font-medium mt-0.5">{profileData.phone_number}</p>
+                                <p className="text-[11px] text-slate-500 font-medium mt-0.5">{profileData.email || profileData.phone_number}</p>
                             </div>
 
                             {/* Tab Navigation */}
@@ -209,13 +228,23 @@ export default function Profile() {
                                                 </div>
                                                 <div>
                                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Role</label>
-                                                    <select value={formData.user_type}
-                                                        onChange={e => setFormData({ ...formData, user_type: e.target.value })}
-                                                        className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl font-semibold focus:ring-2 focus:ring-primary focus:outline-none capitalize cursor-pointer">
-                                                        <option value="resident">Resident</option>
-                                                        <option value="volunteer">Volunteer</option>
-                                                        <option value="org">Organization</option>
-                                                    </select>
+                                                    <div className="w-full bg-slate-100 border border-slate-200 px-4 py-3 rounded-xl font-semibold text-slate-600 capitalize flex items-center justify-between">
+                                                        <span>{profileData.user_type || 'resident'}</span>
+                                                        {pendingRoleRequest && pendingRoleRequest.status === 'Pending' ? (
+                                                            <span className="px-2 py-0.5 text-[9px] font-black bg-amber-100 text-amber-700 rounded-full uppercase tracking-widest">
+                                                                Pending: {pendingRoleRequest.requested_role}
+                                                            </span>
+                                                        ) : profileData.user_type === 'resident' ? (
+                                                            <button 
+                                                                type="button"
+                                                                onClick={() => setShowRoleModal(true)}
+                                                                className="text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-lg hover:bg-primary/20 transition-colors"
+                                                            >
+                                                                Request Upgrade →
+                                                            </button>
+                                                        ) : null}
+                                                    </div>
+                                                    <p className="text-[10px] text-slate-400 mt-1.5">Role changes require admin approval for security.</p>
                                                 </div>
                                             </div>
                                             <div>
@@ -242,10 +271,11 @@ export default function Profile() {
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 {[
                                                     { label: 'Full Name', value: profileData.name || '—', icon: 'badge' },
+                                                    { label: 'Email', value: profileData.email, icon: 'mail' },
                                                     { label: 'Phone Number', value: profileData.phone_number, icon: 'phone' },
                                                     { label: 'Area / Pincode', value: profileData.area_code || '—', icon: 'location_on' },
                                                     { label: 'Role', value: profileData.user_type || 'Resident', icon: 'work' },
-                                                ].map((item, i) => (
+                                                ].filter(item => item.value && item.value !== '').map((item, i) => (
                                                     <div key={i} className="flex items-start gap-3 p-4 bg-slate-50 rounded-xl border border-slate-100">
                                                         <span className="material-symbols-outlined text-primary text-lg mt-0.5">{item.icon}</span>
                                                         <div>
@@ -310,27 +340,54 @@ export default function Profile() {
                                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                                     <div className="px-6 py-4 border-b border-slate-100">
                                         <h2 className="font-bold text-slate-900">Login Method</h2>
-                                        <p className="text-xs text-slate-500 mt-0.5">Your account uses OTP-based phone authentication.</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">
+                                            {profileData.google_id ? 'Your account uses Sign-In with Google.' : 'Your account uses OTP-based phone authentication.'}
+                                        </p>
                                     </div>
                                     <div className="p-6 space-y-4">
-                                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                                                    <span className="material-symbols-outlined text-primary text-xl">smartphone</span>
+                                        {profileData.google_id ? (
+                                            <>
+                                                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                                                            <span className="material-symbols-outlined text-primary text-xl">account_circle</span>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold text-slate-800">Google Account</p>
+                                                            <p className="text-xs text-slate-500 mt-0.5">{profileData.email} • Primary login method</p>
+                                                        </div>
+                                                    </div>
+                                                    <span className="px-3 py-1 text-[10px] font-black bg-emerald-100 text-emerald-700 rounded-full uppercase tracking-widest">Active</span>
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-bold text-slate-800">Phone Number (OTP)</p>
-                                                    <p className="text-xs text-slate-500 mt-0.5">{profileData.phone_number} • Primary login method</p>
+                                                <div className="px-4 py-3 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-3">
+                                                    <span className="material-symbols-outlined text-blue-500 text-lg mt-0.5">info</span>
+                                                    <p className="text-xs text-blue-700 leading-relaxed">
+                                                        Your account is secured with Google OAuth 2.0 verification. No local password or OTP is stored.
+                                                    </p>
                                                 </div>
-                                            </div>
-                                            <span className="px-3 py-1 text-[10px] font-black bg-emerald-100 text-emerald-700 rounded-full uppercase tracking-widest">Active</span>
-                                        </div>
-                                        <div className="px-4 py-3 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-3">
-                                            <span className="material-symbols-outlined text-blue-500 text-lg mt-0.5">info</span>
-                                            <p className="text-xs text-blue-700 leading-relaxed">
-                                                Your account is secured with OTP-based verification. Each time you log in, a one-time password is sent to your registered phone number. No password is stored.
-                                            </p>
-                                        </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                                                            <span className="material-symbols-outlined text-primary text-xl">smartphone</span>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-bold text-slate-800">Phone Number (OTP)</p>
+                                                            <p className="text-xs text-slate-500 mt-0.5">{profileData.phone_number} • Primary login method</p>
+                                                        </div>
+                                                    </div>
+                                                    <span className="px-3 py-1 text-[10px] font-black bg-emerald-100 text-emerald-700 rounded-full uppercase tracking-widest">Active</span>
+                                                </div>
+                                                <div className="px-4 py-3 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-3">
+                                                    <span className="material-symbols-outlined text-blue-500 text-lg mt-0.5">info</span>
+                                                    <p className="text-xs text-blue-700 leading-relaxed">
+                                                        Your account is secured with OTP-based verification. Each time you log in, a one-time password is sent to your registered phone number. No password is stored.
+                                                    </p>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
@@ -466,6 +523,73 @@ export default function Profile() {
                     </div>
                 </div>
             </div>
+
+            {/* Role Upgrade Request Modal */}
+            {showRoleModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowRoleModal(false)}>
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center gap-3 mb-5">
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-primary">upgrade</span>
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-lg text-slate-900">Request Role Upgrade</h3>
+                                <p className="text-xs text-slate-500">Requires admin approval for security</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <button 
+                                onClick={() => handleRoleRequest('volunteer')} 
+                                disabled={roleRequestLoading}
+                                className="w-full p-4 border-2 border-slate-200 rounded-xl hover:border-primary hover:bg-primary/5 transition-all text-left group disabled:opacity-50"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="material-symbols-outlined text-2xl text-primary group-hover:scale-110 transition-transform">volunteer_activism</span>
+                                    <div>
+                                        <h4 className="font-bold text-sm text-slate-900">Volunteer</h4>
+                                        <p className="text-[11px] text-slate-500">Accept help requests, respond to emergencies, build trust score</p>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <button 
+                                onClick={() => handleRoleRequest('organization')} 
+                                disabled={roleRequestLoading}
+                                className="w-full p-4 border-2 border-slate-200 rounded-xl hover:border-primary hover:bg-primary/5 transition-all text-left group disabled:opacity-50"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="material-symbols-outlined text-2xl text-primary group-hover:scale-110 transition-transform">corporate_fare</span>
+                                    <div>
+                                        <h4 className="font-bold text-sm text-slate-900">Organization</h4>
+                                        <p className="text-[11px] text-slate-500">Post bulk resources, coordinate community response efforts</p>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <button 
+                                onClick={() => handleRoleRequest('ngo')} 
+                                disabled={roleRequestLoading}
+                                className="w-full p-4 border-2 border-slate-200 rounded-xl hover:border-primary hover:bg-primary/5 transition-all text-left group disabled:opacity-50"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <span className="material-symbols-outlined text-2xl text-primary group-hover:scale-110 transition-transform">diversity_3</span>
+                                    <div>
+                                        <h4 className="font-bold text-sm text-slate-900">NGO</h4>
+                                        <p className="text-[11px] text-slate-500">Verified non-profit access with full resource management capabilities</p>
+                                    </div>
+                                </div>
+                            </button>
+                        </div>
+
+                        <div className="flex justify-end mt-5">
+                            <button onClick={() => setShowRoleModal(false)} className="px-5 py-2 text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

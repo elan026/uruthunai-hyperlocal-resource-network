@@ -1,25 +1,36 @@
 import { useState, useEffect } from 'react';
+import { authService } from '../services/api';
 
 export default function Volunteers() {
     const [volunteers, setVolunteers] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        setVolunteers([
-            { id: 1, name: 'Karthik R.', role: 'Volunteer', area_code: '638001 - Erode City', trust_score: 92, skills: ['First Aid', 'Rescue'], status: 'Active' },
-            { id: 2, name: 'Priya S.', role: 'Medical Support', area_code: '638052 - Perundurai', trust_score: 88, skills: ['Nursing', 'CPR'], status: 'Active' },
-            { id: 3, name: 'Ravi M.', role: 'Volunteer', area_code: '638001 - Erode City', trust_score: 75, skills: ['Transport', 'Supply Chain'], status: 'Standby' },
-            { id: 4, name: 'Lakshmi D.', role: 'Volunteer', area_code: '638301 - Bhavani', trust_score: 95, skills: ['Shelter Mgmt', 'Cooking'], status: 'Active' },
-            { id: 5, name: 'Suresh K.', role: 'Medical Support', area_code: '638001 - Erode City', trust_score: 83, skills: ['Pharmacy', 'First Aid'], status: 'Offline' },
-            { id: 6, name: 'Deepa V.', role: 'Volunteer', area_code: '638452 - Gobichettipalayam', trust_score: 70, skills: ['Communication', 'Elderly Care'], status: 'Active' },
-        ]);
+        const fetchVolunteers = async () => {
+            try {
+                const res = await authService.getVolunteers();
+                setVolunteers(res.data);
+            } catch (err) {
+                console.error('Failed to fetch volunteers:', err);
+                // Fallback mock strictly for design review if DB is empty
+                setVolunteers([
+                    { id: 1, name: 'Karthik R. (Demo)', role: 'volunteer', area_code: '638001', trust_score: 92, skills: ['First Aid', 'Rescue'], status: 'Active' },
+                    { id: 2, name: 'Priya S. (Demo)', role: 'ngo', area_code: '638052', trust_score: 88, skills: ['Nursing', 'CPR'], status: 'Active' },
+                ]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchVolunteers();
     }, []);
 
-    const filteredVolunteers = volunteers.filter(v =>
-        v.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        v.skills.some(s => s.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        v.area_code.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredVolunteers = volunteers.filter(v => {
+        const nameMatch = v.name?.toLowerCase().includes(searchQuery.toLowerCase());
+        const skillMatch = v.skills?.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
+        const areaMatch = (v.area_code?.toString() || '').includes(searchQuery);
+        return nameMatch || skillMatch || areaMatch;
+    });
 
     const statusStyle = (status) => {
         if (status === 'Active') return { color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-200', dot: 'bg-emerald-500' };
@@ -66,62 +77,65 @@ export default function Volunteers() {
 
                 {/* Volunteer Grid */}
                 <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {filteredVolunteers.map((vol, i) => {
-                        const ss = statusStyle(vol.status);
-                        return (
-                            <div key={vol.id} className="bg-white p-6 rounded-2xl border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all group">
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`size-14 rounded-xl ${avatarColors[i % avatarColors.length]} flex items-center justify-center text-xl font-black shadow-sm`}>
-                                            {vol.name.charAt(0)}
+                    {filteredVolunteers.length > 0 ? (
+                        filteredVolunteers.map((vol, i) => {
+                            const ss = statusStyle(vol.status || 'Active');
+                            const skillsArr = Array.isArray(vol.skills) ? vol.skills : (vol.skills?.split(',') || []);
+                            return (
+                                <div key={vol.id || i} className="bg-white p-6 rounded-2xl border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition-all group">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`size-14 rounded-xl ${avatarColors[i % avatarColors.length]} flex items-center justify-center text-xl font-black shadow-sm`}>
+                                                {vol.name?.charAt(0) || 'V'}
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-slate-900 text-lg leading-tight group-hover:text-primary transition-colors">{vol.name}</h3>
+                                                <span className="text-sm text-slate-500 uppercase tracking-tighter font-bold">{vol.role || 'Volunteer'}</span>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-slate-900 text-lg leading-tight group-hover:text-primary transition-colors">{vol.name}</h3>
-                                            <span className="text-sm text-slate-500">{vol.role}</span>
-                                        </div>
-                                    </div>
-                                    <span className={`text-[10px] font-bold px-3 py-1.5 rounded-full border flex items-center gap-1.5 ${ss.bg} ${ss.color}`}>
-                                        <span className={`size-2 rounded-full ${ss.dot}`}></span>
-                                        {vol.status}
-                                    </span>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
-                                    <span className="material-symbols-outlined text-primary text-sm">location_on</span>
-                                    <span className="font-medium">{vol.area_code}</span>
-                                </div>
-
-                                {/* Trust Score */}
-                                <div className="mb-4">
-                                    <div className="flex justify-between items-center mb-1">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Trust Score</span>
-                                        <span className="text-sm font-black">{vol.trust_score}%</span>
-                                    </div>
-                                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                                        <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${vol.trust_score}%` }}></div>
-                                    </div>
-                                </div>
-
-                                {/* Skills */}
-                                <div className="flex flex-wrap gap-2">
-                                    {vol.skills.map(skill => (
-                                        <span key={skill} className="bg-slate-50 text-slate-600 text-xs font-bold px-3 py-1 rounded-lg border border-slate-200">
-                                            {skill}
+                                        <span className={`text-[10px] font-bold px-3 py-1.5 rounded-full border flex items-center gap-1.5 ${ss.bg} ${ss.color}`}>
+                                            <span className={`size-2 rounded-full ${ss.dot}`}></span>
+                                            {vol.status || 'Active'}
                                         </span>
-                                    ))}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                                    </div>
 
-                {filteredVolunteers.length === 0 && (
-                    <div className="bg-white rounded-2xl p-16 text-center border border-slate-200 mt-8">
-                        <span className="material-symbols-outlined text-5xl text-slate-300 mb-4">groups</span>
-                        <h3 className="font-bold text-slate-800 text-xl">No volunteers found</h3>
-                        <p className="text-slate-500 mt-2">Try a different search query or Pincode.</p>
-                    </div>
-                )}
+                                    <div className="flex items-center gap-2 text-sm text-slate-500 mb-4 font-bold">
+                                        <span className="material-symbols-outlined text-primary text-sm">location_on</span>
+                                        <span className="font-bold">{vol.area_code || 'Verified'} • {vol.area_name || 'N/A'}</span>
+                                    </div>
+
+                                    {/* Trust Score */}
+                                    <div className="mb-4">
+                                        <div className="flex justify-between items-center mb-1">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Trust Score</span>
+                                            <span className="text-sm font-black">{vol.trust_score || 50}%</span>
+                                        </div>
+                                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                                            <div 
+                                                className={`h-full rounded-full transition-all ${vol.trust_score >= 90 ? 'bg-emerald-500' : vol.trust_score >= 70 ? 'bg-blue-500' : 'bg-primary'}`} 
+                                                style={{ width: `${vol.trust_score || 50}%` }}></div>
+                                        </div>
+                                    </div>
+
+                                    {/* Skills */}
+                                    <div className="flex flex-wrap gap-2">
+                                        {skillsArr.map((skill, si) => (
+                                            <span key={si} className="bg-slate-50 text-slate-600 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border border-slate-200">
+                                                {skill.trim()}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div className="col-span-full bg-white rounded-2xl p-16 text-center border border-slate-200">
+                            <span className="material-symbols-outlined text-5xl text-slate-300 mb-4">groups</span>
+                            <h3 className="font-bold text-slate-800 text-xl">No volunteers found</h3>
+                            <p className="text-slate-500 mt-2">Try a different search query or area name.</p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

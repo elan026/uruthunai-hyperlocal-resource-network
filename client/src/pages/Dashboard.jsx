@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { resourceService, requestService } from '../services/api';
+import { resourceService, requestService, systemService, alertService } from '../services/api';
 import { motion } from 'framer-motion';
 import FadeUp from '../components/AnimatedSection';
 import Reveal from '../components/Reveal';
@@ -12,32 +12,43 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const [resources, setResources] = useState([]);
     const [requests, setRequests] = useState([]);
+    const [announcements, setAnnouncements] = useState([]);
+    const [stats, setStats] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const [activeVolunteers, setActiveVolunteers] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [resRes, reqRes] = await Promise.all([
+                const [resRes, reqRes, statsRes, alertsRes, volRes] = await Promise.all([
                     resourceService.getAll(),
-                    requestService.getAll()
+                    requestService.getAll(),
+                    systemService.getStats(),
+                    alertService.getAll(),
+                    authService.getVolunteers()
                 ]);
+                
                 setResources(resRes.data.slice(0, 4));
                 setRequests(reqRes.data.slice(0, 4));
+                setAnnouncements(alertsRes.data.slice(0, 3));
+                setActiveVolunteers(volRes.data.slice(0, 3));
+                
+                const s = statsRes.data;
+                setStats([
+                    { label: 'Available Water', value: `${s.waterCount}L`, change: '+5%', positive: true, icon: 'water_drop', color: 'text-blue-500' },
+                    { label: 'First Aid Kits', value: `${s.medicalCount} Units`, change: '+2%', positive: true, icon: 'medical_services', color: 'text-emerald-500' },
+                    { label: 'Active Requests', value: s.requestsCount, change: '-10%', positive: false, icon: 'assignment_late', color: 'text-orange-500' },
+                    { label: 'Verified Volunteers', value: s.volunteerCount, change: '+12%', positive: true, icon: 'groups', color: 'text-purple-500' },
+                ]);
             } catch (err) {
-                console.error("Error fetching dashboard data", err);
+                console.error('Fetch error:', err);
             } finally {
                 setLoading(false);
             }
         };
         fetchData();
     }, []);
-
-    const stats = [
-        { label: 'Available Water', value: '1,250L', change: '+5%', positive: true, icon: 'water_drop', color: 'text-blue-500' },
-        { label: 'First Aid Kits', value: '42 Units', change: '+2%', positive: true, icon: 'medical_services', color: 'text-emerald-500' },
-        { label: 'Active Requests', value: requests.length || '18', change: '-10%', positive: false, icon: 'assignment_late', color: 'text-orange-500' },
-        { label: 'Verified Volunteers', value: '156', change: '+12%', positive: true, icon: 'groups', color: 'text-purple-500' },
-    ];
 
     return (
         <div className="p-4 md:p-6 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 lg:gap-8 max-w-[1600px] mx-auto">
@@ -232,23 +243,25 @@ export default function Dashboard() {
                             <h3 className="text-base md:text-lg lg:text-xl font-bold">Announcements</h3>
                         </div>
                         <div className="space-y-5">
-                            {[
-                                { badge: 'Admin', badgeColor: 'text-primary bg-primary/10', time: '1h ago', text: 'New community fridge installed at Adyar junction.' },
-                                { badge: 'Volunteer', badgeColor: 'text-blue-600 bg-blue-50', time: '3h ago', text: 'Free health checkup camp this Sunday at Community Hall.' },
-                                { badge: 'General', badgeColor: 'text-slate-500 bg-slate-100', time: 'Yesterday', text: 'Cleanliness drive successful: 50kg waste collected.' },
-                            ].map((ann, i) => (
+                            {announcements.length > 0 ? announcements.map((ann, i) => (
                                 <motion.div
-                                    key={i}
+                                    key={ann.id || i}
                                     whileHover={{ x: 4 }}
                                     className="pb-4 border-b border-slate-50 last:border-0 last:pb-0"
                                 >
                                     <div className="flex justify-between items-center mb-2">
-                                        <span className={`text-[10px] font-black uppercase tracking-widest ${ann.badgeColor} px-2 py-1 rounded-md`}>{ann.badge}</span>
-                                        <span className="text-[11px] font-semibold text-slate-400">{ann.time}</span>
-                                    </div>
-                                    <p className="text-sm font-medium text-slate-700 leading-relaxed hover:text-primary transition-colors cursor-default">{ann.text}</p>
+                                         <span className={`text-[10px] font-black uppercase tracking-widest ${
+                                             ann.alert_type === 'Critical' ? 'text-rose-600 bg-rose-50' : 
+                                             ann.alert_type === 'Warning' ? 'text-orange-600 bg-orange-50' : 
+                                             'text-primary bg-primary/10'
+                                         } px-2 py-1 rounded-md`}>{ann.alert_type || 'Admin'}</span>
+                                         <span className="text-[11px] font-semibold text-slate-400">{new Date(ann.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                     </div>
+                                     <p className="text-sm font-medium text-slate-700 leading-relaxed hover:text-primary transition-colors cursor-default line-clamp-2">{ann.message}</p>
                                 </motion.div>
-                            ))}
+                            )) : (
+                                <p className="text-sm text-slate-400 italic">No recent announcements.</p>
+                            )}
                         </div>
                         <motion.button
                             onClick={() => navigate('/alerts')}
@@ -271,29 +284,30 @@ export default function Dashboard() {
                             </button>
                         </div>
                         <StaggerContainer staggerDelay={0.1} className="space-y-4">
-                            {[
-                                { name: 'Ravi Kumar', status: 'Active Now', statusColor: 'text-emerald-500', role: 'Resource Delivery • Area A', initial: 'R', bg: 'bg-blue-100 text-blue-700', active: true },
-                                { name: 'Sarah Jacob', status: 'Away (10m)', statusColor: 'text-amber-500', role: 'Medical Support • Area B', initial: 'S', bg: 'bg-rose-100 text-rose-700', active: false },
-                                { name: 'Ananya D.', status: 'Active Now', statusColor: 'text-emerald-500', role: 'Tech Support • HQ', initial: 'A', bg: 'bg-emerald-100 text-emerald-700', active: true },
-                            ].map((vol, i) => (
-                                <StaggerItem key={i}>
-                                    <div className="flex items-center gap-4 p-2 -mx-2 rounded-xl hover:bg-slate-50 transition-colors">
-                                        <div className="relative">
-                                            <div className={`size-11 rounded-full ${vol.bg} flex items-center justify-center text-sm font-black`}>
-                                                {vol.initial}
+                            {activeVolunteers.length > 0 ? activeVolunteers.map((vol, i) => {
+                                const colors = ['bg-blue-100 text-blue-700', 'bg-rose-100 text-rose-700', 'bg-emerald-100 text-emerald-700'];
+                                return (
+                                    <StaggerItem key={vol.id || i}>
+                                        <div className="flex items-center gap-4 p-2 -mx-2 rounded-xl hover:bg-slate-50 transition-colors">
+                                            <div className="relative">
+                                                <div className={`size-11 rounded-full ${colors[i % 3]} flex items-center justify-center text-sm font-black`}>
+                                                    {vol.name?.charAt(0) || '?'}
+                                                </div>
+                                                <span className="absolute bottom-0 right-0 size-3 bg-emerald-500 border-2 border-white rounded-full"></span>
                                             </div>
-                                            {vol.active && <span className="absolute bottom-0 right-0 size-3 bg-emerald-500 border-2 border-white rounded-full"></span>}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-center mb-0.5">
-                                                <p className="text-sm font-bold text-slate-900 truncate">{vol.name}</p>
-                                                <span className={`text-[10px] font-black ${vol.statusColor} whitespace-nowrap`}>{vol.status}</span>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-center mb-0.5">
+                                                    <p className="text-sm font-bold text-slate-900 truncate">{vol.name}</p>
+                                                    <span className={`text-[10px] font-black text-emerald-500 whitespace-nowrap`}>Active Now</span>
+                                                </div>
+                                                <p className="text-xs font-medium text-slate-500 uppercase tracking-tight truncate">{vol.role || 'Volunteer'} • Area {vol.area_code || 'N/A'}</p>
                                             </div>
-                                            <p className="text-xs font-medium text-slate-500 truncate">{vol.role}</p>
                                         </div>
-                                    </div>
-                                </StaggerItem>
-                            ))}
+                                    </StaggerItem>
+                                );
+                            }) : (
+                                <p className="text-sm text-slate-400 italic">No active volunteers shown.</p>
+                            )}
                         </StaggerContainer>
                         <motion.button
                             onClick={() => navigate('/volunteers')}

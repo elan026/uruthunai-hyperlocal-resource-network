@@ -35,4 +35,28 @@ const adminOnly = (req, res, next) => {
     }
 };
 
-module.exports = { protect, adminOnly };
+// Middleware: Only volunteer, organization, or ngo user_types can proceed
+const volunteerOrAbove = async (req, res, next) => {
+    try {
+        const db = require('../config/db');
+        const [rows] = await db.execute('SELECT user_type FROM users WHERE id = ?', [req.user.id]);
+        if (!rows[0]) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        const userType = rows[0].user_type;
+        const allowedTypes = ['volunteer', 'community_activist', 'organization', 'ngo'];
+        if (!allowedTypes.includes(userType)) {
+            return res.status(403).json({ 
+                error: 'Only volunteers and organizations can perform this action.',
+                current_type: userType
+            });
+        }
+        req.userType = userType;
+        next();
+    } catch (error) {
+        console.error('volunteerOrAbove middleware error:', error);
+        res.status(500).json({ error: 'Authorization check failed' });
+    }
+};
+
+module.exports = { protect, adminOnly, volunteerOrAbove };

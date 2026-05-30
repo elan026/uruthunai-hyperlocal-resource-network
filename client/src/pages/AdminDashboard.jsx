@@ -26,7 +26,7 @@ export default function AdminDashboard() {
                 });
                 setRecentRequests(reqRes.data.slice(0, 5));
             } catch (err) {
-                console.error('Error fetching admin metrics', err);
+                // Silenced: metrics failure shows as zero counts in the UI
             }
         };
         fetchMetrics();

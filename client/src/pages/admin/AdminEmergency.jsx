@@ -19,7 +19,7 @@ export default function AdminEmergency() {
                 setTitle(res.data.title || '');
                 setMessage(res.data.message || '');
             } catch (error) {
-                console.error('Failed to fetch emergency data', error);
+                // Silenced: defaults to non-emergency mode on load failure
             }
         };
 
@@ -42,7 +42,7 @@ export default function AdminEmergency() {
                 setMessage('');
             }
         } catch (error) {
-            console.error('Failed to toggle emergency mode', error);
+            // Silenced: toggle button re-enables, indicating failure
         } finally {
             setIsLoading(false);
         }

@@ -1,4 +1,4 @@
-Make this project fully responsive across all breakpoints using React + Vite + Tailwind CSS. Follow these rules strictly:
+As a front-end developer, make this project fully responsive across all breakpoints using React, Vite, and Tailwind CSS. Follow these rules strictly:
 
 ── BREAKPOINT SYSTEM ──────────────────────────────
 Use Tailwind's standard breakpoint scale only:
@@ -9,8 +9,7 @@ Use Tailwind's standard breakpoint scale only:
   xl  → xl:                  — ≥ 1280px  (desktop)
   2xl → 2xl:                 — ≥ 1536px  (wide screen)
 
-Always write mobile-first. Base classes handle mobile;
-prefixed classes progressively enhance for larger screens.
+Always write mobile-first. Base classes handle mobile; prefixed classes progressively enhance for larger screens.
 
 ── LAYOUT RULES ────────────────────────────────────
 - Use flex and grid with responsive variants:
@@ -37,8 +36,7 @@ prefixed classes progressively enhance for larger screens.
 For every component currently built for desktop/laptop view:
   1. Audit it for overflow, clipping, or fixed-width issues.
   2. If it breaks below md, recreate or restructure it for mobile.
-  3. Use conditional Tailwind classes — do NOT use separate
-     mobile/desktop component copies unless absolutely necessary.
+  3. Use conditional Tailwind classes — do NOT use separate mobile/desktop component copies unless absolutely necessary.
   4. Common patterns to handle:
        Navbar    → hamburger menu on mobile (hidden md:flex / block md:hidden)
        Tables    → horizontal scroll wrapper or card-list layout on mobile
@@ -55,8 +53,7 @@ For every component currently built for desktop/laptop view:
 
 ── OVERFLOW & SCROLLING ────────────────────────────
 - No horizontal scroll allowed on any viewport.
-- Detect and fix: overflow-x-hidden on root if needed,
-  but prefer fixing the root cause (wide elements/flex children).
+- Detect and fix: overflow-x-hidden on root if needed, but prefer fixing the root cause (wide elements/flex children).
 - Tables and code blocks: wrap with overflow-x-auto.
 
 ── TOUCH & INTERACTION ─────────────────────────────
@@ -67,8 +64,7 @@ For every component currently built for desktop/laptop view:
 ── DO NOT ──────────────────────────────────────────
 - Do not use arbitrary px values for breakpoints ([min-width:900px]).
 - Do not use @media queries in component files — use Tailwind prefixes.
-- Do not duplicate components for mobile vs desktop unless layout
-  is structurally incompatible (then use hidden/block toggling).
+- Do not duplicate components for mobile vs desktop unless layout is structurally incompatible (then use hidden/block toggling).
 - Do not leave any component untouched if it was desktop-only.
 
 ── TESTING CHECKLIST ───────────────────────────────
@@ -83,8 +79,6 @@ After changes, verify on:
 ── OUTPUT EXPECTATIONS ─────────────────────────────
 - Modify existing component files in-place.
 - Add responsive Tailwind classes alongside existing ones.
-- If a component needs structural changes for mobile,
-  rewrite that component fully.
-- Do not add external CSS files or override Tailwind with
-  custom @media queries unless Tailwind cannot express it.
+- If a component needs structural changes for mobile, rewrite that component fully.
+- Do not add external CSS files or override Tailwind with custom @media queries unless Tailwind cannot express it.
 - Keep all logic and state unchanged — only layout/styles update.

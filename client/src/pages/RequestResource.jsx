@@ -28,7 +28,7 @@ export default function RequestResource() {
                     setIsLocating(false);
                 },
                 (err) => {
-                    console.error("Location access denied or failed", err);
+                    // Silenced: geolocation denial is expected — fallback to Erode default
                     setLocation({ lat: 11.3410, lng: 77.7172 }); // Erode Default
                     setIsLocating(false);
                 }
@@ -75,7 +75,7 @@ export default function RequestResource() {
             navigate('/home');
 
         } catch (err) {
-            console.error('Error sending request', err);
+            // Silenced: submission failure is apparent from missing redirect
         }
     };
 

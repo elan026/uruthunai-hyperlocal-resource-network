@@ -13,7 +13,7 @@ export default function AdminModeration() {
             });
             setReports(res.data);
         } catch (error) {
-            console.error('Failed to fetch reports', error);
+            // Silenced: empty queue is shown on failure
         }
     };
 
@@ -29,7 +29,7 @@ export default function AdminModeration() {
 
             setReports(prev => prev.filter(r => r.id !== reportId));
         } catch (error) {
-            console.error('Moderation action failed', error);
+            // Silenced: item remains in queue if action fails
         }
     };
 

@@ -7,30 +7,46 @@ const User = {
         return rows[0] || null;
     },
 
-    create: async ({ phone_number, name, area_code, pincode, area_name, role, user_type, skills }) => {
+    findByGoogleId: async (google_id) => {
+        const [rows] = await db.execute('SELECT * FROM users WHERE google_id = ?', [google_id]);
+        return rows[0] || null;
+    },
+
+    findByEmail: async (email) => {
+        const [rows] = await db.execute('SELECT * FROM users WHERE email = ?', [email]);
+        return rows[0] || null;
+    },
+
+    create: async ({ phone_number, google_id, email, name, area_code, pincode, area_name, role, user_type, skills, profile_pic }) => {
         const [result] = await db.execute(
-            'INSERT INTO users (phone_number, name, area_code, pincode, area_name, role, user_type, skills) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            'INSERT INTO users (phone_number, google_id, email, name, area_code, pincode, area_name, role, user_type, skills, profile_pic) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
-                phone_number,
+                phone_number || null,
+                google_id || null,
+                email || null,
                 name || 'Anonymous',
-                area_code || 'N/A',
+                area_code || null,
                 pincode || null,
                 area_name || null,
                 role || 'user',
                 user_type || 'resident',
-                skills || null
+                skills || null,
+                profile_pic || null
             ]
         );
         return {
             id: result.insertId,
-            phone_number,
-            name,
-            area_code,
-            pincode,
-            area_name,
+            phone_number: phone_number || null,
+            google_id: google_id || null,
+            email: email || null,
+            name: name || 'Anonymous',
+            area_code: area_code || null,
+            pincode: pincode || null,
+            area_name: area_name || null,
             role: role || 'user',
             user_type: user_type || 'resident',
-            skills,
+            skills: skills || null,
+            profile_pic: profile_pic || null,
             trust_score: 50,
             verification_status: 'unverified'
         };
@@ -38,13 +54,13 @@ const User = {
 
     findById: async (id) => {
         const [rows] = await db.execute(
-            'SELECT id, phone_number, name, area_code, pincode, area_name, role, user_type, skills, profile_pic, verification_status, verification_method, trust_score, created_at FROM users WHERE id = ?',
+            'SELECT id, phone_number, google_id, email, name, area_code, pincode, area_name, role, user_type, skills, profile_pic, verification_status, verification_method, trust_score, created_at FROM users WHERE id = ?',
             [id]
         );
         return rows[0] || null;
     },
 
-    update: async (id, { name, area_code, pincode, area_name, user_type, skills, profile_pic }) => {
+    update: async (id, { name, area_code, pincode, area_name, user_type, skills, profile_pic, google_id, email }) => {
         const fields = [];
         const values = [];
 
@@ -53,6 +69,8 @@ const User = {
         if (pincode !== undefined) { fields.push('pincode = ?'); values.push(pincode); }
         if (area_name !== undefined) { fields.push('area_name = ?'); values.push(area_name); }
         if (user_type !== undefined) { fields.push('user_type = ?'); values.push(user_type); }
+        if (google_id !== undefined) { fields.push('google_id = ?'); values.push(google_id); }
+        if (email !== undefined) { fields.push('email = ?'); values.push(email); }
         if (skills !== undefined) {
             fields.push('skills = ?');
             // skills column is JSON type — sanitize input
@@ -95,6 +113,16 @@ const User = {
     delete: async (id) => {
         await db.execute('DELETE FROM users WHERE id = ?', [id]);
         return true;
+    },
+
+    findAllVolunteers: async () => {
+        const [rows] = await db.execute(`
+            SELECT id, name, area_code, pincode, area_name, user_type as role, skills, trust_score, verification_status, created_at 
+            FROM users 
+            WHERE user_type IN ('volunteer', 'ngo', 'organization')
+            ORDER BY trust_score DESC
+        `);
+        return rows;
     }
 };
 

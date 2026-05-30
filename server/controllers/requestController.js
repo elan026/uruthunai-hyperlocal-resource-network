@@ -77,10 +77,13 @@ exports.createRequest = async (req, res, next) => {
     }
 };
 
-// PATCH /api/requests/:id/state
+// PATCH /api/requests/:id/state — Protected by auth middleware
 exports.updateRequestState = async (req, res, next) => {
     try {
-        const { newState, user_id } = req.body; // user_id is the volunteer accepting/completing
+        const { newState } = req.body;
+        // Use authenticated user ID from JWT, not from untrusted body
+        const authenticatedUserId = req.user.id;
+
         if (!['OPEN', 'ACCEPTED', 'ACKNOWLEDGED', 'IN_PROGRESS', 'COMPLETED', 'HIDDEN', 'NOT_RECEIVED'].includes(newState)) {
             return res.status(400).json({ error: 'Invalid state transition.' });
         }
@@ -88,12 +91,44 @@ exports.updateRequestState = async (req, res, next) => {
         const reqItem = await Request.findById(req.params.id);
         if (!reqItem) return res.status(404).json({error: 'Request not found'});
 
-        const assigningUser = (newState === 'ACCEPTED' || newState === 'ACKNOWLEDGED') ? user_id : reqItem.assigned_to_user_id;
+        // ── ROLE GUARD: Only volunteers/organizations/ngo can ACCEPT ──
+        if (newState === 'ACCEPTED' || newState === 'ACKNOWLEDGED') {
+            const User = require('../models/userModel');
+            const acceptingUser = await User.findById(authenticatedUserId);
+            if (!acceptingUser) {
+                return res.status(404).json({ error: 'Authenticated user not found' });
+            }
+            const allowedTypes = ['volunteer', 'community_activist', 'organization', 'ngo'];
+            if (!allowedTypes.includes(acceptingUser.user_type)) {
+                return res.status(403).json({ 
+                    error: 'Only volunteers and verified organizations can accept requests.',
+                    your_type: acceptingUser.user_type
+                });
+            }
+            // Prevent double-accept: if already accepted by someone else
+            if (reqItem.status === 'ACCEPTED' && reqItem.assigned_to_user_id && reqItem.assigned_to_user_id !== authenticatedUserId) {
+                return res.status(409).json({ error: 'This request has already been accepted by another volunteer.' });
+            }
+        }
+
+        const assigningUser = (newState === 'ACCEPTED' || newState === 'ACKNOWLEDGED') ? authenticatedUserId : reqItem.assigned_to_user_id;
         await Request.updateState(req.params.id, newState, assigningUser);
+
+        // ── ACCEPTED: Write acknowledged_at timestamp + start SLA clock ──
+        if (newState === 'ACCEPTED') {
+            await db.execute(
+                'UPDATE requests SET acknowledged_at = CURRENT_TIMESTAMP WHERE id = ?', 
+                [req.params.id]
+            );
+            await db.execute(
+                'INSERT INTO request_activities (request_id, user_id, action) VALUES (?, ?, "ACCEPTED")', 
+                [req.params.id, authenticatedUserId]
+            );
+        }
 
         if (newState === 'ACKNOWLEDGED') {
             await db.execute('UPDATE requests SET acknowledged_at = CURRENT_TIMESTAMP WHERE id = ?', [req.params.id]);
-            await db.execute('INSERT INTO request_activities (request_id, user_id, action) VALUES (?, ?, "ACKNOWLEDGED")', [req.params.id, user_id]);
+            await db.execute('INSERT INTO request_activities (request_id, user_id, action) VALUES (?, ?, "ACKNOWLEDGED")', [req.params.id, authenticatedUserId]);
         }
 
         if (newState === 'COMPLETED' && reqItem.assigned_to_user_id) {
@@ -117,9 +152,13 @@ exports.updateRequestState = async (req, res, next) => {
             const io = req.app.get('io');
             if (io) {
                 let assignedName = null;
-                if (user_id) {
+                if (newState === 'ACCEPTED') {
                     const User = require('../models/userModel');
-                    const u = await User.findById(newState === 'ACCEPTED'? user_id : reqItem.assigned_to_user_id);
+                    const u = await User.findById(authenticatedUserId);
+                    assignedName = u?.name;
+                } else if (reqItem.assigned_to_user_id) {
+                    const User = require('../models/userModel');
+                    const u = await User.findById(reqItem.assigned_to_user_id);
                     assignedName = u?.name;
                 }
                 io.emit('request_status_update', { id: req.params.id, status: newState, assigned_to_name: assignedName });
