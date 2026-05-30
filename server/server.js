@@ -27,9 +27,15 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 5000;
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  process.env.CLIENT_URL
+].filter(Boolean);
+
 // Core Middleware
 app.use(cors({
-  origin: "http://localhost:5173", // Need to configure properly for production
+  origin: allowedOrigins,
   credentials: true // Allow cookies to be sent
 }));
 app.use(express.json());
